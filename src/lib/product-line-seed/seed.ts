@@ -437,7 +437,11 @@ function verifyConfig(db: ProductLineSeedDatabase, config: ProductLineSeedConfig
       message: 'Product Line B must have a non-null disabled_at value after apply.',
     })
   }
-  const flags = parseFlags(workspace.feature_flags)
+  const parsedFlags = parseFlagsForVerification(workspace.feature_flags)
+  if (!parsedFlags.ok) {
+    errors.push(drift('$.target.feature_flags', parsedFlags.message))
+  }
+  const flags = parsedFlags.flags
   for (const flag of config.feature_flags.enabled) {
     if (flags[flag] !== true) errors.push(drift(`$.target.feature_flags.${flag}`, `Required feature flag is not enabled: ${flag}.`))
   }
@@ -457,6 +461,15 @@ function verifyConfig(db: ProductLineSeedDatabase, config: ProductLineSeedConfig
       continue
     }
     if (row.name !== department.name) errors.push(drift(`$.target.departments.${department.slug}.name`, `Department name drifted: ${department.slug}.`))
+    if (Number(row.github_sync_enabled) !== (department.github_sync_enabled ? 1 : 0)) {
+      errors.push(drift(`$.target.departments.${department.slug}.github_sync_enabled`, `Department github_sync_enabled drifted: ${department.slug}.`))
+    }
+    if (Number(row.is_repo_sync_owner) !== (department.is_repo_sync_owner ? 1 : 0)) {
+      errors.push(drift(`$.target.departments.${department.slug}.is_repo_sync_owner`, `Department repo sync owner flag drifted: ${department.slug}.`))
+    }
+    if ((row.github_repo ?? null) !== department.github_repo) {
+      errors.push(drift(`$.target.departments.${department.slug}.github_repo`, `Department github_repo drifted: ${department.slug}.`))
+    }
   }
   const assignmentCount = db.prepare(`
     SELECT COUNT(*) as count
@@ -581,6 +594,7 @@ function codeForResidue(kind: string | undefined): ProductLineSeedErrorCode {
   if (kind === 'repo_sync_owner_conflict') return 'TARGET_REPO_CONFLICT'
   if (kind === 'project_github_sync' || kind === 'task_github_sync') return 'TARGET_REPO_CONFLICT'
   if (kind === 'reserved_future_flag_enabled') return 'FEATURE_FLAG_RESERVED_FUTURE_ENABLED'
+  if (kind === 'feature_flags_invalid_json') return 'FEATURE_FLAGS_INVALID_JSON'
   if (kind === 'workflow_template_ownership_conflict') return 'WORKFLOW_TEMPLATE_OWNERSHIP_CONFLICT'
   return 'NON_TARGET_RESIDUE_DETECTED'
 }
@@ -589,6 +603,10 @@ function residuePath(entry: { kind: string; identifiers?: unknown }, index?: num
   if (entry.kind === 'reserved_future_flag_enabled' && isRecord(entry.identifiers)) {
     const flag = entry.identifiers['flag']
     if (typeof flag === 'string') return `$.target.feature_flags.${flag}`
+  }
+  if (entry.kind === 'feature_flags_invalid_json' && isRecord(entry.identifiers)) {
+    const slug = entry.identifiers['workspace_slug']
+    if (typeof slug === 'string') return `$.target.workspaces.${slug}.feature_flags`
   }
   return `$.target.residue[${String(index ?? 0)}]`
 }
@@ -671,14 +689,21 @@ function tableColumns(db: ProductLineSeedDatabase, table: string): string[] {
 }
 
 function parseFlags(featureFlags: string | null): Record<string, boolean> {
-  if (!featureFlags) return {}
+  const result = parseFlagsForVerification(featureFlags)
+  if (!result.ok) throw new Error(result.message)
+  return result.flags
+}
+
+function parseFlagsForVerification(featureFlags: string | null): { ok: true; flags: Record<string, boolean> } | { ok: false; flags: Record<string, boolean>; message: string } {
+  if (!featureFlags) return { ok: true, flags: {} }
   try {
     const parsed = JSON.parse(featureFlags) as unknown
-    return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
-      ? parsed as Record<string, boolean>
-      : {}
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      return { ok: true, flags: parsed as Record<string, boolean> }
+    }
+    return { ok: false, flags: {}, message: 'Workspace feature_flags must be a JSON object.' }
   } catch {
-    return {}
+    return { ok: false, flags: {}, message: 'Workspace feature_flags must be valid JSON.' }
   }
 }
 

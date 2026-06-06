@@ -1417,7 +1417,7 @@ describe('product-line seed fail-closed validation', () => {
 
     expect(failedProof).toMatchObject({
       ok: false,
-      status: 'unexpected_error',
+      status: 'verification_failed',
       code: 'NO_MUTATION_PROOF_FAILED',
       mutation_status: 'not_mutated',
       exit_code: 5,
@@ -1430,6 +1430,33 @@ describe('product-line seed fail-closed validation', () => {
         },
       },
     })
+
+    const successShapedProofFailure = makeResult({
+      ok: true,
+      entrypoint: 'seed:product-line',
+      mode: 'preflight',
+      status: 'ready',
+      code: 'READY',
+      mutationStatus: 'not_mutated',
+      configPath: 'docs/ai/product-lines/paddock.yaml',
+      evidence: {},
+      snapshotBefore: { schema_version: 'product-line-seed-snapshot-v1', hash: 'before', surfaces: {}, preserved_operational_state: { hash: 'before', subsurfaces: {} } },
+      snapshotAfter: { schema_version: 'product-line-seed-snapshot-v1', hash: 'after', surfaces: {}, preserved_operational_state: { hash: 'after', subsurfaces: {} } },
+    })
+
+    expect(successShapedProofFailure).toMatchObject({
+      ok: false,
+      status: 'verification_failed',
+      code: 'NO_MUTATION_PROOF_FAILED',
+      mutation_status: 'not_mutated',
+      exit_code: 5,
+    })
+    expect(successShapedProofFailure['errors']).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        code: 'NO_MUTATION_PROOF_FAILED',
+        path: '$.evidence.no_mutation_proof',
+      }),
+    ]))
   })
 })
 

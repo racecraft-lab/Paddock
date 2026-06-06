@@ -707,4 +707,78 @@ describe('SPEC-010B disabled Product Line B seed lifecycle RED contract', () => 
     expect(tableCounts(db)).toEqual(countsAfterFirstVerify)
     db.close()
   })
+
+  it('fails verify when stored Product Line B feature flags are malformed', () => {
+    const db = makeProductLineBPreflightDb()
+    expect(runProductLineBSeed(db, 'apply')).toMatchObject({ ok: true })
+    db.prepare("UPDATE workspaces SET feature_flags = ? WHERE slug = 'product-line-b'").run('{not-json')
+
+    const result = runProductLineBSeed(db, 'verify', true)
+
+    expect(result).toMatchObject({
+      ok: false,
+      mode: 'verify',
+      status: 'blocked_preflight',
+      code: 'FEATURE_FLAGS_INVALID_JSON',
+      mutation_status: 'not_mutated',
+    })
+    expect(result.errors).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        code: 'FEATURE_FLAGS_INVALID_JSON',
+        path: '$.target.workspaces.product-line-b.feature_flags',
+      }),
+    ]))
+    db.close()
+  })
+
+  it('blocks preflight when target feature flags are malformed instead of treating them as empty', () => {
+    const db = makeProductLineBPreflightDb()
+    db.prepare("INSERT INTO workspaces (slug, name, feature_flags) VALUES ('product-line-b', 'Product Line B', ?)")
+      .run('{not-json')
+
+    const result = runProductLineBPreflight(db)
+
+    expect(result).toMatchObject({
+      ok: false,
+      mode: 'preflight',
+      status: 'blocked_preflight',
+      code: 'FEATURE_FLAGS_INVALID_JSON',
+      mutation_status: 'not_mutated',
+    })
+    expect(result.errors).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        code: 'FEATURE_FLAGS_INVALID_JSON',
+        path: '$.target.workspaces.product-line-b.feature_flags',
+      }),
+    ]))
+    db.close()
+  })
+
+  it('fails verify when Product Line B gains repo sync ownership drift', () => {
+    const db = makeProductLineBPreflightDb()
+    expect(runProductLineBSeed(db, 'apply')).toMatchObject({ ok: true })
+    db.prepare(`
+      UPDATE projects
+      SET github_sync_enabled = 1, is_repo_sync_owner = 1
+      WHERE workspace_id = (SELECT id FROM workspaces WHERE slug = 'product-line-b')
+        AND slug = 'qa'
+    `).run()
+
+    const result = runProductLineBSeed(db, 'verify', true)
+
+    expect(result).toMatchObject({
+      ok: false,
+      mode: 'verify',
+      status: 'blocked_preflight',
+      code: 'TARGET_REPO_CONFLICT',
+      mutation_status: 'not_mutated',
+    })
+    expect(result.errors).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        code: 'TARGET_REPO_CONFLICT',
+        path: '$.target.residue[0]',
+      }),
+    ]))
+    db.close()
+  })
 })

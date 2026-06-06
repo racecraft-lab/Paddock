@@ -114,6 +114,7 @@ export const PRODUCT_LINE_RESIDUE_KINDS = [
   'project_github_sync',
   'task_github_sync',
   'reserved_future_flag_enabled',
+  'feature_flags_invalid_json',
 ] as const
 
 export const PADDOCK_REQUIRED_WORKFLOW_SLUGS = [
@@ -291,6 +292,7 @@ export type ProductLineSeedErrorCode =
   | 'FEATURE_FLAG_DUPLICATE'
   | 'FEATURE_FLAG_CONFLICT'
   | 'FEATURE_FLAG_RESERVED_FUTURE_ENABLED'
+  | 'FEATURE_FLAGS_INVALID_JSON'
   | 'FEATURE_FLAG_ENV_FORCE_OFF'
   | 'FEATURE_FLAG_CASCADE_PREREQUISITE_MISSING'
   | 'DEPARTMENT_INVALID'

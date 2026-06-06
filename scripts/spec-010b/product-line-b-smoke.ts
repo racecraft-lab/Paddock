@@ -72,6 +72,13 @@ const PAUSED_OR_FORBIDDEN_FLAGS = [
   'FEATURE_PRODUCT_LINE_B_DISPATCH',
   'PILOT_PRODUCT_LINE_B_SMOKE',
 ] as const
+const CLEANUP_COUNTER_FIELDS = [
+  'github_sync_enabled_projects',
+  'repo_sync_owner_projects',
+  'assigned_dispatch_eligible_tasks',
+  'remaining_eligible_smoke_work',
+  'unintended_side_effect_rows',
+] as const
 const ACCEPTED_RUNTIME_INVENTORY_STATES = ['visible', 'unassigned', 'assigned', 'blocked', 'eligible'] as const
 const DEFAULT_SYNTHETIC_ISSUE_FIXTURE = 'specs/010b-product-line-b-smoke/fixtures/synthetic-issue.json'
 
@@ -126,6 +133,10 @@ function numberAt(value: unknown, key: string, fallback = 0): number {
   if (!isRecord(value)) return fallback
   const child = value[key]
   return typeof child === 'number' ? child : fallback
+}
+
+function statusAt(value: unknown): number {
+  return numberAt(value, 'status')
 }
 
 function booleanAt(value: unknown, key: string, fallback = false): boolean {
@@ -349,32 +360,89 @@ export function evaluateProductLineAIsolation(input: unknown): Promise<JsonRecor
 }
 
 export function validateScopedApiEvidence(input: unknown): Promise<JsonRecord> {
+  const productLineBWorkspaceId = numberAt(input, 'product_line_b_workspace_id')
   const routes = arrayAt(input, 'routes')
-  const routeNames = new Set(routes.map((route) => stringAt(route, 'route')))
+  const routeByName = new Map(routes.map((route) => [stringAt(route, 'route'), route]))
+  const routeNames = new Set(routeByName.keys())
+  const requiredRoutesPresent = SCOPED_API_ROUTES.every((route) => routeNames.has(route))
+  const allStatusOk = routes.every((route) => statusAt(route) === 200)
+  const workspaceRoute = recordAt(routeByName.get('/api/workspaces/:id'), 'response')
+  const workspace = recordAt(workspaceRoute, 'workspace')
+  const projectsRoute = recordAt(routeByName.get('/api/projects?workspace_id=<id>'), 'response')
+  const projects = arrayAt(projectsRoute, 'projects')
+  const tasksRoute = recordAt(routeByName.get('/api/tasks?workspace_id=<id>'), 'response')
+  const tasks = arrayAt(tasksRoute, 'tasks')
+  const agentsRoute = recordAt(routeByName.get('/api/agents?workspace_id=<id>'), 'response')
+  const agents = arrayAt(agentsRoute, 'agents')
+  const syncRoute = recordAt(routeByName.get('/api/github/sync?workspace_id=<id>'), 'response')
+  const syncs = arrayAt(syncRoute, 'syncs')
+  const syncLifecycle = recordAt(syncRoute, 'github_sync_lifecycle')
+  const syncScopes = arrayAt(syncLifecycle, 'scopes')
+  const syncFlag = recordAt(syncLifecycle, 'flag')
+  const productLineBRepoSyncOwnerCount = projects
+    .filter((project) => booleanAt(project, 'is_repo_sync_owner') || booleanAt(project, 'github_sync_enabled'))
+    .length
+  const responsePathsPresent = stringAt(workspace, 'slug') === 'paddock' &&
+    projects.some((project) => numberAt(project, 'workspace_id') > 0 && stringAt(project, 'github_repo') === PADDOCK_REPO) &&
+    tasks.some((task) => stringAt(recordAt(task, 'metadata'), 'product_line_slug') === PRODUCT_LINE_B_SLUG) &&
+    agents.some((agent) => stringAt(agent, 'name').startsWith('plb-platform-')) &&
+    syncs.length > 0 &&
+    syncScopes.every((scope) => !booleanAt(scope, 'enabled')) &&
+    !booleanAt(syncFlag, 'enabled')
+  const explicitScopeInspectable = productLineBWorkspaceId > 0 &&
+    projects.every((project) => numberAt(project, 'workspace_id') === productLineBWorkspaceId) &&
+    tasks.every((task) => stringAt(recordAt(task, 'metadata'), 'product_line_slug') === PRODUCT_LINE_B_SLUG) &&
+    agents.every((agent) => stringAt(agent, 'name').startsWith('plb-platform-'))
+  const ok = requiredRoutesPresent && allStatusOk && responsePathsPresent && explicitScopeInspectable && productLineBRepoSyncOwnerCount === 0
+  const evidenceCodes = [
+    ...(requiredRoutesPresent ? [] : ['SCOPED_API_REQUIRED_ROUTE_MISSING']),
+    ...(allStatusOk ? [] : ['SCOPED_API_STATUS_FAILED']),
+    ...(responsePathsPresent ? [] : ['SCOPED_API_RESPONSE_PATH_MISSING']),
+    ...(explicitScopeInspectable ? [] : ['SCOPED_API_SCOPE_ASSERTION_FAILED']),
+    ...(productLineBRepoSyncOwnerCount === 0 ? [] : ['SCOPED_API_REPO_SYNC_OWNER_DRIFT']),
+  ]
   return Promise.resolve({
-    ok: SCOPED_API_ROUTES.every((route) => routeNames.has(route)),
+    ok,
     required_routes_present: [...SCOPED_API_ROUTES],
-    required_response_paths_present: true,
+    required_response_paths_present: responsePathsPresent,
     product_line_a_baseline_matches_after: true,
-    product_line_b_explicit_scope_inspectable: true,
-    product_line_b_repo_sync_owner_count: 0,
-    evidence_codes: [],
+    product_line_b_explicit_scope_inspectable: explicitScopeInspectable,
+    product_line_b_repo_sync_owner_count: productLineBRepoSyncOwnerCount,
+    evidence_codes: evidenceCodes,
   })
 }
 
 export function validateScopedDashboardEvidence(input: unknown): Promise<JsonRecord> {
   const switcher = recordAt(input, 'switcher')
+  const explicitWorkspaceIdUsed = arrayAt(input, 'status_requests')
+    .every((request) => stringAt(request, 'url').includes('workspace_id='))
+  const productLineAMetricsMatch = JSON.stringify(recordAt(input, 'product_line_a_baseline')) === JSON.stringify(recordAt(input, 'product_line_a_after'))
+  const productLineBDuringSmoke = recordAt(input, 'product_line_b_during_smoke')
+  const productLineBMetricsScoped = DASHBOARD_SURFACES.every((surface) => isRecord(productLineBDuringSmoke[surface]))
+  const productLineBSwitcherAbsentAfterSeed = !stringArray(switcher['after_seed']).includes(PRODUCT_LINE_B_SLUG)
+  const productLineBSwitcherAbsentAfterDisable = !stringArray(switcher['after_final_disablement']).includes(PRODUCT_LINE_B_SLUG)
+  const ok = explicitWorkspaceIdUsed &&
+    productLineAMetricsMatch &&
+    productLineBMetricsScoped &&
+    productLineBSwitcherAbsentAfterSeed &&
+    productLineBSwitcherAbsentAfterDisable
   return Promise.resolve({
-    ok: true,
+    ok,
     status_endpoint: '/api/status?action=dashboard',
-    explicit_workspace_id_used: arrayAt(input, 'status_requests').every((request) => stringAt(request, 'url').includes('workspace_id=')),
+    explicit_workspace_id_used: explicitWorkspaceIdUsed,
     dashboard_surfaces_present: [...DASHBOARD_SURFACES],
-    product_line_a_metrics_match_baseline: JSON.stringify(recordAt(input, 'product_line_a_baseline')) === JSON.stringify(recordAt(input, 'product_line_a_after')),
-    product_line_b_metrics_scoped: Object.keys(recordAt(input, 'product_line_b_during_smoke')).length > 0,
-    disabled_product_line_b_switcher_absent_after_seed: !stringArray(switcher['after_seed']).includes(PRODUCT_LINE_B_SLUG),
-    disabled_product_line_b_switcher_absent_after_disable: !stringArray(switcher['after_final_disablement']).includes(PRODUCT_LINE_B_SLUG),
+    product_line_a_metrics_match_baseline: productLineAMetricsMatch,
+    product_line_b_metrics_scoped: productLineBMetricsScoped,
+    disabled_product_line_b_switcher_absent_after_seed: productLineBSwitcherAbsentAfterSeed,
+    disabled_product_line_b_switcher_absent_after_disable: productLineBSwitcherAbsentAfterDisable,
     include_disabled_preview_mode_added: false,
     product_line_metrics_widget_added: false,
+    evidence_codes: [
+      ...(explicitWorkspaceIdUsed ? [] : ['DASHBOARD_SCOPE_MISSING_WORKSPACE_ID']),
+      ...(productLineAMetricsMatch ? [] : ['DASHBOARD_PRODUCT_LINE_A_DRIFT']),
+      ...(productLineBMetricsScoped ? [] : ['DASHBOARD_PRODUCT_LINE_B_SURFACE_MISSING']),
+      ...(productLineBSwitcherAbsentAfterSeed && productLineBSwitcherAbsentAfterDisable ? [] : ['DASHBOARD_DISABLED_SWITCHER_VISIBLE']),
+    ],
   })
 }
 
@@ -472,15 +540,34 @@ export function validateFinalProductLineBDisabledState(input: unknown): Promise<
   const cleanupCounters = recordAt(input, 'cleanup_counters')
   const switcher = recordAt(input, 'switcher')
   const seedVerify = recordAt(input, 'seed_verify')
+  const disabledAtNonNull = typeof productLineB['disabled_at'] === 'string'
+  const smokeOwnedFlagsAbsentOrFalse = SMOKE_OWNED_FLAGS.filter((flag) => featureFlags[flag] !== true)
+  const smokeOwnedFlagsClean = smokeOwnedFlagsAbsentOrFalse.length === SMOKE_OWNED_FLAGS.length
+  const cleanupCountersClean = CLEANUP_COUNTER_FIELDS.every((field) => numberAt(cleanupCounters, field) === 0)
+  const switcherAbsent = !stringArray(switcher['after_final_disablement']).includes(PRODUCT_LINE_B_SLUG)
+  const seedVerifyStatus = stringAt(seedVerify, 'status')
+  const seedVerifyClean = seedVerifyStatus === 'verified'
+  const ok = stringAt(productLineB, 'slug') === PRODUCT_LINE_B_SLUG &&
+    disabledAtNonNull &&
+    smokeOwnedFlagsClean &&
+    cleanupCountersClean &&
+    switcherAbsent &&
+    seedVerifyClean
   return Promise.resolve({
-    ok: stringAt(productLineB, 'slug') === PRODUCT_LINE_B_SLUG && typeof productLineB['disabled_at'] === 'string',
+    ok,
     product_line_slug: stringAt(productLineB, 'slug'),
-    disabled_at_non_null: typeof productLineB['disabled_at'] === 'string',
-    smoke_owned_flags_absent_or_false: SMOKE_OWNED_FLAGS.filter((flag) => featureFlags[flag] !== true),
+    disabled_at_non_null: disabledAtNonNull,
+    smoke_owned_flags_absent_or_false: smokeOwnedFlagsAbsentOrFalse,
     cleanup_counters: cleanupCounters,
-    product_line_b_switcher_absent_after_disable: !stringArray(switcher['after_final_disablement']).includes(PRODUCT_LINE_B_SLUG),
-    seed_verify_status: stringAt(seedVerify, 'status'),
-    evidence_codes: [],
+    product_line_b_switcher_absent_after_disable: switcherAbsent,
+    seed_verify_status: seedVerifyStatus,
+    evidence_codes: [
+      ...(disabledAtNonNull ? [] : ['FINAL_DISABLEMENT_MISSING_DISABLED_AT']),
+      ...(smokeOwnedFlagsClean ? [] : ['FINAL_DISABLEMENT_SMOKE_FLAGS_ENABLED']),
+      ...(cleanupCountersClean ? [] : ['FINAL_DISABLEMENT_CLEANUP_COUNTERS_FAILED']),
+      ...(switcherAbsent ? [] : ['FINAL_DISABLEMENT_SWITCHER_VISIBLE']),
+      ...(seedVerifyClean ? [] : ['FINAL_DISABLEMENT_SEED_VERIFY_FAILED']),
+    ],
   })
 }
 
@@ -503,7 +590,23 @@ export function runSpec010bSmokePhase(
   const db = options.db ?? openedDb
   try {
     const result = runSpec010bSmokePhaseWithDatabase(phase, { ...options, ...(db ? { db } : {}) })
-    if (options.evidencePath) writeEvidenceFile(options.evidencePath, result)
+    if (options.evidencePath) {
+      try {
+        writeEvidenceFile(options.evidencePath, result)
+      } catch (error) {
+        return {
+          ...result,
+          ok: false,
+          errors: [
+            ...(result.errors ?? []),
+            {
+              code: 'SPEC_010B_EVIDENCE_WRITE_FAILED',
+              message: error instanceof Error ? error.message : String(error),
+            },
+          ],
+        }
+      }
+    }
     return options.evidencePath && result.ok ? { ...result, evidence_path: options.evidencePath } : result
   } catch (error) {
     return phaseError(phase, error instanceof Error ? error.message : String(error))
@@ -594,7 +697,10 @@ function runCleanupProofPhase(db: Database.Database, runId?: string): Spec010bSm
   const workspace = requireProductLineBWorkspace(db)
   const flags = parseFlagJson(workspace.feature_flags)
   const cleanupCounters = cleanupCountersFor(db, workspace.id, flags)
-  const ok = Object.values(cleanupCounters).every((value) => value === 0 || value === true || value === 'passed')
+  const ok = booleanAt(cleanupCounters, 'product_line_b_disabled_at_non_null') &&
+    booleanAt(cleanupCounters, 'schema_proof_surfaces_present') &&
+    CLEANUP_COUNTER_FIELDS.every((field) => numberAt(cleanupCounters, field) === 0) &&
+    stringAt(cleanupCounters, 'product_line_a_snapshot_parity') === 'passed'
   return {
     ok,
     phase: 'cleanup-proof',
@@ -607,12 +713,14 @@ function runCleanupProofPhase(db: Database.Database, runId?: string): Spec010bSm
 }
 
 function cleanupCountersFor(db: Database.Database, workspaceId: number, flags: JsonRecord): JsonRecord {
+  const missingSchemaProofSurfaces: string[] = []
   const githubSyncEnabledProjects = countRows(
     db,
     'projects',
     ['workspace_id', 'github_sync_enabled'],
     'SELECT COUNT(*) as count FROM projects WHERE workspace_id = ? AND COALESCE(github_sync_enabled, 0) = 1',
     [workspaceId],
+    missingSchemaProofSurfaces,
   )
   const repoSyncOwnerProjects = countRows(
     db,
@@ -620,6 +728,7 @@ function cleanupCountersFor(db: Database.Database, workspaceId: number, flags: J
     ['workspace_id', 'is_repo_sync_owner'],
     'SELECT COUNT(*) as count FROM projects WHERE workspace_id = ? AND COALESCE(is_repo_sync_owner, 0) = 1',
     [workspaceId],
+    missingSchemaProofSurfaces,
   )
   const assignedDispatchEligibleTasks = countRows(
     db,
@@ -631,6 +740,7 @@ function cleanupCountersFor(db: Database.Database, workspaceId: number, flags: J
        AND assigned_to LIKE 'plb-platform-%'
        AND status NOT IN ('done', 'completed', 'cancelled', 'failed', 'archived')`,
     [workspaceId],
+    missingSchemaProofSurfaces,
   )
   const remainingEligibleSmokeWork = countRows(
     db,
@@ -642,6 +752,7 @@ function cleanupCountersFor(db: Database.Database, workspaceId: number, flags: J
        AND metadata LIKE '%SPEC-010B%'
        AND status NOT IN ('done', 'completed', 'cancelled', 'failed', 'archived')`,
     [workspaceId],
+    missingSchemaProofSurfaces,
   )
   const smokeOwnedFlagsEnabled = countTrueFlags(flags, SMOKE_OWNED_FLAGS)
   const workspace = requireProductLineBWorkspace(db)
@@ -651,10 +762,13 @@ function cleanupCountersFor(db: Database.Database, workspaceId: number, flags: J
     assignedDispatchEligibleTasks +
     remainingEligibleSmokeWork +
     smokeOwnedFlagsEnabled +
-    (productLineBDisabledAtNonNull ? 0 : 1)
+    (productLineBDisabledAtNonNull ? 0 : 1) +
+    missingSchemaProofSurfaces.length
 
   return {
     product_line_b_disabled_at_non_null: productLineBDisabledAtNonNull,
+    schema_proof_surfaces_present: missingSchemaProofSurfaces.length === 0,
+    missing_schema_proof_surfaces: missingSchemaProofSurfaces,
     smoke_owned_flags_enabled: smokeOwnedFlagsEnabled,
     github_sync_enabled_projects: githubSyncEnabledProjects,
     repo_sync_owner_projects: repoSyncOwnerProjects,
@@ -698,12 +812,14 @@ function updateProductLineBWorkspace(
 
 function parseFlagJson(value: string | null): JsonRecord {
   if (!value) return {}
+  let parsed: unknown
   try {
-    const parsed = JSON.parse(value) as unknown
-    return isRecord(parsed) ? parsed : {}
+    parsed = JSON.parse(value) as unknown
   } catch {
-    return {}
+    throw new Error('Product Line B feature_flags must be valid JSON.')
   }
+  if (isRecord(parsed)) return parsed
+  throw new Error('Product Line B feature_flags must be a JSON object.')
 }
 
 function countTrueFlags(flags: JsonRecord, names: readonly string[]): number {
@@ -716,8 +832,15 @@ function countRows(
   columns: string[],
   sql: string,
   params: unknown[] = [],
+  missingSchemaProofSurfaces?: string[],
 ): number {
-  if (!tableExists(db, table) || columns.some((column) => !columnExists(db, table, column))) return 0
+  const missing = !tableExists(db, table)
+    ? [`${table}.*`]
+    : columns.filter((column) => !columnExists(db, table, column)).map((column) => `${table}.${column}`)
+  if (missing.length > 0) {
+    missingSchemaProofSurfaces?.push(...missing)
+    return 0
+  }
   const row = db.prepare(sql).get(...params) as { count: number } | undefined
   return row?.count ?? 0
 }

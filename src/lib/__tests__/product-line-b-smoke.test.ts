@@ -436,6 +436,32 @@ describe('SPEC-010B Product Line B smoke RED contract', () => {
     }
   })
 
+  it('blocks smoke mutation when stored Product Line B feature flags are invalid or not a JSON object', async () => {
+    const smokeModule = await loadSmokeModule()
+    const runSpec010bSmokePhase = expectSmokeFunction(smokeModule, 'runSpec010bSmokePhase')
+    for (const storedFlags of ['[]', '{not-json']) {
+      const db = createSmokeLifecycleDb()
+      try {
+        db.prepare('UPDATE workspaces SET feature_flags = ? WHERE slug = ?').run(storedFlags, PRODUCT_LINE_B_SLUG)
+
+        const result = runSpec010bSmokePhase('enable', { db, runId: RUN_ID }) as Record<string, unknown>
+        expect(result).toMatchObject({
+          ok: false,
+          phase: 'enable',
+          mutation_status: 'not_mutated',
+        })
+        expect(result['errors']).toEqual(expect.arrayContaining([
+          expect.objectContaining({ code: 'SPEC_010B_SMOKE_ERROR' }),
+        ]))
+        expect(db.prepare('SELECT feature_flags FROM workspaces WHERE slug = ?').get(PRODUCT_LINE_B_SLUG)).toEqual({
+          feature_flags: storedFlags,
+        })
+      } finally {
+        db.close()
+      }
+    }
+  })
+
   it('projects the requested run id into synthetic issue CLI evidence', async () => {
     const smokeModule = await loadSmokeModule()
     const runSpec010bSmokePhase = expectSmokeFunction(smokeModule, 'runSpec010bSmokePhase')
@@ -675,11 +701,56 @@ describe('SPEC-010B Product Line B smoke RED contract', () => {
     })
   })
 
+  it('rejects scoped API evidence when routes, status, scope, or sync ownership drift', async () => {
+    const smokeModule = await loadSmokeModule()
+    const validateScopedApiEvidence = expectSmokeFunction(smokeModule, 'validateScopedApiEvidence')
+
+    const result = await validateScopedApiEvidence({
+      run_id: RUN_ID,
+      product_line_b_workspace_id: PRODUCT_LINE_B_WORKSPACE_ID,
+      routes: [
+        {
+          route: '/api/workspaces/:id',
+          scope: 'product_line_a',
+          status: 200,
+          response: { workspace: { slug: PRODUCT_LINE_A_SLUG } },
+        },
+        {
+          route: '/api/projects?workspace_id=<id>',
+          scope: 'product_line_b',
+          status: 503,
+          response: {
+            projects: [{
+              workspace_id: PRODUCT_LINE_A_WORKSPACE_ID,
+              github_repo: PADDOCK_REPO,
+              github_sync_enabled: true,
+              is_repo_sync_owner: true,
+            }],
+          },
+        },
+      ],
+    }) as Record<string, unknown>
+
+    expect(result).toMatchObject({
+      ok: false,
+      required_response_paths_present: false,
+      product_line_b_explicit_scope_inspectable: false,
+      product_line_b_repo_sync_owner_count: 1,
+    })
+    expect(result['evidence_codes']).toEqual(expect.arrayContaining([
+      'SCOPED_API_REQUIRED_ROUTE_MISSING',
+      'SCOPED_API_STATUS_FAILED',
+      'SCOPED_API_RESPONSE_PATH_MISSING',
+      'SCOPED_API_SCOPE_ASSERTION_FAILED',
+      'SCOPED_API_REPO_SYNC_OWNER_DRIFT',
+    ]))
+  })
+
   it('requires scoped dashboard evidence fields', async () => {
     const smokeModule = await loadSmokeModule()
     const validateScopedDashboardEvidence = expectSmokeFunction(smokeModule, 'validateScopedDashboardEvidence')
 
-    await expect(validateScopedDashboardEvidence({
+    const result = await validateScopedDashboardEvidence({
       run_id: RUN_ID,
       status_requests: [
         {
@@ -714,7 +785,9 @@ describe('SPEC-010B Product Line B smoke RED contract', () => {
         during_smoke_enablement: [PRODUCT_LINE_A_SLUG, PRODUCT_LINE_B_SLUG],
         after_final_disablement: [PRODUCT_LINE_A_SLUG],
       },
-    })).resolves.toMatchObject({
+    }) as Record<string, unknown>
+
+    expect(result).toMatchObject({
       ok: true,
       status_endpoint: '/api/status?action=dashboard',
       explicit_workspace_id_used: true,
@@ -726,6 +799,48 @@ describe('SPEC-010B Product Line B smoke RED contract', () => {
       include_disabled_preview_mode_added: false,
       product_line_metrics_widget_added: false,
     })
+  })
+
+  it('rejects scoped dashboard evidence when workspace ids or Product Line B surfaces are missing', async () => {
+    const smokeModule = await loadSmokeModule()
+    const validateScopedDashboardEvidence = expectSmokeFunction(smokeModule, 'validateScopedDashboardEvidence')
+
+    const result = await validateScopedDashboardEvidence({
+      run_id: RUN_ID,
+      status_requests: [
+        {
+          scope: 'product_line_a',
+          url: '/api/status?action=dashboard',
+        },
+      ],
+      product_line_a_baseline: {
+        metric_cards: { tasks_total: 12 },
+      },
+      product_line_a_after: {
+        metric_cards: { tasks_total: 13 },
+      },
+      product_line_b_during_smoke: {
+        metric_cards: { tasks_total: 1 },
+      },
+      switcher: {
+        after_seed: [PRODUCT_LINE_A_SLUG, PRODUCT_LINE_B_SLUG],
+        after_final_disablement: [PRODUCT_LINE_A_SLUG],
+      },
+    }) as Record<string, unknown>
+
+    expect(result).toMatchObject({
+      ok: false,
+      explicit_workspace_id_used: false,
+      product_line_a_metrics_match_baseline: false,
+      product_line_b_metrics_scoped: false,
+      disabled_product_line_b_switcher_absent_after_seed: false,
+    })
+    expect(result['evidence_codes']).toEqual(expect.arrayContaining([
+      'DASHBOARD_SCOPE_MISSING_WORKSPACE_ID',
+      'DASHBOARD_PRODUCT_LINE_A_DRIFT',
+      'DASHBOARD_PRODUCT_LINE_B_SURFACE_MISSING',
+      'DASHBOARD_DISABLED_SWITCHER_VISIBLE',
+    ]))
   })
 
   it('classifies invalid workspace scope outcomes', async () => {
@@ -1015,7 +1130,7 @@ describe('SPEC-010B Product Line B smoke RED contract', () => {
     const smokeModule = await loadSmokeModule()
     const validateFinalProductLineBDisabledState = expectSmokeFunction(smokeModule, 'validateFinalProductLineBDisabledState')
 
-    await expect(validateFinalProductLineBDisabledState({
+    const result = await validateFinalProductLineBDisabledState({
       run_id: RUN_ID,
       product_line_b: {
         workspace_id: PRODUCT_LINE_B_WORKSPACE_ID,
@@ -1039,7 +1154,9 @@ describe('SPEC-010B Product Line B smoke RED contract', () => {
         status: 'verified',
         mutation_status: 'not_mutated',
       },
-    })).resolves.toMatchObject({
+    }) as Record<string, unknown>
+
+    expect(result).toMatchObject({
       ok: true,
       product_line_slug: PRODUCT_LINE_B_SLUG,
       disabled_at_non_null: true,
@@ -1055,5 +1172,96 @@ describe('SPEC-010B Product Line B smoke RED contract', () => {
       seed_verify_status: 'verified',
       evidence_codes: [],
     })
+  })
+
+  it('rejects final Product Line B disablement when cleanup, switcher, flags, or seed verify are not clean', async () => {
+    const smokeModule = await loadSmokeModule()
+    const validateFinalProductLineBDisabledState = expectSmokeFunction(smokeModule, 'validateFinalProductLineBDisabledState')
+
+    const result = await validateFinalProductLineBDisabledState({
+      run_id: RUN_ID,
+      product_line_b: {
+        workspace_id: PRODUCT_LINE_B_WORKSPACE_ID,
+        slug: PRODUCT_LINE_B_SLUG,
+        disabled_at: null,
+        feature_flags: {
+          FEATURE_WORKSPACE_SWITCHER: true,
+        },
+      },
+      cleanup_counters: {
+        github_sync_enabled_projects: 0,
+        repo_sync_owner_projects: 1,
+        assigned_dispatch_eligible_tasks: 0,
+        remaining_eligible_smoke_work: 0,
+        unintended_side_effect_rows: 1,
+      },
+      switcher: {
+        after_final_disablement: [PRODUCT_LINE_A_SLUG, PRODUCT_LINE_B_SLUG],
+      },
+      seed_verify: {
+        status: 'verification_failed',
+        mutation_status: 'not_mutated',
+      },
+    }) as Record<string, unknown>
+
+    expect(result).toMatchObject({
+      ok: false,
+      disabled_at_non_null: false,
+      product_line_b_switcher_absent_after_disable: false,
+      seed_verify_status: 'verification_failed',
+    })
+    expect(result['evidence_codes']).toEqual(expect.arrayContaining([
+      'FINAL_DISABLEMENT_MISSING_DISABLED_AT',
+      'FINAL_DISABLEMENT_SMOKE_FLAGS_ENABLED',
+      'FINAL_DISABLEMENT_CLEANUP_COUNTERS_FAILED',
+      'FINAL_DISABLEMENT_SWITCHER_VISIBLE',
+      'FINAL_DISABLEMENT_SEED_VERIFY_FAILED',
+    ]))
+  })
+
+  it('fails cleanup proof when required schema proof surfaces are missing', async () => {
+    const smokeModule = await loadSmokeModule()
+    const runSpec010bSmokePhase = expectSmokeFunction(smokeModule, 'runSpec010bSmokePhase')
+    const db = new Database(':memory:')
+    db.exec(`
+      CREATE TABLE workspaces (
+        id INTEGER PRIMARY KEY,
+        slug TEXT NOT NULL UNIQUE,
+        disabled_at TEXT,
+        feature_flags TEXT
+      );
+      CREATE TABLE projects (
+        id INTEGER PRIMARY KEY,
+        workspace_id INTEGER NOT NULL
+      );
+      CREATE TABLE tasks (
+        id INTEGER PRIMARY KEY,
+        workspace_id INTEGER NOT NULL
+      );
+    `)
+    db.prepare('INSERT INTO workspaces (id, slug, disabled_at, feature_flags) VALUES (?, ?, ?, ?)')
+      .run(PRODUCT_LINE_B_WORKSPACE_ID, PRODUCT_LINE_B_SLUG, '2026-06-05T12:30:00.000Z', '{}')
+
+    const result = runSpec010bSmokePhase('cleanup-proof', { db, runId: RUN_ID }) as Record<string, unknown>
+    expect(result).toMatchObject({
+      ok: false,
+      phase: 'cleanup-proof',
+      mutation_status: 'not_mutated',
+      cleanup_counters: {
+        schema_proof_surfaces_present: false,
+      },
+    })
+    const cleanupCounters = result['cleanup_counters'] as Record<string, unknown>
+    expect(cleanupCounters['missing_schema_proof_surfaces']).toEqual(expect.arrayContaining([
+      'projects.github_sync_enabled',
+      'projects.is_repo_sync_owner',
+      'tasks.assigned_to',
+      'tasks.status',
+      'tasks.metadata',
+    ]))
+    expect(result['errors']).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'CLEANUP_PROOF_FAILED' }),
+    ]))
+    db.close()
   })
 })

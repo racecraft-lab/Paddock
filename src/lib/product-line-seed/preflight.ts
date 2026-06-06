@@ -62,11 +62,17 @@ export function detectProductLineTargetResidue(
   }
   const reservedFutureFlag = findEnabledReservedFutureFlag(db, config)
   if (reservedFutureFlag) {
-    residue.push({
-      kind: 'reserved_future_flag_enabled',
-      count: 1,
-      identifiers: { flag: reservedFutureFlag },
-    })
+    residue.push(reservedFutureFlag.startsWith('INVALID_JSON:')
+      ? {
+          kind: 'feature_flags_invalid_json',
+          count: 1,
+          identifiers: { workspace_slug: reservedFutureFlag.slice('INVALID_JSON:'.length) },
+        }
+      : {
+          kind: 'reserved_future_flag_enabled',
+          count: 1,
+          identifiers: { flag: reservedFutureFlag },
+        })
   }
   const ownershipConflict = findWorkflowTemplateOwnershipConflict(db, config)
   if (ownershipConflict) {
@@ -221,10 +227,12 @@ export function buildPendingProductLineSeedResult(
 
 function findEnabledReservedFutureFlag(db: ProductLineSeedDatabase, config: ProductLineSeedConfig): string | null {
   if (!tableExists(db, 'workspaces')) return null
-  const rows = db.prepare('SELECT feature_flags FROM workspaces WHERE slug IN (?, ?) ORDER BY slug ASC')
-    .all('facility', config.product_line.slug) as { feature_flags: string | null }[]
+  const rows = db.prepare('SELECT slug, feature_flags FROM workspaces WHERE slug IN (?, ?) ORDER BY slug ASC')
+    .all('facility', config.product_line.slug) as { slug: string; feature_flags: string | null }[]
   for (const row of rows) {
-    const flags = parseFlags(row.feature_flags)
+    const parsed = parseFlags(row.feature_flags)
+    if (!parsed.ok) return `INVALID_JSON:${row.slug}`
+    const flags = parsed.flags
     for (const flag of RESERVED_FUTURE_FLAGS) {
       if (flags[flag] === true) return flag
     }
@@ -237,14 +245,14 @@ function tableExists(db: ProductLineSeedDatabase, table: string): boolean {
   return Boolean(row?.ok)
 }
 
-function parseFlags(featureFlags: string | null): Record<string, boolean> {
-  if (!featureFlags) return {}
+function parseFlags(featureFlags: string | null): { ok: true; flags: Record<string, boolean> } | { ok: false; flags: Record<string, boolean> } {
+  if (!featureFlags) return { ok: true, flags: {} }
   try {
     const parsed = JSON.parse(featureFlags) as unknown
     return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
-      ? parsed as Record<string, boolean>
-      : {}
+      ? { ok: true, flags: parsed as Record<string, boolean> }
+      : { ok: false, flags: {} }
   } catch {
-    return {}
+    return { ok: false, flags: {} }
   }
 }

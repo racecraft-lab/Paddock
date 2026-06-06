@@ -47,6 +47,7 @@ interface SnapshotQuery {
   sql: string
   params?: unknown[]
   columns?: string[]
+  where?: string
   orderBy?: string[]
 }
 
@@ -116,19 +117,28 @@ export function makeProductLineSeedResultEnvelope(options: {
   actionRequired?: string | null
 }): ProductLineSeedResultEnvelope {
   const noMutationProof = compareNoMutationSnapshots(options.snapshotBefore ?? null, options.snapshotAfter ?? null)
-  const code = options.mutationStatus === 'not_mutated' && noMutationProof.compared && !noMutationProof.passed
-    ? 'NO_MUTATION_PROOF_FAILED'
-    : options.code
+  const noMutationProofFailed = options.mutationStatus === 'not_mutated' && noMutationProof.compared && !noMutationProof.passed
+  const code = noMutationProofFailed ? 'NO_MUTATION_PROOF_FAILED' : options.code
+  const errors = noMutationProofFailed
+    ? [
+        ...(options.errors ?? []),
+        {
+          code: 'NO_MUTATION_PROOF_FAILED' as const,
+          path: '$.evidence.no_mutation_proof',
+          message: 'No-mutation proof failed: before and after snapshots differ for a not_mutated result.',
+        },
+      ]
+    : options.errors ?? []
   const exitCode = exitCodeFor(code)
   const evidence = options.mutationStatus === 'not_mutated' && noMutationProof.compared
     ? { ...options.evidence, no_mutation_proof: noMutationProof }
     : options.evidence ?? {}
   return {
     schema_version: PRODUCT_LINE_SEED_RESULT_SCHEMA_VERSION,
-    ok: options.ok,
+    ok: noMutationProofFailed ? false : options.ok,
     entrypoint: options.entrypoint,
     mode: options.mode,
-    status: options.status,
+    status: noMutationProofFailed ? 'verification_failed' : options.status,
     code,
     mutation_status: options.mutationStatus,
     config: {
@@ -144,7 +154,7 @@ export function makeProductLineSeedResultEnvelope(options: {
         }
       : null,
     evidence,
-    errors: options.errors ?? [],
+    errors,
     snapshot_before: options.snapshotBefore ?? null,
     snapshot_after: options.snapshotAfter ?? null,
     redaction: options.redaction ?? { raw_secret_values_emitted: false, redacted_fields: [] },
@@ -186,6 +196,7 @@ export function exitCodeFor(code: ProductLineSeedErrorCode): 0 | 2 | 3 | 4 | 5 {
     code === 'FEATURE_FLAG_DUPLICATE' ||
     code === 'FEATURE_FLAG_CONFLICT' ||
     code === 'FEATURE_FLAG_RESERVED_FUTURE_ENABLED' ||
+    code === 'FEATURE_FLAGS_INVALID_JSON' ||
     code === 'FEATURE_FLAG_ENV_FORCE_OFF' ||
     code === 'FEATURE_FLAG_CASCADE_PREREQUISITE_MISSING' ||
     code === 'DEPARTMENT_INVALID' ||
@@ -319,9 +330,10 @@ function snapshotExistingColumns(db: ProductLineSeedDatabase, query: SnapshotQue
   const orderColumns = (query.orderBy ?? ['id']).filter((column) => existingColumns.has(column))
   const sql = [
     `SELECT ${selectedColumns.map(quoteIdentifier).join(', ')} FROM ${quoteIdentifier(query.table)}`,
+    query.where ? `WHERE ${query.where}` : '',
     orderColumns.length > 0 ? `ORDER BY ${orderColumns.map(quoteIdentifier).join(', ')} ASC` : '',
   ].filter(Boolean).join(' ')
-  const rows = db.prepare(sql).all() as RedactionSafeSnapshotInput[]
+  const rows = db.prepare(sql).all(...(query.params ?? [])) as RedactionSafeSnapshotInput[]
   return {
     count: rows.length,
     hash: hashProductLineSeedSnapshot(rows),
@@ -337,6 +349,9 @@ function queryForConfigOwnedSurface(surface: string, config: ProductLineSeedConf
         table: 'workspaces',
         sql: 'SELECT id, slug, name, tenant_id, disabled_at, feature_flags, created_at, updated_at FROM workspaces WHERE slug = ? ORDER BY id ASC',
         params: [slug],
+        columns: ['id', 'slug', 'name', 'tenant_id', 'disabled_at', 'feature_flags', 'created_at', 'updated_at'],
+        where: 'slug = ?',
+        orderBy: ['id'],
       }
     case 'department_projects':
       return {
