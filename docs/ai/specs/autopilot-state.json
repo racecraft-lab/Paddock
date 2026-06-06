@@ -1,6 +1,6 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-010B-workflow.md",
-  "updated_at": "2026-06-06T05:56:00Z",
+  "updated_at": "2026-06-06T06:03:00Z",
   "spec_id": "SPEC-010B",
   "branch": "010b-product-line-b-smoke",
   "feature_dir": "specs/010b-product-line-b-smoke",
@@ -56,7 +56,7 @@
       "Current target specs/010b-product-line-b-smoke is excluded from archive and cleanup"
     ]
   },
-  "active_step": "Post: Reviewability Diff Gate",
+  "active_step": "Post: UAT Runbook Generation",
   "current_blocker": null,
   "plan": [
     {"step": "Archive Sweep: previously merged specs dry-run/apply eligibility", "status": "completed"},
@@ -101,9 +101,9 @@
     {"step": "Post: Code Review", "status": "completed"},
     {"step": "Post: Integration Suite", "status": "completed"},
     {"step": "Post: Cleanup", "status": "completed"},
-    {"step": "Post: Reviewability Diff Gate", "status": "in_progress"},
-    {"step": "Post: Self-Review", "status": "pending"},
-    {"step": "Post: UAT Runbook Generation", "status": "pending"},
+    {"step": "Post: Reviewability Diff Gate", "status": "completed"},
+    {"step": "Post: Self-Review", "status": "completed"},
+    {"step": "Post: UAT Runbook Generation", "status": "in_progress"},
     {"step": "Post: PR Body Generation", "status": "pending"},
     {"step": "Post: PR Creation", "status": "pending"},
     {"step": "Post: Review Remediation", "status": "pending"},
