@@ -11,6 +11,9 @@ import {
   BLOCKED_SIDE_EFFECTS,
   CONFIG_OWNED_SURFACES,
   FR020_PRESERVED_SURFACES,
+  PRODUCT_LINE_B_BLOCKED_SIDE_EFFECTS,
+  PRODUCT_LINE_B_PAUSED_OR_FORBIDDEN_FLAGS,
+  PRODUCT_LINE_B_SMOKE_OWNED_FLAGS,
   type ProductLineSeedConfig,
   type ProductLineSeedErrorCode,
   type ProductLineSeedValidationError,
@@ -20,8 +23,12 @@ const RESERVED_DISABLED_OR_ABSENT_FLAGS = new Set([
   'PILOT_PRODUCT_LINE_A_E2E',
   'FEATURE_TASK_CONTROL_PLANE',
   'FEATURE_AGENT_RUNNER_SANDBOXES',
+  'FEATURE_PRODUCT_LINE_B_DISPATCH',
+  'PILOT_PRODUCT_LINE_B_SMOKE',
 ])
 const SLUG_SAFE_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+const PRODUCT_LINE_B_SLUG = 'product-line-b'
+const PRODUCT_LINE_B_AGENT_PREFIX = 'plb-platform'
 
 export class ProductLineSeedConfigNotImplementedError extends Error {
   constructor(action: string) {
@@ -117,13 +124,17 @@ export function validateProductLineSeedConfig(config: unknown): ProductLineSeedV
   const errors = validateProductLineSeedTopLevelShape(config)
   if (!isRecord(config)) return errors
 
-  validateObject(config['product_line'], '$.product_line', ['slug', 'display_name', 'agent_prefix'], errors)
+  validateObject(config['product_line'], '$.product_line', ['slug', 'display_name', 'agent_prefix', 'disabled_by_default'], errors, ['disabled_by_default'])
   validateStringField(config['product_line'], 'slug', '$.product_line.slug', errors, 'PRODUCT_LINE_IDENTITY_INVALID')
   validateStringField(config['product_line'], 'display_name', '$.product_line.display_name', errors)
   const agentPrefix = validateStringField(config['product_line'], 'agent_prefix', '$.product_line.agent_prefix', errors, 'AGENT_PREFIX_INVALID')
   if (agentPrefix && !SLUG_SAFE_PATTERN.test(agentPrefix)) {
     errors.push(error('AGENT_PREFIX_INVALID', '$.product_line.agent_prefix', 'agent_prefix must be slug-safe lowercase text.'))
   }
+  const productLineSlug = isRecord(config['product_line']) && typeof config['product_line']['slug'] === 'string'
+    ? config['product_line']['slug']
+    : null
+  validateProductLineBIdentity(config['product_line'], errors)
 
   validateObject(config['github'], '$.github', ['owner', 'repo', 'full_name'], errors)
   validateStringField(config['github'], 'owner', '$.github.owner', errors, 'GITHUB_OWNER_REPO_INVALID')
@@ -153,17 +164,30 @@ export function validateProductLineSeedConfig(config: unknown): ProductLineSeedV
     config['agent_assignments'],
     config['departments'],
     agentPrefix,
-    isRecord(config['product_line']) && typeof config['product_line']['slug'] === 'string' ? config['product_line']['slug'] : null,
+    productLineSlug,
     errors,
   )
-  validateFeatureFlags(config['feature_flags'], errors)
+  validateFeatureFlags(config['feature_flags'], productLineSlug, errors)
   const allowBlockingGovernance = isRecord(config['safety_policy'])
     ? config['safety_policy']['allow_first_intake_blocking_governance'] === true
     : false
   validateGovernanceDefaults(config['governance_defaults'], allowBlockingGovernance, errors)
-  validateSafetyPolicy(config['safety_policy'], errors)
+  validateSafetyPolicy(config['safety_policy'], productLineSlug, errors)
 
   return errors
+}
+
+function validateProductLineBIdentity(value: unknown, errors: ProductLineSeedValidationError[]): void {
+  if (!isRecord(value) || value['slug'] !== PRODUCT_LINE_B_SLUG) return
+  if (value['display_name'] !== 'Product Line B') {
+    errors.push(error('PRODUCT_LINE_IDENTITY_INVALID', '$.product_line.display_name', 'Product Line B display_name must be Product Line B.'))
+  }
+  if (value['agent_prefix'] !== PRODUCT_LINE_B_AGENT_PREFIX) {
+    errors.push(error('AGENT_PREFIX_INVALID', '$.product_line.agent_prefix', 'Product Line B agent_prefix must be plb-platform.'))
+  }
+  if (value['disabled_by_default'] !== true) {
+    errors.push(error('CONFIG_SCHEMA_INVALID', '$.product_line.disabled_by_default', 'Product Line B must declare disabled_by_default: true.'))
+  }
 }
 
 function validateWorkflowContractDeclaration(
@@ -291,7 +315,11 @@ function validateAgentAssignments(
       if (!SLUG_SAFE_PATTERN.test(assignment['agent_key'])) {
         errors.push(error('AGENT_KEY_INVALID', `${path}.agent_key`, 'agent_key must be slug-safe lowercase text.'))
       }
-      if (
+      if (productLineSlug === PRODUCT_LINE_B_SLUG) {
+        if (!assignment['agent_key'].startsWith(`${PRODUCT_LINE_B_AGENT_PREFIX}-`)) {
+          errors.push(error('AGENT_KEY_INVALID', `${path}.agent_key`, 'Product Line B agent_key must use a plb-platform-* logical assignment name.'))
+        }
+      } else if (
         (agentPrefix && assignment['agent_key'].startsWith(`${agentPrefix}-`)) ||
         (productLineSlug && assignment['agent_key'].startsWith(`${productLineSlug}-`))
       ) {
@@ -321,12 +349,24 @@ function validateAgentAssignments(
   }
 }
 
-function validateFeatureFlags(value: unknown, errors: ProductLineSeedValidationError[]): void {
-  validateObject(value, '$.feature_flags', ['enabled', 'disabled_or_absent', 'owned_keys'], errors, ['owned_keys'])
+function validateFeatureFlags(value: unknown, productLineSlug: string | null, errors: ProductLineSeedValidationError[]): void {
+  validateObject(value, '$.feature_flags', [
+    'enabled',
+    'disabled_or_absent',
+    'owned_keys',
+    'smoke_owned',
+    'paused_or_forbidden',
+  ], errors, ['owned_keys', 'smoke_owned', 'paused_or_forbidden'])
   if (!isRecord(value)) return
   const enabled = validateStringArrayField(value, 'enabled', '$.feature_flags.enabled', errors)
   const disabled = validateStringArrayField(value, 'disabled_or_absent', '$.feature_flags.disabled_or_absent', errors)
   validateStringArrayField(value, 'owned_keys', '$.feature_flags.owned_keys', errors, true)
+  const smokeOwned = validateStringArrayField(value, 'smoke_owned', '$.feature_flags.smoke_owned', errors, true)
+  const pausedOrForbidden = validateStringArrayField(value, 'paused_or_forbidden', '$.feature_flags.paused_or_forbidden', errors, true)
+  if (productLineSlug === PRODUCT_LINE_B_SLUG) {
+    validateExactStringArray(smokeOwned, [...PRODUCT_LINE_B_SMOKE_OWNED_FLAGS], '$.feature_flags.smoke_owned', errors)
+    validateExactStringArray(pausedOrForbidden, [...PRODUCT_LINE_B_PAUSED_OR_FORBIDDEN_FLAGS], '$.feature_flags.paused_or_forbidden', errors)
+  }
   const enabledSet = new Set<string>()
   for (const [index, flag] of enabled.entries()) {
     if (enabledSet.has(flag)) errors.push(error('FEATURE_FLAG_DUPLICATE', `$.feature_flags.enabled[${String(index)}]`, `Duplicate enabled feature flag: ${flag}.`))
@@ -403,7 +443,7 @@ function validateGovernanceDefaults(value: unknown, allowBlockingGovernance: boo
   }
 }
 
-function validateSafetyPolicy(value: unknown, errors: ProductLineSeedValidationError[]): void {
+function validateSafetyPolicy(value: unknown, productLineSlug: string | null, errors: ProductLineSeedValidationError[]): void {
   validateObject(value, '$.safety_policy', [
     'existing_target',
     'allow_first_intake_blocking_governance',
@@ -418,7 +458,12 @@ function validateSafetyPolicy(value: unknown, errors: ProductLineSeedValidationE
   validateBooleanField(value, 'allow_first_intake_blocking_governance', '$.safety_policy.allow_first_intake_blocking_governance', errors)
   validateExactStringArray(value['config_owned_surfaces'], [...CONFIG_OWNED_SURFACES], '$.safety_policy.config_owned_surfaces', errors)
   validateExactStringArray(value['preserved_surfaces'], [...FR020_PRESERVED_SURFACES], '$.safety_policy.preserved_surfaces', errors)
-  validateExactStringArray(value['blocked_side_effects'], [...BLOCKED_SIDE_EFFECTS], '$.safety_policy.blocked_side_effects', errors)
+  validateExactStringArray(
+    value['blocked_side_effects'],
+    productLineSlug === PRODUCT_LINE_B_SLUG ? [...PRODUCT_LINE_B_BLOCKED_SIDE_EFFECTS] : [...BLOCKED_SIDE_EFFECTS],
+    '$.safety_policy.blocked_side_effects',
+    errors,
+  )
 }
 
 function validateObject(

@@ -93,6 +93,7 @@ export function makeProductLineSeedTestDb(): Database.Database {
       slug TEXT NOT NULL UNIQUE,
       name TEXT NOT NULL,
       tenant_id INTEGER NOT NULL DEFAULT 1,
+      disabled_at TEXT,
       feature_flags TEXT,
       created_at INTEGER NOT NULL DEFAULT 100,
       updated_at INTEGER NOT NULL DEFAULT 100
@@ -339,6 +340,7 @@ function matchingLines(path: string, pattern: RegExp): string[] {
 function isNegativeStaticGuardMatch(match: string): boolean {
   return /\b(no|not|without|exclusion|excluded|blocked|block|guard|negative|forbid|forbidden|does not|must not|never|free of|out-of-scope|scope)\b/i.test(match)
     || /blocked_side_effects|disabled_or_absent|FEATURE_AGENT_RUNNER_SANDBOXES|FEATURE_TASK_CONTROL_PLANE|FEATURE_AUTO_MERGE/i.test(match)
+    || /src\/lib\/product-line-seed\/(?:types|schema|config|preflight|seed)\.ts:\d+:.*(?:Product Line B|product-line-b|FEATURE_PRODUCT_LINE_B_DISPATCH|PILOT_PRODUCT_LINE_B_SMOKE|FocusEngine|OpenClaw|focusengine_takeover|openclaw_takeover|plb-platform)/i.test(match)
     || /paddock\.yaml:\d+:- (dispatch|claim|runner|sandbox|auto_merge)$/i.test(match)
     || /types\.ts:\d+:'(dispatch|claim|runner|sandbox|auto_merge)'/i.test(match)
     || /dispatch_attempts|github_sync_state|is_repo_sync_owner|enforcement:.*block_dispatch|block_dispatch|SELECT .* FROM tasks|INSERT INTO tasks .*Preserved issue/i.test(match)
@@ -1415,7 +1417,7 @@ describe('product-line seed fail-closed validation', () => {
 
     expect(failedProof).toMatchObject({
       ok: false,
-      status: 'unexpected_error',
+      status: 'verification_failed',
       code: 'NO_MUTATION_PROOF_FAILED',
       mutation_status: 'not_mutated',
       exit_code: 5,
@@ -1428,11 +1430,38 @@ describe('product-line seed fail-closed validation', () => {
         },
       },
     })
+
+    const successShapedProofFailure = makeResult({
+      ok: true,
+      entrypoint: 'seed:product-line',
+      mode: 'preflight',
+      status: 'ready',
+      code: 'READY',
+      mutationStatus: 'not_mutated',
+      configPath: 'docs/ai/product-lines/paddock.yaml',
+      evidence: {},
+      snapshotBefore: { schema_version: 'product-line-seed-snapshot-v1', hash: 'before', surfaces: {}, preserved_operational_state: { hash: 'before', subsurfaces: {} } },
+      snapshotAfter: { schema_version: 'product-line-seed-snapshot-v1', hash: 'after', surfaces: {}, preserved_operational_state: { hash: 'after', subsurfaces: {} } },
+    })
+
+    expect(successShapedProofFailure).toMatchObject({
+      ok: false,
+      status: 'verification_failed',
+      code: 'NO_MUTATION_PROOF_FAILED',
+      mutation_status: 'not_mutated',
+      exit_code: 5,
+    })
+    expect(successShapedProofFailure['errors']).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        code: 'NO_MUTATION_PROOF_FAILED',
+        path: '$.evidence.no_mutation_proof',
+      }),
+    ]))
   })
 })
 
 describe('product-line seed reuse docs and static guards', () => {
-  it('keeps seed surfaces free of Product Line B and runtime execution behavior except negative guard evidence', () => {
+  it('keeps seed surfaces free of runtime execution behavior except negative guard evidence and SPEC-010B seed extensions', () => {
     const matches = staticScopeGuardSources.flatMap((path) => matchingLines(path, staticScopeGuardPattern))
     const disallowedMatches = matches.filter((match) => !isNegativeStaticGuardMatch(match))
 

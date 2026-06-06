@@ -188,6 +188,8 @@ OpenAPI spec: `openapi.json`. Interactive docs at `/docs` when running.
 - SQLite through `src/lib/migrations.ts`; additive M80 `080_agent_sandbox_lifecycles`; rollback SQL at `docs/migrations/rollback-M80.sql` (014a-sandbox-lifecycle-contract)
 - TypeScript 5.7 strict on Node >=22 + Next.js 16 App Router, React 19, Tailwind CSS 3, Zustand only where existing Agents panel patterns require it, `better-sqlite3` through existing read helpers, Vitest, Playwright; no new runtime dependency planned (014b-adapter-manifest-fakes)
 - Checked-in typed fixture files plus derived runtime inventory; no SQLite manifest or inventory persistence and no migration. Existing SQLite state may be read through existing helpers for assignments, tasks, governance/capability decisions, and SPEC-014A lifecycle evidence. (014b-adapter-manifest-fakes)
+- TypeScript 5.7 strict on Node.js >=22; HAL service-compatible checks use `/usr/bin/node` v24.15.0 + Next.js 16 App Router, React 19, Zustand where existing panels need it, Tailwind CSS 3, `better-sqlite3`, existing direct `yaml`, existing workflow-contract and product-line seed modules (010b-product-line-b-smoke)
+- SQLite through `better-sqlite3`; no schema migration planned because `workspaces.disabled_at` exists in `src/lib/migrations.ts` M74 (010b-product-line-b-smoke)
 - TypeScript 5.7 strict on Node >=22 + Next.js 16 App Router, React 19, `better-sqlite3`, existing feature-flag/auth/workspace/task-stage helpers, Node `child_process`/stream/timer/crypto/fs APIs, Vitest, Playwright; no new runtime dependency (014c-first-real-harness-adapter)
 - SQLite through existing runs, task-stage attempts, task-stage claims, sandbox lifecycles, task artifacts, activities, and feature-flag rows; no migration (014c-first-real-harness-adapter)
 
@@ -216,5 +218,5 @@ OpenAPI spec: `openapi.json`. Interactive docs at `/docs` when running.
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read
-`specs/014c-first-real-harness-adapter/plan.md`.
+`specs/010b-product-line-b-smoke/plan.md`.
 <!-- SPECKIT END -->

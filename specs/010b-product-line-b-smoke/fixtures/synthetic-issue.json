@@ -1,0 +1,65 @@
+{
+  "schema_version": "spec-010b.synthetic_issue.v1",
+  "run_id": "SPEC-010B-LOCAL-0001",
+  "product_line_slug": "product-line-b",
+  "repo": {
+    "owner": "racecraft-lab",
+    "name": "Paddock",
+    "full_name": "racecraft-lab/Paddock"
+  },
+  "issue": {
+    "number": 1001,
+    "title": "[mc-pilot][product-line-b] SPEC-010B synthetic smoke SPEC-010B-LOCAL-0001",
+    "labels": [
+      "pd:inbox",
+      "priority:medium",
+      "area:dev"
+    ]
+  },
+  "payload": {
+    "type": "PilotIssueCandidate",
+    "candidate": {
+      "repository": "racecraft-lab/Paddock",
+      "issueNumber": 1001,
+      "title": "[mc-pilot][product-line-b] SPEC-010B synthetic smoke SPEC-010B-LOCAL-0001",
+      "state": "open",
+      "isPullRequest": false,
+      "linkedPullRequest": false,
+      "labels": [
+        "pd:inbox",
+        "priority:medium",
+        "area:dev"
+      ]
+    }
+  },
+  "metadata": {
+    "source": "local_synthetic_fixture",
+    "live_github_required": false,
+    "github_mutation": "not_required",
+    "optional_live_issue_url": null,
+    "product_line": {
+      "slug": "product-line-b",
+      "display_name": "Product Line B",
+      "agent_prefix": "plb-platform",
+      "github_sync_enabled": false,
+      "is_repo_sync_owner": false
+    },
+    "task": {
+      "product_line_slug": "product-line-b",
+      "spec_010b_run_id": "SPEC-010B-LOCAL-0001",
+      "logical_agent_prefix": "plb-platform",
+      "selected_logical_agent": "plb-platform-dev",
+      "synthetic_issue_identifier": "product-line-b:SPEC-010B-LOCAL-0001:1001"
+    },
+    "scope": {
+      "local_only": true,
+      "single_synthetic_issue": true,
+      "product_line_a_mutation_allowed": false,
+      "scheduler_required": false,
+      "runner_required": false,
+      "sandbox_required": false,
+      "adapter_required": false,
+      "runtime_inventory_eligible_required": false
+    }
+  }
+}

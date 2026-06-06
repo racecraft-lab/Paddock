@@ -2,6 +2,9 @@ import {
   BLOCKED_SIDE_EFFECTS,
   CONFIG_OWNED_SURFACES,
   FR020_PRESERVED_SURFACES,
+  PRODUCT_LINE_B_BLOCKED_SIDE_EFFECTS,
+  PRODUCT_LINE_B_PAUSED_OR_FORBIDDEN_FLAGS,
+  PRODUCT_LINE_B_SMOKE_OWNED_FLAGS,
   PRODUCT_LINE_SEED_SCHEMA_VERSION,
   type ProductLineSeedValidationError,
 } from './types.ts'
@@ -26,10 +29,17 @@ const stringSchema = { type: 'string', minLength: 1 } as const
 const booleanSchema = { type: 'boolean' } as const
 const nullableStringSchema = { anyOf: [{ type: 'string', minLength: 1 }, { type: 'null' }] } as const
 const nullableNumberSchema = { anyOf: [{ type: 'number' }, { type: 'null' }] } as const
+const slugSafeStringSchema = { type: 'string', minLength: 1, pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$' } as const
 const stringArraySchema = {
   type: 'array',
   items: stringSchema,
 } as const
+
+export const PRODUCT_LINE_B_AGENT_KEY_PATTERN = '^plb-platform-[a-z0-9]+(?:-[a-z0-9]+)*$'
+
+const ALL_BLOCKED_SIDE_EFFECTS = [
+  ...new Set([...BLOCKED_SIDE_EFFECTS, ...PRODUCT_LINE_B_BLOCKED_SIDE_EFFECTS]),
+]
 
 export const PRODUCT_LINE_SEED_CONFIG_JSON_SCHEMA = {
   $schema: 'https://json-schema.org/draft/2020-12/schema',
@@ -43,9 +53,10 @@ export const PRODUCT_LINE_SEED_CONFIG_JSON_SCHEMA = {
       additionalProperties: false,
       required: ['slug', 'display_name', 'agent_prefix'],
       properties: {
-        slug: stringSchema,
+        slug: slugSafeStringSchema,
         display_name: stringSchema,
-        agent_prefix: stringSchema,
+        agent_prefix: slugSafeStringSchema,
+        disabled_by_default: booleanSchema,
       },
     },
     github: {
@@ -53,9 +64,9 @@ export const PRODUCT_LINE_SEED_CONFIG_JSON_SCHEMA = {
       additionalProperties: false,
       required: ['owner', 'repo', 'full_name'],
       properties: {
-        owner: stringSchema,
-        repo: stringSchema,
-        full_name: stringSchema,
+        owner: { const: 'racecraft-lab' },
+        repo: { const: 'Paddock' },
+        full_name: { const: 'racecraft-lab/Paddock' },
       },
     },
     workflow_contract: {
@@ -107,7 +118,7 @@ export const PRODUCT_LINE_SEED_CONFIG_JSON_SCHEMA = {
             additionalProperties: false,
             required: ['agent_key', 'role', 'department_slug'],
             properties: {
-              agent_key: stringSchema,
+              agent_key: slugSafeStringSchema,
               role: stringSchema,
               department_slug: stringSchema,
             },
@@ -136,6 +147,16 @@ export const PRODUCT_LINE_SEED_CONFIG_JSON_SCHEMA = {
         enabled: stringArraySchema,
         disabled_or_absent: stringArraySchema,
         owned_keys: stringArraySchema,
+        smoke_owned: {
+          type: 'array',
+          items: { enum: [...PRODUCT_LINE_B_SMOKE_OWNED_FLAGS] },
+          uniqueItems: true,
+        },
+        paused_or_forbidden: {
+          type: 'array',
+          items: { enum: [...PRODUCT_LINE_B_PAUSED_OR_FORBIDDEN_FLAGS] },
+          uniqueItems: true,
+        },
       },
     },
     governance_defaults: {
@@ -184,10 +205,73 @@ export const PRODUCT_LINE_SEED_CONFIG_JSON_SCHEMA = {
         allow_first_intake_blocking_governance: booleanSchema,
         config_owned_surfaces: { type: 'array', items: { enum: [...CONFIG_OWNED_SURFACES] } },
         preserved_surfaces: { type: 'array', items: { enum: [...FR020_PRESERVED_SURFACES] } },
-        blocked_side_effects: { type: 'array', items: { enum: [...BLOCKED_SIDE_EFFECTS] } },
+        blocked_side_effects: { type: 'array', items: { enum: [...ALL_BLOCKED_SIDE_EFFECTS] } },
       },
     },
   },
+  allOf: [
+    {
+      if: {
+        properties: {
+          product_line: {
+            type: 'object',
+            required: ['slug'],
+            properties: {
+              slug: { const: 'product-line-b' },
+            },
+          },
+        },
+      },
+      then: {
+        properties: {
+          product_line: {
+            required: ['slug', 'display_name', 'agent_prefix', 'disabled_by_default'],
+            properties: {
+              slug: { const: 'product-line-b' },
+              display_name: { const: 'Product Line B' },
+              agent_prefix: { const: 'plb-platform' },
+              disabled_by_default: { const: true },
+            },
+          },
+          github: {
+            properties: {
+              owner: { const: 'racecraft-lab' },
+              repo: { const: 'Paddock' },
+              full_name: { const: 'racecraft-lab/Paddock' },
+            },
+          },
+          agent_assignments: {
+            properties: {
+              product_line_assignments: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    agent_key: { pattern: PRODUCT_LINE_B_AGENT_KEY_PATTERN },
+                  },
+                },
+              },
+            },
+          },
+          feature_flags: {
+            required: ['smoke_owned', 'paused_or_forbidden'],
+            properties: {
+              smoke_owned: {
+                type: 'array',
+                items: { enum: [...PRODUCT_LINE_B_SMOKE_OWNED_FLAGS] },
+                uniqueItems: true,
+              },
+              paused_or_forbidden: {
+                type: 'array',
+                items: { enum: [...PRODUCT_LINE_B_PAUSED_OR_FORBIDDEN_FLAGS] },
+                uniqueItems: true,
+              },
+            },
+          },
+        },
+      },
+    },
+  ],
 } as const
 
 export function validateProductLineSeedTopLevelShape(value: unknown): ProductLineSeedValidationError[] {

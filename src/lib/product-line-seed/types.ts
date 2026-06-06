@@ -55,6 +55,68 @@ export const BLOCKED_SIDE_EFFECTS = [
   'speckit_setup_or_autopilot',
 ] as const
 
+export const PRODUCT_LINE_B_BLOCKED_SIDE_EFFECTS = [
+  'product_line_a_takeover',
+  'github_mutation',
+  'task_creation',
+  'dispatch',
+  'claim',
+  'runner',
+  'sandbox',
+  'harness_adapter',
+  'auto_merge',
+  'speckit_setup_or_autopilot',
+  'focusengine_takeover',
+  'openclaw_takeover',
+] as const
+
+export const PRODUCT_LINE_B_FOCUSED_ERROR_CODES = [
+  'PRODUCT_LINE_B_DISABLED_STATE_MISSING',
+  'PRODUCT_LINE_B_REPO_SYNC_OWNER_PRESENT',
+  'PRODUCT_LINE_B_SMOKE_FLAG_STILL_ENABLED',
+  'PRODUCT_LINE_B_SMOKE_ELIGIBILITY_REMAINING',
+] as const
+
+export const PRODUCT_LINE_EXISTING_TARGET_OUTCOMES = [
+  'already_valid',
+  'requires_allow_existing',
+  'residue_blocked',
+  'ownership_conflict',
+] as const
+
+export const PRODUCT_LINE_SEED_TARGET_CLASSES = [
+  'absent_ready',
+  ...PRODUCT_LINE_EXISTING_TARGET_OUTCOMES,
+] as const
+
+export const PRODUCT_LINE_RETAINED_INVENTORY_IDENTITIES = [
+  'FocusEngine',
+  'OpenClaw',
+] as const
+
+export const PRODUCT_LINE_RETAINED_INVENTORY_SOURCES = [
+  'agent_rows',
+  'openclaw_config',
+  'runtime_inventory',
+  'operator_evidence',
+] as const
+
+export const PRODUCT_LINE_RETAINED_INVENTORY_CLASSIFICATIONS = [
+  'retained_inventory',
+] as const
+
+export const PRODUCT_LINE_RESIDUE_KINDS = [
+  'product_line_identity_conflict',
+  'plb_platform_assignment_conflict',
+  'repo_sync_owner_conflict',
+  'retained_inventory',
+  'workflow_template_ownership_conflict',
+  'project_github_sync',
+  'task_github_sync',
+  'reserved_future_flag_enabled',
+  'feature_flags_invalid_json',
+] as const
+
 export const PADDOCK_REQUIRED_WORKFLOW_SLUGS = [
   'paddock_issue_triage',
   'paddock_specialist_route',
@@ -84,6 +146,28 @@ export const PADDOCK_DISABLED_OR_ABSENT_FLAGS = [
   'PILOT_PRODUCT_LINE_A_E2E',
   'FEATURE_TASK_CONTROL_PLANE',
   'FEATURE_AGENT_RUNNER_SANDBOXES',
+] as const
+
+export const PRODUCT_LINE_B_SMOKE_OWNED_FLAGS = [
+  'FEATURE_WORKSPACE_SWITCHER',
+  'FEATURE_GLOBAL_AEGIS',
+  'FEATURE_TASK_PIPELINES',
+  'FEATURE_TWO_STEP_TERMINAL',
+  'FEATURE_AREA_LABEL_ROUTING',
+  'FEATURE_DISPOSITION_LOGGING',
+  'FEATURE_TASK_ARTIFACTS',
+  'FEATURE_RESOURCE_GOVERNANCE',
+  'FEATURE_OPENCLAW_HEALTH_COSTS',
+  'PILOT_PADDOCK_E2E',
+] as const
+
+export const PRODUCT_LINE_B_PAUSED_OR_FORBIDDEN_FLAGS = [
+  'FEATURE_GITHUB_SYNC_AUTOMATION',
+  'FEATURE_TASK_CONTROL_PLANE',
+  'FEATURE_AGENT_RUNNER_SANDBOXES',
+  'PILOT_PRODUCT_LINE_A_E2E',
+  'FEATURE_PRODUCT_LINE_B_DISPATCH',
+  'PILOT_PRODUCT_LINE_B_SMOKE',
 ] as const
 
 export const PADDOCK_DEPARTMENTS = [
@@ -168,7 +252,22 @@ export type ProductLineSeedMode = typeof PRODUCT_LINE_SEED_MODES[number]
 export type MutationStatus = typeof MUTATION_STATUSES[number]
 export type ConfigOwnedSurface = typeof CONFIG_OWNED_SURFACES[number]
 export type Fr020PreservedSurface = typeof FR020_PRESERVED_SURFACES[number]
-export type BlockedSideEffect = typeof BLOCKED_SIDE_EFFECTS[number]
+export type BlockedSideEffect =
+  | typeof BLOCKED_SIDE_EFFECTS[number]
+  | typeof PRODUCT_LINE_B_BLOCKED_SIDE_EFFECTS[number]
+export type ProductLineBFocusedErrorCode = typeof PRODUCT_LINE_B_FOCUSED_ERROR_CODES[number]
+export type ProductLineExistingTargetOutcome = typeof PRODUCT_LINE_EXISTING_TARGET_OUTCOMES[number]
+export type ProductLineSeedTargetClass = typeof PRODUCT_LINE_SEED_TARGET_CLASSES[number]
+export type ProductLineRetainedInventoryIdentity = typeof PRODUCT_LINE_RETAINED_INVENTORY_IDENTITIES[number]
+export type ProductLineRetainedInventorySource = typeof PRODUCT_LINE_RETAINED_INVENTORY_SOURCES[number]
+export type ProductLineRetainedInventoryClassification = typeof PRODUCT_LINE_RETAINED_INVENTORY_CLASSIFICATIONS[number]
+export type ProductLineResidueKind = typeof PRODUCT_LINE_RESIDUE_KINDS[number]
+export type ProductLineSeedRedactionSafeScalar = string | number | boolean | null
+export type ProductLineSeedRedactionSafeValue =
+  | ProductLineSeedRedactionSafeScalar
+  | ProductLineSeedRedactionSafeValue[]
+  | { [key: string]: ProductLineSeedRedactionSafeValue }
+export type ProductLineSeedRedactionSafeIdentifiers = Record<string, ProductLineSeedRedactionSafeValue>
 
 export type ProductLineSeedStatus =
   | 'ready'
@@ -215,6 +314,7 @@ export type ProductLineSeedErrorCode =
   | 'FEATURE_FLAG_DUPLICATE'
   | 'FEATURE_FLAG_CONFLICT'
   | 'FEATURE_FLAG_RESERVED_FUTURE_ENABLED'
+  | 'FEATURE_FLAGS_INVALID_JSON'
   | 'FEATURE_FLAG_ENV_FORCE_OFF'
   | 'FEATURE_FLAG_CASCADE_PREREQUISITE_MISSING'
   | 'DEPARTMENT_INVALID'
@@ -228,6 +328,7 @@ export type ProductLineSeedErrorCode =
   | 'GOVERNANCE_POLICY_IDENTITY_DUPLICATE'
   | 'APPLY_TRANSACTION_FAILED'
   | 'NO_MUTATION_PROOF_FAILED'
+  | ProductLineBFocusedErrorCode
   | 'CLI_USAGE_ERROR'
   | 'CLI_UNKNOWN_FLAG'
   | 'CLI_REQUIRED_FLAG_MISSING'
@@ -252,6 +353,7 @@ export interface ProductLineIdentity {
   slug: string
   display_name: string
   agent_prefix: string
+  disabled_by_default?: boolean
 }
 
 export interface GitHubOwnership {
@@ -298,6 +400,8 @@ export interface FeatureFlagPolicy {
   enabled: string[]
   disabled_or_absent: string[]
   owned_keys?: string[]
+  smoke_owned?: string[]
+  paused_or_forbidden?: string[]
 }
 
 export interface GovernanceDefault {
@@ -328,20 +432,67 @@ export interface ProductLineSeedTarget {
   existing_target: boolean
 }
 
-export interface ProductLineSeedValidationError {
+export interface ProductLineSeedRedactionSafeError {
   code: ProductLineSeedErrorCode
   path: string
   message: string
   remediation?: string
+  identifiers?: ProductLineSeedRedactionSafeIdentifiers
+}
+
+export type ProductLineSeedValidationError = ProductLineSeedRedactionSafeError
+
+export interface ProductLineNoMutationProof {
+  compared: boolean
+  passed: boolean
+  before_hash?: string
+  after_hash?: string
+}
+
+export interface ProductLineExistingTargetEvidence {
+  outcome: ProductLineExistingTargetOutcome
+  target_class?: ProductLineSeedTargetClass
+  action_required?: '--allow-existing'
+  blocking?: boolean
+}
+
+export interface ProductLineRetainedInventoryReport {
+  identity: ProductLineRetainedInventoryIdentity | (string & {})
+  source: ProductLineRetainedInventorySource | (string & {})
+  classification?: ProductLineRetainedInventoryClassification
+  ownership?: ProductLineRetainedInventoryClassification
+  status?: string
+  count?: number
+  identifiers?: ProductLineSeedRedactionSafeIdentifiers
+  assigned_to_product_line_b?: false
+  explicitly_assigned_to_product_line_b?: false
+  blocking: boolean
 }
 
 export interface ProductLineResidue {
-  kind: string
+  kind: ProductLineResidueKind | (string & {})
   repo?: string
   count: number
   project_ids?: number[]
   task_ids?: number[]
-  identifiers?: unknown
+  identifiers?: ProductLineSeedRedactionSafeIdentifiers
+}
+
+export interface ProductLineABaselineEvidence {
+  workspace_slug: string
+  repo_sync_owner_count: number
+  hash?: string
+  surfaces?: ProductLineSeedRedactionSafeIdentifiers
+}
+
+export interface ProductLineBSeedEvidence {
+  target_class?: ProductLineSeedTargetClass
+  existing_target?: ProductLineExistingTargetEvidence
+  no_mutation_proof?: ProductLineNoMutationProof
+  product_line_a_baseline?: ProductLineABaselineEvidence
+  residue: ProductLineResidue[]
+  retained_inventory?: ProductLineRetainedInventoryReport[]
+  cleanup_policy?: 'detection_only_no_automatic_deletion_or_unlinking'
 }
 
 export interface RedactionProof {

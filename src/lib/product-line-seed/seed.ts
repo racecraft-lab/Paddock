@@ -7,7 +7,7 @@ import {
   collectProductLineSeedSnapshot,
   makeProductLineSeedResultEnvelope,
 } from './evidence.ts'
-import { detectProductLineTargetResidue } from './preflight.ts'
+import { collectRetainedProductLineInventory, detectProductLineTargetResidue } from './preflight.ts'
 import type {
   DepartmentDeclaration,
   GovernanceDefault,
@@ -58,6 +58,8 @@ export function runProductLineSeed(options: ProductLineSeedRunOptions): ProductL
     const snapshotBefore = collectProductLineSeedSnapshot(db, config)
     const existingTarget = workspaceExists(db, config.product_line.slug)
     const validationEvidence = buildValidationEvidence()
+    const retainedInventory = collectRetainedProductLineInventory(db)
+    const productLineABaseline = collectProductLineABaseline(db)
     const residue = detectProductLineTargetResidue(db, config)
       .filter((entry) => options.mode === 'preflight' || entry.kind !== 'product_line_identity_conflict')
     if (residue.length > 0) {
@@ -77,7 +79,11 @@ export function runProductLineSeed(options: ProductLineSeedRunOptions): ProductL
         existingTarget,
         evidence: {
           validation: validationEvidence,
+          target_class: targetClassFor({ existingTarget, residue }),
+          existing_target: existingTargetEvidence({ existingTarget, residue, allowExisting: options.allowExisting }),
+          product_line_a_baseline: productLineABaseline,
           residue,
+          retained_inventory: retainedInventory,
           cleanup_policy: 'detection_only_no_automatic_deletion_or_unlinking',
         },
         errors: [
@@ -115,7 +121,11 @@ export function runProductLineSeed(options: ProductLineSeedRunOptions): ProductL
         existingTarget,
         evidence: {
           validation: validationEvidence,
+          target_class: existingTarget ? 'already_valid' : 'absent_ready',
+          existing_target: existingTargetEvidence({ existingTarget, residue: [], allowExisting: options.allowExisting }),
+          product_line_a_baseline: productLineABaseline,
           residue: [],
+          retained_inventory: retainedInventory,
           cleanup_policy: 'detection_only_no_automatic_deletion_or_unlinking',
         },
         snapshotBefore,
@@ -140,7 +150,11 @@ export function runProductLineSeed(options: ProductLineSeedRunOptions): ProductL
           existingTarget,
           evidence: {
             validation: validationEvidence,
+            target_class: 'requires_allow_existing',
+            existing_target: existingTargetEvidence({ existingTarget, residue: [], allowExisting: options.allowExisting }),
+            product_line_a_baseline: productLineABaseline,
             residue: [],
+            retained_inventory: retainedInventory,
             cleanup_policy: 'detection_only_no_automatic_deletion_or_unlinking',
           },
           errors: [{
@@ -169,7 +183,11 @@ export function runProductLineSeed(options: ProductLineSeedRunOptions): ProductL
         existingTarget,
         evidence: {
           validation: validationEvidence,
+          target_class: existingTarget ? 'already_valid' : 'absent_ready',
+          existing_target: existingTargetEvidence({ existingTarget, residue: [], allowExisting: options.allowExisting }),
+          product_line_a_baseline: productLineABaseline,
           residue: [],
+          retained_inventory: retainedInventory,
           workspace_id: workspaceId,
           cleanup_policy: 'detection_only_no_automatic_deletion_or_unlinking',
         },
@@ -193,7 +211,7 @@ export function runProductLineSeed(options: ProductLineSeedRunOptions): ProductL
         config,
         dbPath: options.dbPath ?? null,
         existingTarget,
-        evidence: { validation: validationEvidence, drift },
+        evidence: { validation: validationEvidence, disabled_by_default: config.product_line.disabled_by_default === true, drift },
         errors: drift,
         snapshotBefore,
         snapshotAfter,
@@ -211,7 +229,7 @@ export function runProductLineSeed(options: ProductLineSeedRunOptions): ProductL
       config,
       dbPath: options.dbPath ?? null,
       existingTarget,
-      evidence: { validation: validationEvidence, drift: [] },
+      evidence: { validation: validationEvidence, disabled_by_default: config.product_line.disabled_by_default === true, drift: [] },
       snapshotBefore,
       snapshotAfter,
       redaction,
@@ -252,18 +270,28 @@ function applyConfig(db: ProductLineSeedDatabase, config: ProductLineSeedConfig)
 }
 
 function upsertWorkspace(db: ProductLineSeedDatabase, config: ProductLineSeedConfig, tenantId: number): number {
-  const existing = db.prepare('SELECT id, name, tenant_id FROM workspaces WHERE slug = ?').get(config.product_line.slug) as
-    | { id: number; name: string; tenant_id: number }
+  const existing = db.prepare('SELECT * FROM workspaces WHERE slug = ?').get(config.product_line.slug) as
+    | { id: number; name: string; tenant_id: number; disabled_at?: string | null }
     | undefined
+  const values: Record<string, unknown> = {
+    name: config.product_line.display_name,
+    tenant_id: tenantId,
+  }
+  if (config.product_line.disabled_by_default === true && tableColumns(db, 'workspaces').includes('disabled_at')) {
+    values['disabled_at'] = existing?.disabled_at ?? currentTimestamp()
+  }
   if (existing) {
-    if (existing.name !== config.product_line.display_name || existing.tenant_id !== tenantId) {
-      db.prepare('UPDATE workspaces SET name = ?, tenant_id = ?, updated_at = unixepoch() WHERE id = ?')
-        .run(config.product_line.display_name, tenantId, existing.id)
+    if (hasRowDrift(existing as unknown as Record<string, unknown>, values)) {
+      updateRow(db, 'workspaces', { ...values, updated_at: unixepoch() }, 'id = ?', [existing.id])
     }
     return existing.id
   }
-  const result = db.prepare('INSERT INTO workspaces (slug, name, tenant_id, created_at, updated_at) VALUES (?, ?, ?, unixepoch(), unixepoch())')
-    .run(config.product_line.slug, config.product_line.display_name, tenantId)
+  const result = insertRow(db, 'workspaces', {
+    slug: config.product_line.slug,
+    ...values,
+    created_at: unixepoch(),
+    updated_at: unixepoch(),
+  })
   return Number(result.lastInsertRowid)
 }
 
@@ -321,7 +349,7 @@ function upsertAssignments(
   for (const assignment of config.agent_assignments.product_line_assignments) {
     const projectId = projectIds[assignment.department_slug]
     if (!projectId) throw new Error(`Missing department project for ${assignment.department_slug}`)
-    const agentName = `${config.product_line.agent_prefix}-${assignment.agent_key}`
+    const agentName = assignmentAgentName(config, assignment.agent_key)
     const existing = db.prepare('SELECT id, role FROM project_agent_assignments WHERE project_id = ? AND agent_name = ?')
       .get(projectId, agentName) as { id: number; role: string } | undefined
     if (existing) {
@@ -342,7 +370,13 @@ function upsertAssignments(
 function upsertFeatureFlags(db: ProductLineSeedDatabase, config: ProductLineSeedConfig, workspaceId: number): void {
   const row = db.prepare('SELECT feature_flags FROM workspaces WHERE id = ?').get(workspaceId) as { feature_flags: string | null } | undefined
   const flags = parseFlags(row?.feature_flags ?? null)
-  for (const flag of config.feature_flags.disabled_or_absent) Reflect.deleteProperty(flags, flag)
+  for (const flag of config.feature_flags.disabled_or_absent) {
+    if (config.product_line.disabled_by_default === true) {
+      flags[flag] = false
+    } else {
+      Reflect.deleteProperty(flags, flag)
+    }
+  }
   for (const flag of config.feature_flags.enabled) flags[flag] = true
   const nextFlags = JSON.stringify(flags)
   if (row?.feature_flags !== nextFlags) {
@@ -386,8 +420,8 @@ function upsertGovernanceDefaults(db: ProductLineSeedDatabase, config: ProductLi
 
 function verifyConfig(db: ProductLineSeedDatabase, config: ProductLineSeedConfig): ProductLineSeedValidationError[] {
   const errors: ProductLineSeedValidationError[] = []
-  const workspace = db.prepare('SELECT id, name, feature_flags FROM workspaces WHERE slug = ?').get(config.product_line.slug) as
-    | { id: number; name: string; feature_flags: string | null }
+  const workspace = db.prepare('SELECT * FROM workspaces WHERE slug = ?').get(config.product_line.slug) as
+    | { id: number; name: string; feature_flags: string | null; disabled_at?: string | null }
     | undefined
   if (!workspace) {
     errors.push(drift('$.target.workspace_identity', 'Product-line workspace is missing.'))
@@ -396,7 +430,18 @@ function verifyConfig(db: ProductLineSeedDatabase, config: ProductLineSeedConfig
   if (workspace.name !== config.product_line.display_name) {
     errors.push(drift('$.target.workspace_identity.name', 'Product-line workspace name drifted from config.'))
   }
-  const flags = parseFlags(workspace.feature_flags)
+  if (config.product_line.disabled_by_default === true && typeof workspace.disabled_at !== 'string') {
+    errors.push({
+      code: 'PRODUCT_LINE_B_DISABLED_STATE_MISSING',
+      path: '$.target.workspace_identity.disabled_at',
+      message: 'Product Line B must have a non-null disabled_at value after apply.',
+    })
+  }
+  const parsedFlags = parseFlagsForVerification(workspace.feature_flags)
+  if (!parsedFlags.ok) {
+    errors.push(drift('$.target.feature_flags', parsedFlags.message))
+  }
+  const flags = parsedFlags.flags
   for (const flag of config.feature_flags.enabled) {
     if (flags[flag] !== true) errors.push(drift(`$.target.feature_flags.${flag}`, `Required feature flag is not enabled: ${flag}.`))
   }
@@ -416,6 +461,15 @@ function verifyConfig(db: ProductLineSeedDatabase, config: ProductLineSeedConfig
       continue
     }
     if (row.name !== department.name) errors.push(drift(`$.target.departments.${department.slug}.name`, `Department name drifted: ${department.slug}.`))
+    if (Number(row.github_sync_enabled) !== (department.github_sync_enabled ? 1 : 0)) {
+      errors.push(drift(`$.target.departments.${department.slug}.github_sync_enabled`, `Department github_sync_enabled drifted: ${department.slug}.`))
+    }
+    if (Number(row.is_repo_sync_owner) !== (department.is_repo_sync_owner ? 1 : 0)) {
+      errors.push(drift(`$.target.departments.${department.slug}.is_repo_sync_owner`, `Department repo sync owner flag drifted: ${department.slug}.`))
+    }
+    if ((row.github_repo ?? null) !== department.github_repo) {
+      errors.push(drift(`$.target.departments.${department.slug}.github_repo`, `Department github_repo drifted: ${department.slug}.`))
+    }
   }
   const assignmentCount = db.prepare(`
     SELECT COUNT(*) as count
@@ -427,7 +481,7 @@ function verifyConfig(db: ProductLineSeedDatabase, config: ProductLineSeedConfig
     workspace.id,
     ...config.agent_assignments.product_line_assignments.flatMap((assignment) => [
       assignment.department_slug,
-      `${config.product_line.agent_prefix}-${assignment.agent_key}`,
+      assignmentAgentName(config, assignment.agent_key),
       assignment.role,
     ]),
   ) as { count: number }
@@ -440,8 +494,15 @@ function verifyConfig(db: ProductLineSeedDatabase, config: ProductLineSeedConfig
   for (const slug of config.workflow_contract.required_slugs) {
     if (!workflowSlugs.has(slug)) errors.push(drift(`$.target.workflow_templates.${slug}`, `Required workflow template is missing: ${slug}.`))
   }
-  const governanceCount = db.prepare("SELECT COUNT(*) as count FROM resource_policies WHERE workspace_id = ? AND notes LIKE 'SPEC-009B:paddock:%'")
-    .get(workspace.id) as { count: number }
+  const governanceNotes = config.governance_defaults.map((policy) => policy.notes ?? policy.identity)
+  const governanceCount = governanceNotes.length > 0
+    ? db.prepare(`
+      SELECT COUNT(*) as count
+      FROM resource_policies
+      WHERE workspace_id = ?
+        AND notes IN (${governanceNotes.map(() => '?').join(', ')})
+    `).get(workspace.id, ...governanceNotes) as { count: number }
+    : { count: 0 }
   if (governanceCount.count !== config.governance_defaults.length) {
     errors.push(drift('$.target.governance_defaults', 'Governance defaults are missing or drifted.'))
   }
@@ -461,6 +522,63 @@ function buildValidationEvidence(): Record<string, string> {
   }
 }
 
+function collectProductLineABaseline(db: ProductLineSeedDatabase): Record<string, unknown> {
+  if (!tableExists(db, 'workspaces')) {
+    return { workspace_slug: 'paddock', repo_sync_owner_count: 0 }
+  }
+  const workspace = db.prepare("SELECT id FROM workspaces WHERE slug = 'paddock'").get() as { id: number } | undefined
+  if (!workspace) {
+    return { workspace_slug: 'paddock', repo_sync_owner_count: 0 }
+  }
+  if (!tableExists(db, 'projects')) {
+    return { workspace_slug: 'paddock', repo_sync_owner_count: 0 }
+  }
+  const repoSyncOwner = db.prepare(`
+    SELECT COUNT(*) as count
+    FROM projects
+    WHERE workspace_id = ?
+      AND github_repo IS NOT NULL
+      AND (COALESCE(github_sync_enabled, 0) = 1 OR COALESCE(is_repo_sync_owner, 0) = 1)
+  `).get(workspace.id) as { count: number }
+  return {
+    workspace_slug: 'paddock',
+    repo_sync_owner_count: repoSyncOwner.count,
+  }
+}
+
+function targetClassFor(input: {
+  existingTarget: boolean
+  residue: { kind: string }[]
+}): string {
+  if (input.residue.some((entry) => entry.kind === 'repo_sync_owner_conflict')) return 'ownership_conflict'
+  if (input.residue.length > 0) return 'residue_blocked'
+  return input.existingTarget ? 'already_valid' : 'absent_ready'
+}
+
+function existingTargetEvidence(input: {
+  existingTarget: boolean
+  residue: { kind: string }[]
+  allowExisting: boolean
+}): Record<string, unknown> | null {
+  if (!input.existingTarget && input.residue.length === 0) return null
+  const outcome = input.residue.length > 0
+    ? targetClassFor(input)
+    : input.allowExisting
+      ? 'already_valid'
+      : 'requires_allow_existing'
+  return {
+    outcome,
+    target_class: outcome,
+    blocking: outcome !== 'already_valid',
+    action_required: outcome === 'requires_allow_existing' ? '--allow-existing' : undefined,
+  }
+}
+
+function assignmentAgentName(config: ProductLineSeedConfig, agentKey: string): string {
+  const prefix = `${config.product_line.agent_prefix}-`
+  return agentKey.startsWith(prefix) ? agentKey : `${prefix}${agentKey}`
+}
+
 function isWorkflowContractCode(code: ProductLineSeedErrorCode): boolean {
   return code === 'UNSUPPORTED_WORKFLOW_CONTRACT_FAMILY' ||
     code === 'WORKFLOW_CONTRACT_PATH_INVALID' ||
@@ -472,9 +590,11 @@ function isWorkflowContractCode(code: ProductLineSeedErrorCode): boolean {
 }
 
 function codeForResidue(kind: string | undefined): ProductLineSeedErrorCode {
-  if (kind === 'product_line_identity_conflict') return 'TARGET_PRODUCT_LINE_CONFLICT'
+  if (kind === 'product_line_identity_conflict' || kind === 'plb_platform_assignment_conflict') return 'TARGET_PRODUCT_LINE_CONFLICT'
+  if (kind === 'repo_sync_owner_conflict') return 'TARGET_REPO_CONFLICT'
   if (kind === 'project_github_sync' || kind === 'task_github_sync') return 'TARGET_REPO_CONFLICT'
   if (kind === 'reserved_future_flag_enabled') return 'FEATURE_FLAG_RESERVED_FUTURE_ENABLED'
+  if (kind === 'feature_flags_invalid_json') return 'FEATURE_FLAGS_INVALID_JSON'
   if (kind === 'workflow_template_ownership_conflict') return 'WORKFLOW_TEMPLATE_OWNERSHIP_CONFLICT'
   return 'NON_TARGET_RESIDUE_DETECTED'
 }
@@ -483,6 +603,10 @@ function residuePath(entry: { kind: string; identifiers?: unknown }, index?: num
   if (entry.kind === 'reserved_future_flag_enabled' && isRecord(entry.identifiers)) {
     const flag = entry.identifiers['flag']
     if (typeof flag === 'string') return `$.target.feature_flags.${flag}`
+  }
+  if (entry.kind === 'feature_flags_invalid_json' && isRecord(entry.identifiers)) {
+    const slug = entry.identifiers['workspace_slug']
+    if (typeof slug === 'string') return `$.target.workspaces.${slug}.feature_flags`
   }
   return `$.target.residue[${String(index ?? 0)}]`
 }
@@ -565,14 +689,21 @@ function tableColumns(db: ProductLineSeedDatabase, table: string): string[] {
 }
 
 function parseFlags(featureFlags: string | null): Record<string, boolean> {
-  if (!featureFlags) return {}
+  const result = parseFlagsForVerification(featureFlags)
+  if (!result.ok) throw new Error(result.message)
+  return result.flags
+}
+
+function parseFlagsForVerification(featureFlags: string | null): { ok: true; flags: Record<string, boolean> } | { ok: false; flags: Record<string, boolean>; message: string } {
+  if (!featureFlags) return { ok: true, flags: {} }
   try {
     const parsed = JSON.parse(featureFlags) as unknown
-    return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
-      ? parsed as Record<string, boolean>
-      : {}
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      return { ok: true, flags: parsed as Record<string, boolean> }
+    }
+    return { ok: false, flags: {}, message: 'Workspace feature_flags must be a JSON object.' }
   } catch {
-    return {}
+    return { ok: false, flags: {}, message: 'Workspace feature_flags must be valid JSON.' }
   }
 }
 

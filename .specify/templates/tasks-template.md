@@ -6,17 +6,10 @@ description: "Task list template for feature implementation"
 # Tasks: [FEATURE NAME]
 
 **Input**: Design documents from `/specs/[###-feature-name]/`
+
 **Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md, contracts/
 
-**Tests**: The examples below include test tasks. Tests are required when the
-feature specification or constitution requires them. User-facing UI changes
-MUST include real Playwright e2e journey tasks, Docker-backed seed-data
-execution when Docker is available, screenshot artifact capture, Argos
-metadata verification when Argos uploads are used, and an e2e/screenshot
-defect review before any PR update. Specs that touch SpecKit artifacts or
-evidence policy MUST include Archive Sweep startup/dry-run evidence,
-current-target exclusion, cleanup safety, recovery-command evidence, and
-screenshot/evidence guard tasks.
+**Tests**: The examples below include test tasks. For production code changes, tests are required by the Paddock Constitution and must be planned RED-first before implementation. Omit tests only for docs-only/process-only work or when the feature spec explicitly records a test-not-applicable rationale.
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
@@ -33,21 +26,21 @@ screenshot/evidence guard tasks.
 - **Mobile**: `api/src/`, `ios/src/` or `android/src/`
 - Paths shown below assume single project - adjust based on plan.md structure
 
-<!-- 
+<!--
   ============================================================================
   IMPORTANT: The tasks below are SAMPLE TASKS for illustration purposes only.
-  
-  The /speckit.tasks command MUST replace these with actual tasks based on:
+
+  The /speckit-tasks command MUST replace these with actual tasks based on:
   - User stories from spec.md (with their priorities P1, P2, P3...)
   - Feature requirements from plan.md
   - Entities from data-model.md
   - Endpoints from contracts/
-  
+
   Tasks MUST be organized by user story so each story can be:
   - Implemented independently
   - Tested independently
   - Delivered as an MVP increment
-  
+
   DO NOT keep these sample tasks in the generated tasks.md file.
   ============================================================================
 -->
@@ -87,15 +80,12 @@ Examples of foundational tasks (adjust based on your project):
 
 **Independent Test**: [How to verify this story works on its own]
 
-### Tests for User Story 1 (OPTIONAL - only if tests requested) ⚠️
+### Tests for User Story 1 (REQUIRED for production behavior changes) ⚠️
 
 > **NOTE: Write these tests FIRST, ensure they FAIL before implementation**
 
 - [ ] T010 [P] [US1] Contract test for [endpoint] in tests/contract/test_[name].py
 - [ ] T011 [P] [US1] Integration test for [user journey] in tests/integration/test_[name].py
-- [ ] T011A [P] [US1] Real Playwright UI journey with deterministic seed data in tests/e2e/[journey].spec.ts, attaching review screenshots for before/during/after states
-- [ ] T011B [US1] Docker-backed Playwright run using the repository Docker build and seeded data; review screenshots and remediate known UI journey defects before PR update
-- [ ] T011C [US1] Argos metadata gate for Playwright and/or Storybook visual uploads that verifies screenshot metadata includes test/story identity, source location, and spec-scoped tags
 
 ### Implementation for User Story 1
 
@@ -116,7 +106,7 @@ Examples of foundational tasks (adjust based on your project):
 
 **Independent Test**: [How to verify this story works on its own]
 
-### Tests for User Story 2 (OPTIONAL - only if tests requested) ⚠️
+### Tests for User Story 2 (REQUIRED for production behavior changes) ⚠️
 
 - [ ] T018 [P] [US2] Contract test for [endpoint] in tests/contract/test_[name].py
 - [ ] T019 [P] [US2] Integration test for [user journey] in tests/integration/test_[name].py
@@ -138,7 +128,7 @@ Examples of foundational tasks (adjust based on your project):
 
 **Independent Test**: [How to verify this story works on its own]
 
-### Tests for User Story 3 (OPTIONAL - only if tests requested) ⚠️
+### Tests for User Story 3 (REQUIRED for production behavior changes) ⚠️
 
 - [ ] T024 [P] [US3] Contract test for [endpoint] in tests/contract/test_[name].py
 - [ ] T025 [P] [US3] Integration test for [user journey] in tests/integration/test_[name].py
@@ -164,10 +154,8 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] TXXX [P] Documentation updates in docs/
 - [ ] TXXX Code cleanup and refactoring
 - [ ] TXXX Performance optimization across all stories
-- [ ] TXXX [P] Additional unit tests (if requested) in tests/unit/
+- [ ] TXXX [P] Additional regression/unit tests in tests/unit/
 - [ ] TXXX Security hardening
-- [ ] TXXX Archive Sweep dry-run/apply safety evidence and recovery commands for previously merged specs, excluding the current target spec
-- [ ] TXXX Screenshot/evidence guard verification, including negative fixture or manifest-backed exception coverage when generated screenshots could be committed
 - [ ] TXXX Run quickstart.md validation
 
 ---
@@ -191,7 +179,7 @@ Examples of foundational tasks (adjust based on your project):
 
 ### Within Each User Story
 
-- Tests (if included) MUST be written and FAIL before implementation
+- Required tests MUST be written and FAIL before implementation
 - Models before services
 - Services before endpoints
 - Core implementation before integration
