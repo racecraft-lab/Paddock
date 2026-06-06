@@ -664,3 +664,100 @@ alone.
        AND github_issue_number IN (:synthetic_issue_numbers)
      );
   ```
+
+## SPEC-010B Product Line B Onboarding Smoke
+
+Status: local verification passed on 2026-06-06T00:17:42Z. HAL UAT remains
+pending explicit operator approval after local verification.
+
+Record for each run:
+
+- Run id: `SPEC-010B-LOCAL-202606051857`
+- Branch/commit: `010b-product-line-b-smoke` local worktree verification run
+- DB path: `/private/tmp/spec-010b-paddock-20260605-1857c.db`
+- Evidence packet: `/private/tmp/spec-010b-smoke-evidence-202606051857.json`
+- Product Line A/baseline workspace ids: `1` (`default`) and `2` (`facility`)
+- Product Line B workspace id: `3`
+
+Required sequence:
+
+- Preflight: `seed:product-line --mode preflight --json` returns
+  `mutation_status: not_mutated`, comparable before/after hashes, Product Line A
+  baseline evidence, retained FocusEngine/OpenClaw inventory as non-blocking
+  inventory, and either `ready` or a typed stop result.
+- Apply: `seed:product-line --mode apply --json` creates or updates only
+  Product Line B config-owned rows and leaves Product Line B disabled with
+  non-null `disabled_at`.
+- Verify: `seed:product-line --mode verify --json` returns `verified` with no
+  Product Line B repo-sync owner projects and all smoke/runner/control-plane
+  flags absent or false.
+- Existing target refusal: repeated apply without `--allow-existing` returns
+  `EXISTING_TARGET_REQUIRES_ALLOW_EXISTING` and `action_required:
+  --allow-existing`.
+- Idempotency: repeated apply with `--allow-existing` creates no duplicate
+  workspace/project/assignment/template/governance rows.
+- Enable: smoke enablement is run-id scoped, clears only Product Line B
+  `disabled_at`, enables only reviewed smoke-owned flags, and leaves sync,
+  dispatch, control-plane, runner, sandbox, adapter, and auto-merge paused.
+- Synthetic issue: local `spec-010b.synthetic_issue.v1` evidence uses
+  `racecraft-lab/Paddock`, labels `pd:inbox`, `priority:medium`, and
+  `area:dev`, and records no credential fields.
+- Pilot subset: evidence covers candidate eligibility, one root-task proof,
+  pilot auto-route hold, and side-effect absence without a required live GitHub
+  write.
+- Disable: final disablement restores non-null Product Line B `disabled_at`.
+- Cleanup proof: record zero for `github_sync_enabled_projects`,
+  `repo_sync_owner_projects`, `assigned_dispatch_eligible_tasks`,
+  `remaining_eligible_smoke_work`, and `unintended_side_effect_rows`.
+- Product Line A isolation: Product Line A scoped hashes match before and after
+  cleanup; expected retained Product Line B rows are excluded from Product Line A
+  drift counts.
+- Scope evidence: scoped API/dashboard evidence uses explicit workspace ids.
+  Disabled Product Line B is absent from the normal switcher after seed and
+  after final disablement.
+
+Optional live GitHub evidence:
+
+- Optional only; not required for closeout.
+- Requires explicit operator approval and live-mutation opt-in.
+- May find/reuse one safe open Product Line B smoke issue or create exactly one
+  Product Line B synthetic issue.
+- Must not repair labels, comment, close, delete, create PRs, enable repo sync
+  ownership, or mutate Product Line A state.
+- Missing credentials, insufficient permissions, or operator refusal records
+  skipped/not-mutated evidence and does not fail the required synthetic smoke.
+
+Parallel-safety record:
+
+- Active parallel spec: SPEC-014C.
+- Avoided files: `src/lib/harness-adapters/**`,
+  `src/app/api/agents/runtime-inventory/**`, `src/lib/task-dispatch.ts`,
+  `src/lib/task-dispatch-codex-app-server.ts`, `scripts/spec-014c/**`, and
+  SPEC-014C artifacts.
+- Runtime-inventory evidence is read-only/supporting only; `eligible` is not a
+  closeout requirement.
+- Harness manifest ids are substrate evidence only, not Product Line B identity.
+
+Local result:
+
+- Preflight returned `READY`, `mutation_status: not_mutated`, and equal
+  before/after hash
+  `966bf950aa2d408970cc7bc8a4785a51443650e766dab39396fd46eeceaa6f65`.
+- Apply returned `SEEDED`; verify returned `VERIFIED`,
+  `disabled_by_default: true`, and no drift.
+- Repeated apply without `--allow-existing` refused with
+  `EXISTING_TARGET_REQUIRES_ALLOW_EXISTING`; allowed repeated apply and
+  repeated verify kept hash
+  `eaf9418cf5d5cc9ac46d6303ccd9240552a8ba71bbfcf100940f0ef625523c1c`.
+- Smoke `enable` applied only to Product Line B workspace `3`, cleared
+  `disabled_at`, enabled 10 smoke-owned flags, and left paused/forbidden flags
+  off.
+- Smoke `synthetic-issue` validated `spec-010b.synthetic_issue.v1` for
+  `racecraft-lab/Paddock` with no credential fields.
+- Smoke `disable` restored non-null `disabled_at`.
+- Cleanup proof returned zero for `github_sync_enabled_projects`,
+  `repo_sync_owner_projects`, `assigned_dispatch_eligible_tasks`,
+  `remaining_eligible_smoke_work`, and `unintended_side_effect_rows`.
+- Local typecheck, lint, and production build passed. The first sandboxed build
+  failed only on Turbopack local port binding; the same build passed outside the
+  sandbox.

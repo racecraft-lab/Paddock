@@ -62,6 +62,10 @@ const specStrictFiles = [
   'src/lib/__tests__/product-line-seed.test.ts',
   'src/lib/__tests__/product-line-seed-cli.test.ts',
   'scripts/seed-product-line.ts',
+  // SPEC-010B Product Line B smoke and focused tests.
+  'scripts/spec-010b/product-line-b-smoke.ts',
+  'src/lib/__tests__/product-line-b-seed.test.ts',
+  'src/lib/__tests__/product-line-b-smoke.test.ts',
   // SPEC-009C1 pilot issue ingest and eligibility.
   'src/lib/pilot-issue-eligibility.ts',
   // SPEC-009D pilot review packet and focused contract tests.

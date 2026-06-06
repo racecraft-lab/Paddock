@@ -15,9 +15,18 @@ Set paths:
 ```bash
 DB=/tmp/spec-010b-paddock.db
 CONFIG=docs/ai/product-lines/product-line-b.yaml
+RUN_ID=SPEC-010B-LOCAL-$(date +%Y%m%d%H%M%S)
+EVIDENCE_DIR=test-results/spec-010b-product-line-b-smoke
+EVIDENCE_PACKET=$EVIDENCE_DIR/spec-010b-smoke-evidence.json
 ```
 
 Run migrations or use the repository's existing disposable DB setup path before seed checks.
+
+Create the local evidence directory before recording JSON output:
+
+```bash
+mkdir -p "$EVIDENCE_DIR"
+```
 
 Preflight without mutation:
 
@@ -49,10 +58,16 @@ pnpm seed:product-line -- --config "$CONFIG" --db "$DB" --mode verify --json
 Run the SPEC-010B smoke lifecycle after implementation:
 
 ```bash
-node --experimental-strip-types scripts/spec-010b/product-line-b-smoke.ts --config "$CONFIG" --db "$DB" --phase enable --json
-node --experimental-strip-types scripts/spec-010b/product-line-b-smoke.ts --config "$CONFIG" --db "$DB" --phase synthetic-issue --json
-node --experimental-strip-types scripts/spec-010b/product-line-b-smoke.ts --config "$CONFIG" --db "$DB" --phase disable --json
-node --experimental-strip-types scripts/spec-010b/product-line-b-smoke.ts --config "$CONFIG" --db "$DB" --phase cleanup-proof --json
+node --experimental-strip-types scripts/spec-010b/product-line-b-smoke.ts --config "$CONFIG" --db "$DB" --phase enable --run-id "$RUN_ID" --json
+node --experimental-strip-types scripts/spec-010b/product-line-b-smoke.ts --config "$CONFIG" --db "$DB" --phase synthetic-issue --run-id "$RUN_ID" --json
+node --experimental-strip-types scripts/spec-010b/product-line-b-smoke.ts --config "$CONFIG" --db "$DB" --phase disable --run-id "$RUN_ID" --json
+node --experimental-strip-types scripts/spec-010b/product-line-b-smoke.ts --config "$CONFIG" --db "$DB" --phase cleanup-proof --run-id "$RUN_ID" --evidence "$EVIDENCE_PACKET" --json
+```
+
+Write the final review packet to:
+
+```text
+test-results/spec-010b-product-line-b-smoke/spec-010b-smoke-evidence.json
 ```
 
 Required local evidence:
@@ -69,6 +84,17 @@ Required local evidence:
 - Product Line B final `disabled_at` is non-null.
 - Product Line B repo sync owner count is zero.
 - Product Line B remaining eligible smoke work is zero.
+
+Required cleanup counters:
+
+- `github_sync_enabled_projects: 0`
+- `repo_sync_owner_projects: 0`
+- `assigned_dispatch_eligible_tasks: 0`
+- `remaining_eligible_smoke_work: 0`
+- `unintended_side_effect_rows: 0`
+- `product_line_a_snapshot_parity: passed`
+- Product Line B final `disabled_at` is non-null.
+- Every smoke-owned flag is absent or explicitly false after final disablement.
 
 ## API/Dashboard Evidence
 
@@ -91,6 +117,12 @@ Use the HAL service-compatible Node path:
 
 ```bash
 /usr/bin/node --experimental-strip-types scripts/seed-product-line.ts --config docs/ai/product-lines/product-line-b.yaml --db /home/fredrick-gabelmann/paddock-data/paddock.db --mode preflight --json
+```
+
+HAL evidence should be saved under an operator-owned path such as:
+
+```text
+/home/fredrick-gabelmann/paddock-evidence/spec-010b/spec-010b-smoke-evidence.json
 ```
 
 After local verification and explicit operator approval for HAL:

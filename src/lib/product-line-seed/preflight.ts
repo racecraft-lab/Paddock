@@ -9,6 +9,7 @@ import {
 } from './types.ts'
 
 const RESERVED_FUTURE_FLAGS = new Set(['FEATURE_TASK_CONTROL_PLANE', 'FEATURE_AGENT_RUNNER_SANDBOXES'])
+const RETAINED_INVENTORY_NAMES = new Set(['FocusEngine', 'OpenClaw'])
 
 export function detectProductLineTargetResidue(
   db: ProductLineSeedDatabase,
@@ -28,6 +29,8 @@ export function detectProductLineTargetResidue(
     }
   }
   if (tableExists(db, 'projects')) {
+    const targetRepoSyncOwners = targetWorkspaceRepoSyncOwners(db, config)
+    if (targetRepoSyncOwners) residue.push(targetRepoSyncOwners)
     const projects = db.prepare(`
       SELECT github_repo, COUNT(*) as count, GROUP_CONCAT(id) as ids
       FROM projects
@@ -41,6 +44,8 @@ export function detectProductLineTargetResidue(
       project_ids: row.ids.split(',').map(Number),
     })))
   }
+  const assignmentConflict = findProductLineBAssignmentConflict(db, config)
+  if (assignmentConflict) residue.push(assignmentConflict)
   if (tableExists(db, 'tasks')) {
     const tasks = db.prepare(`
       SELECT github_repo, COUNT(*) as count, GROUP_CONCAT(id) as ids
@@ -68,6 +73,85 @@ export function detectProductLineTargetResidue(
     residue.push(ownershipConflict)
   }
   return residue
+}
+
+function targetWorkspaceRepoSyncOwners(
+  db: ProductLineSeedDatabase,
+  config: ProductLineSeedConfig,
+): ProductLineResidue | null {
+  if (config.product_line.disabled_by_default !== true) return null
+  if (!tableExists(db, 'workspaces') || !tableExists(db, 'projects')) return null
+  const workspace = db.prepare('SELECT id FROM workspaces WHERE slug = ?').get(config.product_line.slug) as { id: number } | undefined
+  if (!workspace) return null
+  const rows = db.prepare(`
+    SELECT id
+    FROM projects
+    WHERE workspace_id = ?
+      AND github_repo = ?
+      AND (COALESCE(github_sync_enabled, 0) = 1 OR COALESCE(is_repo_sync_owner, 0) = 1)
+    ORDER BY id ASC
+  `).all(workspace.id, config.github.full_name) as { id: number }[]
+  if (rows.length === 0) return null
+  return {
+    kind: 'repo_sync_owner_conflict',
+    repo: config.github.full_name,
+    count: rows.length,
+    project_ids: rows.map((row) => row.id),
+  }
+}
+
+function findProductLineBAssignmentConflict(
+  db: ProductLineSeedDatabase,
+  config: ProductLineSeedConfig,
+): ProductLineResidue | null {
+  if (config.product_line.disabled_by_default !== true) return null
+  if (!tableExists(db, 'workspaces') || !tableExists(db, 'projects') || !tableExists(db, 'project_agent_assignments')) return null
+  const prefix = `${config.product_line.agent_prefix}-`
+  const rows = db.prepare(`
+    SELECT paa.id, paa.agent_name
+    FROM project_agent_assignments paa
+    JOIN projects p ON p.id = paa.project_id
+    JOIN workspaces w ON w.id = p.workspace_id
+    WHERE paa.agent_name LIKE ?
+      AND w.slug <> ?
+    ORDER BY paa.agent_name ASC, paa.id ASC
+  `).all(`${prefix}%`, config.product_line.slug) as { id: number; agent_name: string }[]
+  if (rows.length === 0) return null
+  return {
+    kind: 'plb_platform_assignment_conflict',
+    count: rows.length,
+    identifiers: {
+      agent_names: rows.map((row) => row.agent_name),
+    },
+  }
+}
+
+export function collectRetainedProductLineInventory(
+  db: ProductLineSeedDatabase,
+): {
+  identity: string
+  source: string
+  classification: 'retained_inventory'
+  status?: string
+  count: number
+  blocking: false
+}[] {
+  if (!tableExists(db, 'agents')) return []
+  const rows = db.prepare(`
+    SELECT name, COALESCE(source, 'agent_rows') as source, status, COUNT(*) as count
+    FROM agents
+    WHERE name IN (${[...RETAINED_INVENTORY_NAMES].map(() => '?').join(', ')})
+    GROUP BY name, source, status
+    ORDER BY name ASC, source ASC
+  `).all(...RETAINED_INVENTORY_NAMES) as { name: string; source: string; status: string | null; count: number }[]
+  return rows.map((row) => ({
+    identity: row.name,
+    source: row.source,
+    classification: 'retained_inventory',
+    ...(row.status ? { status: row.status } : {}),
+    count: row.count,
+    blocking: false,
+  }))
 }
 
 function findWorkflowTemplateOwnershipConflict(

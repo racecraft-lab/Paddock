@@ -62,6 +62,7 @@ function makeWrapperParityDb(): Database.Database {
       slug TEXT NOT NULL UNIQUE,
       name TEXT NOT NULL,
       tenant_id INTEGER NOT NULL DEFAULT 1,
+      disabled_at TEXT,
       feature_flags TEXT,
       created_at INTEGER NOT NULL DEFAULT 100,
       updated_at INTEGER NOT NULL DEFAULT 100

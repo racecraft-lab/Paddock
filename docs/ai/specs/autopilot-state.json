@@ -1,6 +1,6 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-010B-workflow.md",
-  "updated_at": "2026-06-05T05:09:23Z",
+  "updated_at": "2026-06-06T00:17:42Z",
   "spec_id": "SPEC-010B",
   "branch": "010b-product-line-b-smoke",
   "feature_dir": "specs/010b-product-line-b-smoke",
@@ -29,14 +29,14 @@
     }
   },
   "preflight": {
-    "speckit_cli": "specify 0.8.16",
+    "speckit_cli": "specify 0.9.4",
     "package_manager": "pnpm",
     "required_agents_installed": true,
     "required_agent_scope": "user",
     "model": "gpt-5.5",
     "model_reasoning_effort": "xhigh",
     "mcp_servers": "Missing: tavily-mcp context7 RepoPrompt (agents will use built-in fallbacks)",
-    "plugin_cache": "/Users/fredrickgabelmann/.codex/plugins/cache/racecraft-plugins-public/speckit-pro/2.6.2",
+    "plugin_cache": "/Users/fredrickgabelmann/.codex/plugins/cache/racecraft-plugins-public/speckit-pro/2.6.3",
     "implementation_agent": "implement-executor"
   },
   "archive_sweep": {
@@ -56,7 +56,8 @@
       "Current target specs/010b-product-line-b-smoke is excluded from archive and cleanup"
     ]
   },
-  "active_step": "Phase 7: Implement",
+  "active_step": "Phase 7: Implement - HAL UAT approval gate",
+  "current_blocker": "T046 HAL UAT requires explicit approval after local verification. Local disposable DB verification, focused tests, typecheck, lint, build, and ownership guard are complete.",
   "plan": [
     {"step": "Archive Sweep: previously merged specs dry-run/apply eligibility", "status": "completed"},
     {"step": "Phase 0: Prerequisites", "status": "completed"},
@@ -86,7 +87,14 @@
     {"step": "Phase 6: Analyze", "status": "completed"},
     {"step": "Phase 6: Analyze - Consensus", "status": "completed"},
     {"step": "Phase 6.5: Confidence Gate", "status": "completed"},
-    {"step": "Phase 7: Implement - Pending task decomposition", "status": "in_progress"},
+    {"step": "Phase 7: RED test baseline (T001-T006)", "status": "completed"},
+    {"step": "Phase 7: Foundational setup (T007-T013)", "status": "completed"},
+    {"step": "Phase 7: US1 preflight without mutation (T014-T017)", "status": "completed"},
+    {"step": "Phase 7: US2 seed disabled Product Line B (T018-T023)", "status": "completed"},
+    {"step": "Phase 7: US3 enable, smoke, and disable (T024-T029)", "status": "completed"},
+    {"step": "Phase 7: US4 prove Product Line A isolation (T030-T035)", "status": "completed"},
+    {"step": "Phase 7: US5 preserve evidence (T036-T040)", "status": "completed"},
+    {"step": "Phase 7: Polish and verification (T041-T047)", "status": "in_progress"},
     {"step": "Post: Doctor Extension Check", "status": "pending"},
     {"step": "Post: Verify Implementation", "status": "pending"},
     {"step": "Post: Verify Tasks Phantom Check", "status": "pending"},

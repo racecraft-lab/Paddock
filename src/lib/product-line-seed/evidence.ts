@@ -335,7 +335,7 @@ function queryForConfigOwnedSurface(surface: string, config: ProductLineSeedConf
     case 'feature_flags':
       return {
         table: 'workspaces',
-        sql: 'SELECT id, slug, name, tenant_id, feature_flags, created_at, updated_at FROM workspaces WHERE slug = ? ORDER BY id ASC',
+        sql: 'SELECT id, slug, name, tenant_id, disabled_at, feature_flags, created_at, updated_at FROM workspaces WHERE slug = ? ORDER BY id ASC',
         params: [slug],
       }
     case 'department_projects':

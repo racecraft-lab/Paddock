@@ -616,6 +616,73 @@ Before merging latest `main`, a read-only pre-edit check on 2026-06-05 found act
 
 Latest `origin/main` now includes SPEC-014C closeout and those changes have been merged into this branch. SPEC-010B implementation may proceed, but must still run the pre-edit ownership check before touching shared coordination files and must stop if another active worktree owns the same path.
 
+### Implementation Kickoff Checkpoint
+
+RED baseline T001-T006 is established in:
+
+- `src/lib/__tests__/product-line-b-seed.test.ts`
+- `src/lib/__tests__/product-line-b-smoke.test.ts`
+
+Foundational setup owns these files before user-story implementation begins:
+
+- `docs/ai/product-lines/product-line-b.yaml`
+- `specs/010b-product-line-b-smoke/fixtures/synthetic-issue.json`
+- `scripts/spec-010b/product-line-b-smoke.ts`
+- `tsconfig.spec-strict.json`
+- `eslint.config.mjs`
+
+Split-stop condition: if implementation expands beyond seed/config, focused smoke evidence, and scoped API/dashboard proof into scheduler/claim/retry authority, runner state, sandbox lifecycle, harness adapter implementation, runtime-inventory eligibility logic, auto-merge, or broad dashboard redesign, stop and split the spec before continuing.
+
+### SPEC-014C Hard Stop Boundary
+
+Pre-edit ownership check on 2026-06-05 during implementation found the registered SPEC-014C worktree path prunable and absent, with no live dirty diff to own SPEC-010B shared coordination files. Continue to avoid:
+
+- `src/lib/harness-adapters/**`
+- `src/app/api/agents/runtime-inventory/**`
+- `src/lib/task-dispatch.ts`
+- `src/lib/task-dispatch-codex-app-server.ts`
+- `scripts/spec-014c/**`
+- `specs/014c-first-real-harness-adapter/**`
+
+Runtime-inventory evidence remains optional read-only support evidence only. `eligible` is not a SPEC-010B closeout requirement, and harness manifest IDs are substrate evidence only, not Product Line B identity.
+
+### Implementation Evidence
+
+Local implementation evidence recorded on 2026-06-06T00:17:42Z from branch
+`010b-product-line-b-smoke` before HAL UAT. The local run used disposable DB
+`/private/tmp/spec-010b-paddock-20260605-1857c.db` and evidence file
+`/private/tmp/spec-010b-smoke-evidence-202606051857.json`.
+
+| Evidence | Status | Command Or Source | Notes |
+|----------|--------|-------------------|-------|
+| RED baseline | Complete | T001-T006 RED tests added before implementation in `src/lib/__tests__/product-line-b-seed.test.ts` and `src/lib/__tests__/product-line-b-smoke.test.ts` | Final focused run below proves GREEN state |
+| Focused seed and smoke tests | Complete | `pnpm test src/lib/__tests__/product-line-b-seed.test.ts src/lib/__tests__/product-line-b-smoke.test.ts src/lib/__tests__/product-line-seed.test.ts src/lib/__tests__/product-line-seed-cli.test.ts` | Passed: 4 files, 69 tests. Covers Product Line B config/preflight/apply/verify/idempotency, reusable Paddock seed regression, synthetic smoke, DB-backed enable/disable/cleanup proof, redaction, Product Line A isolation, scoped evidence, and SPEC-014C boundary |
+| SPEC strict type gate | Complete | `pnpm exec tsc -p tsconfig.spec-strict.json --pretty false --noEmit` | Passed |
+| Disposable seed CLI | Complete | `pnpm seed:product-line -- --config docs/ai/product-lines/product-line-b.yaml --db /private/tmp/spec-010b-paddock-20260605-1857c.db --mode preflight/apply/verify --json` | Preflight `READY` was `not_mutated` with equal hash `966bf950aa2d408970cc7bc8a4785a51443650e766dab39396fd46eeceaa6f65`; apply `SEEDED`; verify `VERIFIED` with `disabled_by_default: true` and no drift; repeated apply without `--allow-existing` refused with `EXISTING_TARGET_REQUIRES_ALLOW_EXISTING`; allowed repeat apply and repeated verify kept snapshot hash `eaf9418cf5d5cc9ac46d6303ccd9240552a8ba71bbfcf100940f0ef625523c1c` |
+| Disposable smoke lifecycle | Complete | `node --experimental-strip-types scripts/spec-010b/product-line-b-smoke.ts --config docs/ai/product-lines/product-line-b.yaml --db /private/tmp/spec-010b-paddock-20260605-1857c.db --phase <phase> --run-id SPEC-010B-LOCAL-202606051857 --json` | `enable` applied to workspace `3` with `disabled_at: null`, 10 smoke-owned flags enabled, and paused/forbidden flags still off; `synthetic-issue` validated `spec-010b.synthetic_issue.v1`; `disable` restored non-null `disabled_at`; `cleanup-proof` was `not_mutated` with zero sync-owner, GitHub-sync, dispatch-eligible, remaining-smoke, and unintended side-effect counters |
+| Type/lint/build | Complete | `pnpm typecheck`; `pnpm lint`; `pnpm build` | Typecheck passed; lint passed; production build passed outside the sandbox. The first sandboxed build failed with Turbopack `Operation not permitted` during local port binding, then the same command passed when rerun outside the sandbox. Playwright was not run because dashboard behavior and Playwright assertions did not change |
+| File ownership guard | Complete | `git worktree list --porcelain`; `git status --short -- src/lib/harness-adapters src/app/api/agents/runtime-inventory src/lib/task-dispatch.ts src/lib/task-dispatch-codex-app-server.ts scripts/spec-014c specs/014c-first-real-harness-adapter`; `git diff --check` | SPEC-014C worktree still registered as prunable/absent; forbidden path status clean; whitespace diff check clean |
+| HAL UAT | Pending explicit approval | `/usr/bin/node --experimental-strip-types scripts/seed-product-line.ts ...` and `/usr/bin/node --experimental-strip-types scripts/spec-010b/product-line-b-smoke.ts ...` on HAL | Local verification is complete; HAL UAT has not been run because T046 requires explicit approval after local verification |
+
+### PR Review Packet Traceability
+
+The PR packet must map these requirements to files and evidence:
+
+| Requirement | Files | Evidence |
+|-------------|-------|----------|
+| Product Line B reviewed config and disabled identity | `docs/ai/product-lines/product-line-b.yaml`, `src/lib/product-line-seed/config.ts`, `src/lib/product-line-seed/schema.ts` | Focused seed config tests and seed CLI validation |
+| No-mutation preflight and typed stop states | `src/lib/product-line-seed/preflight.ts`, `src/lib/product-line-seed/seed.ts`, `src/lib/product-line-seed/types.ts` | Product Line B seed tests and disposable preflight JSON |
+| Disabled apply/verify and idempotency | `src/lib/product-line-seed/seed.ts`, `src/lib/product-line-seed/evidence.ts` | Apply/verify/repeated apply/repeated verify JSON |
+| Synthetic smoke and redaction-safe evidence | `scripts/spec-010b/product-line-b-smoke.ts`, `src/lib/__tests__/product-line-b-smoke.test.ts` | Focused smoke tests and evidence packet |
+| Product Line A isolation | `scripts/spec-010b/product-line-b-smoke.ts`, `src/lib/product-line-seed/evidence.ts` | Scoped hash parity and expected Product Line B row exclusions |
+| Optional live GitHub boundary | `scripts/spec-010b/product-line-b-smoke.ts`, `docs/qa/pilot-smoke-checklist.md`, `quickstart.md` | Optional evidence skipped/not-mutated unless explicitly approved |
+| SPEC-014C parallel safety | `docs/ai/specs/SPEC-010B-workflow.md`, `docs/qa/pilot-smoke-checklist.md`, smoke evidence packet | No adapter ownership, files avoided, runtime-inventory optional, `eligible` not required |
+
+Deferred out-of-scope work remains scheduler/claim/retry authority, runner state,
+sandbox lifecycle, harness adapter implementation, runtime-inventory eligibility,
+auto-merge, live GitHub mutation as a required gate, FocusEngine/OpenClaw
+takeover, and broad dashboard redesign or include-disabled switcher mode.
+
 ### Implementation Verification Targets
 
 Minimum expected verification:
