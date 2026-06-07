@@ -41,7 +41,7 @@ Re-read it before each phase if you need to disambiguate a prompt. The Specify a
 | Checklist | `$speckit-checklist` | Complete | Completed six domains; all gaps remediated with final marker count 0 |
 | Tasks | `$speckit-tasks` | Complete | Generated 55 TDD-first tasks; G5 passed and task reviewability gate passed under ratified process/tooling exception |
 | Analyze | `$speckit-analyze` | Complete | G6 passed with 0 CRITICAL/HIGH/MEDIUM/LOW findings after remediating workflow-ledger metric/status wording |
-| Implement | `$speckit-implement` | In Progress | US3 warning-only detectors and static scope guard complete; polish verification remains |
+| Implement | `$speckit-implement` | Complete | T001-T055 complete; polish verification and PR review packet recorded |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
 
@@ -693,8 +693,8 @@ During implementation:
 | Recommendation schema and output | Complete | T027-T036 implemented non-mutating recommendation payloads, Paddock cleanup-task import drafts, export-only GitHub issue drafts, dedupe/unknown-owner behavior, package command, guardrails suite, and deterministic default reports |
 | Drift detectors | Complete | T019-T044 implemented US1 hard-drift detectors plus US3 warning-only low-value, freshness, source-link, archive-cleanup eligibility, and static scope-control detectors |
 | Package and guardrails integration | Complete | `spec:012b:harness-gardening` package script added; `pnpm guardrails -- --suite harness-gardening` passed; existing `task-pipeline`, `spec-evidence-screenshots`, and `repo-knowledge-index` suite keys preserved |
-| Docs and discoverability | Pending | Pending |
-| Final verification | Pending | Pending |
+| Docs and discoverability | Complete | Repo knowledge index and AGENTS pointers verified for SPEC-012B design concept, workflow ledger, generated spec folder, and report artifacts |
+| Final verification | Complete | PR review packet records scope, fixture, deterministic JSON, guardrails, knowledge-index, typecheck, lint, unit, and whitespace evidence |
 
 ### Foundation Verification
 
@@ -724,6 +724,17 @@ During implementation:
 - `node scripts/spec-012b/check-scope-control.mjs`: pass with 17 changed files, 1069 scanned entries, and 0 failures.
 - `pnpm spec:012b:harness-gardening -- --fixtures scripts/spec-012b/fixtures/warning --as-of 2026-06-06 --json`: pass with 9 warning findings, 9 recommendations, and 0 hard failures.
 - `git diff --check`: pass.
+
+### Polish Verification
+
+- Review packet: `specs/012b-harness-gardening-guards/.process/pr-review-packet.md` finalized with change summary, non-goals, review order, scope budget, traceability, verification evidence, known gaps, and rollback notes.
+- Discoverability: `docs/ai/repo-knowledge-index.json` already includes SPEC-012B design concept, workflow ledger, generated spec folder, and report-artifact entries; `AGENTS.md` already points to the current SPEC-012B workflow and generated artifacts.
+- Scope self-test: `node scripts/spec-012b/check-scope-control.mjs --self-test` passed with 12 changed files, 29 scanned entries, 0 failures, and all four self-test cases passed.
+- Scope current-diff: final changed-file and scanned-entry counts are recorded in the PR review packet after polish edits; failures remain 0.
+- Full fixture matrix: `pnpm spec:012b:harness-gardening -- --fixtures scripts/spec-012b/fixtures --as-of 2026-06-06` exited 1 as expected for hard fixtures, with 15 findings, 15 recommendations, 28 hard failures, 19 warnings, and 22 guard errors.
+- Deterministic JSON: two full-corpus JSON runs matched byte-for-byte; both exited 1 as expected and produced 76,865 bytes.
+- Guardrails: `pnpm guardrails -- --suite harness-gardening` passed; `pnpm guardrails` passed 4 suites; `pnpm knowledge:index:check` passed with 0 warnings; `pnpm guardrails -- --suite repo-knowledge-index` passed.
+- Baseline checks under Node v22.22.2: `pnpm typecheck` passed; `pnpm lint` passed; `node --test scripts/spec-012b/__tests__/*.test.mjs` passed 37 tests; `pnpm test` passed 327 files / 3391 tests with 4 skipped and 84 todo.
 
 ---
 

@@ -125,17 +125,17 @@
 
 **Purpose**: Final docs, integration, scope, compatibility, and review evidence.
 
-- [ ] T045 [P] Verify or update SPEC-012B discoverability entries for the design concept, workflow ledger, spec folder, and report artifacts in `docs/ai/repo-knowledge-index.json`
-- [ ] T046 [P] Verify or update concise SPEC-012B pointers without premature command-success claims in `AGENTS.md`
-- [ ] T047 [P] Update Phase 5 task-result evidence in `docs/ai/specs/.process/SPEC-012B-workflow.md`
-- [ ] T048 Run `node scripts/spec-012b/check-scope-control.mjs --self-test` and record self-test evidence in `specs/012b-harness-gardening-guards/.process/pr-review-packet.md`
-- [ ] T049 Run `node scripts/spec-012b/check-scope-control.mjs` in current-diff mode and record zero-failure changed-file and scanned-entry counts in `specs/012b-harness-gardening-guards/.process/pr-review-packet.md`
-- [ ] T050 Run `pnpm spec:012b:harness-gardening -- --fixtures scripts/spec-012b/fixtures --as-of 2026-06-06` and record hard-versus-warning fixture evidence in `specs/012b-harness-gardening-guards/.process/pr-review-packet.md`
-- [ ] T051 Run `pnpm spec:012b:harness-gardening -- --fixtures scripts/spec-012b/fixtures --as-of 2026-06-06 --json` twice, compare byte-for-byte output, and record deterministic JSON evidence in `specs/012b-harness-gardening-guards/.process/pr-review-packet.md`
-- [ ] T052 Run `pnpm guardrails -- --suite harness-gardening` and record focused-suite evidence in `specs/012b-harness-gardening-guards/.process/pr-review-packet.md`
-- [ ] T053 Run `pnpm guardrails`, `pnpm knowledge:index:check`, and `pnpm guardrails -- --suite repo-knowledge-index`, then record compatibility evidence in `specs/012b-harness-gardening-guards/.process/pr-review-packet.md`
-- [ ] T054 Run `pnpm typecheck`, `pnpm lint`, `pnpm test`, and `git diff --check`, then record verification evidence in `specs/012b-harness-gardening-guards/.process/pr-review-packet.md`
-- [ ] T055 Finalize the PR review packet with what changed, why, non-goals, review order, scope budget, traceability, verification evidence, known gaps, and rollback or feature-flag notes in `specs/012b-harness-gardening-guards/.process/pr-review-packet.md`
+- [X] T045 [P] Verify or update SPEC-012B discoverability entries for the design concept, workflow ledger, spec folder, and report artifacts in `docs/ai/repo-knowledge-index.json`
+- [X] T046 [P] Verify or update concise SPEC-012B pointers without premature command-success claims in `AGENTS.md`
+- [X] T047 [P] Update Phase 5 task-result evidence in `docs/ai/specs/.process/SPEC-012B-workflow.md`
+- [X] T048 Run `node scripts/spec-012b/check-scope-control.mjs --self-test` and record self-test evidence in `specs/012b-harness-gardening-guards/.process/pr-review-packet.md`
+- [X] T049 Run `node scripts/spec-012b/check-scope-control.mjs` in current-diff mode and record zero-failure changed-file and scanned-entry counts in `specs/012b-harness-gardening-guards/.process/pr-review-packet.md`
+- [X] T050 Run `pnpm spec:012b:harness-gardening -- --fixtures scripts/spec-012b/fixtures --as-of 2026-06-06` and record hard-versus-warning fixture evidence in `specs/012b-harness-gardening-guards/.process/pr-review-packet.md`
+- [X] T051 Run `pnpm spec:012b:harness-gardening -- --fixtures scripts/spec-012b/fixtures --as-of 2026-06-06 --json` twice, compare byte-for-byte output, and record deterministic JSON evidence in `specs/012b-harness-gardening-guards/.process/pr-review-packet.md`
+- [X] T052 Run `pnpm guardrails -- --suite harness-gardening` and record focused-suite evidence in `specs/012b-harness-gardening-guards/.process/pr-review-packet.md`
+- [X] T053 Run `pnpm guardrails`, `pnpm knowledge:index:check`, and `pnpm guardrails -- --suite repo-knowledge-index`, then record compatibility evidence in `specs/012b-harness-gardening-guards/.process/pr-review-packet.md`
+- [X] T054 Run `pnpm typecheck`, `pnpm lint`, `pnpm test`, and `git diff --check`, then record verification evidence in `specs/012b-harness-gardening-guards/.process/pr-review-packet.md`
+- [X] T055 Finalize the PR review packet with what changed, why, non-goals, review order, scope budget, traceability, verification evidence, known gaps, and rollback or feature-flag notes in `specs/012b-harness-gardening-guards/.process/pr-review-packet.md`
 
 ---
 
