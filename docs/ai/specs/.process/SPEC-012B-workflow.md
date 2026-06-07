@@ -35,7 +35,7 @@ Re-read it before each phase if you need to disambiguate a prompt. The Specify a
 | Phase | Command | Status | Notes |
 |-------|---------|--------|-------|
 | Scaffold | `$speckit-scaffold-spec SPEC-012B` | Complete | Branch, worktree, reviewability preset, design concept, workflow, and roadmap setup status created |
-| Specify | `$speckit-specify` | Pending | Generate `specs/012b-harness-gardening-guards/spec.md` from the roadmap and Design Concept |
+| Specify | `$speckit-specify` | Complete | Generated `spec.md` and requirements checklist; G1 passed with 0 clarification markers |
 | Clarify | `$speckit-clarify` | Pending | Resolve recommendation schema, hard/warning drift classes, thresholds, fixtures, and command names |
 | Plan | `$speckit-plan` | Pending | Plan repo-artifact-only guard scripts, fixture corpus, package/guardrail wiring, and no-runtime boundary |
 | Checklist | `$speckit-checklist` | Pending | Suggested domains: data-integrity, docs-integrity, guardrail-integration, error-handling, testing-strategy, scope-control |
@@ -75,7 +75,7 @@ Before starting any workflow phase, verify alignment with `.specify/memory/const
 | XV. Spec Artifact Provenance | Design concept, workflow, recommendation reports, and fixture evidence remain durable | `.process` artifact paths and fixture/report paths are recorded |
 | XVI. Reviewability And Verification Debt Control | Scope remains reviewable, split decisions are explicit, and drift findings create narrow remediation work | Reviewability gate result below is preserved; recommendation schema emits one cleanup task payload per stable finding |
 
-**Constitution Check:** Pending for G1; scaffold pre-check passed under the existing transition exception.
+**Constitution Check:** Verified for G1 on 2026-06-06; scope remains process/tooling-only and no runtime behavior, migrations, UI, scheduler, dispatch, sandbox, adapter, or harness behavior entered the Specify artifact.
 
 ### Reviewability Gate
 
@@ -266,13 +266,20 @@ Use the Phase 10B roadmap acceptance criteria plus the Success Criteria Summary 
 
 | Metric | Value |
 |--------|-------|
-| Functional Requirements | Pending |
-| User Stories | Pending |
-| Acceptance Criteria | Pending |
+| Functional Requirements | 18 |
+| User Stories | 3 |
+| Acceptance Criteria | 9 |
 
 ### Files Generated
 
-- [ ] `specs/012b-harness-gardening-guards/spec.md`
+- [x] `specs/012b-harness-gardening-guards/spec.md`
+- [x] `specs/012b-harness-gardening-guards/checklists/requirements.md`
+
+### G1 Validation
+
+- `validate-gate.sh G1 specs/012b-harness-gardening-guards`: pass.
+- `count-markers.sh all specs/012b-harness-gardening-guards`: 0 gaps, 0 clarifications, 0 CRITICAL, 0 HIGH, 0 MEDIUM, 0 LOW.
+- External-context evidence recorded in `spec.md`: Harness Engineering article, Symphony announcement, and Symphony SPEC retrieved on 2026-06-06.
 
 ---
 
