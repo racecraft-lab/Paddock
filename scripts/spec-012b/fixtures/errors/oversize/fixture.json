@@ -1,0 +1,27 @@
+{
+  "fixture_version": "harness_gardening_fixture.v1",
+  "case_id": "errors/oversize",
+  "as_of": "2026-06-06",
+  "description": "Runtime test materializes repo/docs/too-large.md above the fixture input byte limit.",
+  "inputs": {
+    "repo_root": "repo",
+    "files": [
+      {
+        "path": "repo/docs/too-large.md",
+        "limit_bytes": 262144,
+        "expected_observed_bytes": 262145
+      }
+    ]
+  },
+  "expected": {
+    "exit_code": 1,
+    "errors": [
+      {
+        "code": "artifact_too_large",
+        "source_path": "repo/docs/too-large.md",
+        "required": true,
+        "redacted": false
+      }
+    ]
+  }
+}

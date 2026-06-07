@@ -1,0 +1,25 @@
+{
+  "fixture_version": "harness_gardening_fixture.v1",
+  "case_id": "errors/unsafe-paths",
+  "as_of": "2026-06-06",
+  "description": "Fixture-declared paths escape the case root and must fail before content read.",
+  "inputs": {
+    "repo_root": "repo",
+    "unsafe_paths": [
+      "/absolute/escape.md",
+      "../outside.md",
+      "..\\outside.md",
+      "repo/docs/link-outside"
+    ]
+  },
+  "expected": {
+    "exit_code": 1,
+    "errors": [
+      {
+        "code": "fixture_unsafe_path",
+        "required": true,
+        "redacted": false
+      }
+    ]
+  }
+}

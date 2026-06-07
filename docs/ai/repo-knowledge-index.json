@@ -12,7 +12,7 @@
         "trigger": "when setup, verification, or local index-refresh instructions change"
       },
       "last_verified": "2026-06-06",
-      "related_specs": ["SPEC-012A", "SPEC-010B"],
+      "related_specs": ["SPEC-012A", "SPEC-010B", "SPEC-012B"],
       "verification_commands": ["pnpm knowledge:index:smoke"],
       "required": true,
       "repo_owned": true,
@@ -42,6 +42,18 @@
           "description": "SpecKit workflow ledger directory"
         },
         {
+          "target": "docs/ai/specs/.process/SPEC-012B-workflow.md",
+          "required": true,
+          "repo_owned": true,
+          "description": "Active SPEC-012B workflow ledger"
+        },
+        {
+          "target": "specs/012b-harness-gardening-guards/",
+          "required": true,
+          "repo_owned": true,
+          "description": "Generated SPEC-012B spec, plan, contracts, quickstart, and checklists"
+        },
+        {
           "target": "docs/qa/pilot-smoke-checklist.md",
           "required": true,
           "repo_owned": true,
@@ -64,8 +76,8 @@
         "cadence": "per PR touching indexed paths",
         "trigger": "when a required source-of-truth path, owner, or verification command changes"
       },
-      "last_verified": "2026-05-23",
-      "related_specs": ["SPEC-012A"],
+      "last_verified": "2026-06-06",
+      "related_specs": ["SPEC-012A", "SPEC-012B"],
       "verification_commands": ["pnpm knowledge:index:check"],
       "required": false,
       "repo_owned": true
@@ -125,8 +137,53 @@
         "trigger": "when setup, autopilot, implementation, or closeout changes workflow artifacts"
       },
       "last_verified": "2026-06-06",
-      "related_specs": ["SPEC-012A", "SPEC-009F", "SPEC-010B", "SPEC-013A1", "SPEC-013B", "SPEC-014B", "SPEC-014C"],
+      "related_specs": ["SPEC-012A", "SPEC-009F", "SPEC-010B", "SPEC-012B", "SPEC-013A1", "SPEC-013B", "SPEC-014B", "SPEC-014C"],
       "verification_commands": ["Manual check: no unresolved clarification, checklist gap, CRITICAL, or HIGH markers in active spec artifacts"],
+      "required": true,
+      "repo_owned": true
+    },
+    {
+      "path": "docs/ai/specs/.process/SPEC-012B-design-concept.md",
+      "kind": "durable-intent",
+      "purpose": "Setup Grill Me design concept for SPEC-012B harness-gardening drift guards, including goals, non-goals, Q&A decisions, and open questions.",
+      "owner": "SpecKit operators",
+      "freshness": {
+        "cadence": "per SPEC-012B setup or scope revision",
+        "trigger": "when drift taxonomy, recommendation boundary, source-of-truth, external-context, or cleanup scope decisions change"
+      },
+      "last_verified": "2026-06-06",
+      "related_specs": ["SPEC-012B"],
+      "verification_commands": ["Manual check: design concept contains Goals, Non-goals, Design Tree, Open Questions, and Recommended Next Step"],
+      "required": true,
+      "repo_owned": true
+    },
+    {
+      "path": "docs/ai/specs/.process/SPEC-012B-workflow.md",
+      "kind": "execution-ledger",
+      "purpose": "Active SPEC-012B workflow ledger for harness-gardening drift guards, phase gates, checklist results, scope boundaries, and external-context evidence.",
+      "owner": "SpecKit operators",
+      "freshness": {
+        "cadence": "per SPEC-012B phase transition",
+        "trigger": "when checklist status, tasks, analysis, implementation evidence, PR status, or closeout state changes"
+      },
+      "last_verified": "2026-06-06",
+      "related_specs": ["SPEC-012B"],
+      "verification_commands": ["Manual check: docs-integrity checklist has zero [Gap] markers and workflow Phase 4 records remediation evidence"],
+      "required": true,
+      "repo_owned": true
+    },
+    {
+      "path": "specs/012b-harness-gardening-guards/",
+      "kind": "execution-ledger",
+      "purpose": "Generated SPEC-012B spec, plan, research, data model, quickstart, report contract, and checklists for harness-gardening drift guard work.",
+      "owner": "SpecKit operators",
+      "freshness": {
+        "cadence": "per SPEC-012B artifact or checklist change",
+        "trigger": "when generated requirements, plan, contracts, quickstart, checklist status, or report paths change"
+      },
+      "last_verified": "2026-06-06",
+      "related_specs": ["SPEC-012B"],
+      "verification_commands": ["Manual check: spec, plan, research, data-model, quickstart, contract, and checklists agree on offline repo-artifact-only guard scope"],
       "required": true,
       "repo_owned": true
     },

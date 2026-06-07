@@ -1,0 +1,24 @@
+{
+  "fixture_version": "harness_gardening_fixture.v1",
+  "case_id": "warning/freshness/status-age-only",
+  "as_of": "2026-06-06",
+  "description": "Status pointer is older than freshness threshold but has no contradictory hard drift.",
+  "inputs": {
+    "repo_root": "repo",
+    "freshness": {
+      "kind": "status-pointer",
+      "last_verified": "2026-06-01"
+    }
+  },
+  "expected": {
+    "exit_code": 0,
+    "findings": [
+      {
+        "drift_class": "stale_workflow_claim",
+        "source_path": "docs/ai/specs/.process/SPEC-012B-workflow.md",
+        "anchor": "last_verified",
+        "severity": "warning"
+      }
+    ]
+  }
+}

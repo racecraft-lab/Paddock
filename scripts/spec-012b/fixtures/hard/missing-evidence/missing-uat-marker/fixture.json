@@ -1,0 +1,49 @@
+{
+  "fixture_version": "harness_gardening_fixture.v1",
+  "case_id": "hard/missing-evidence/missing-uat-marker",
+  "as_of": "2026-06-06",
+  "description": "Complete workflow row lacks the required UAT run id closeout marker.",
+  "inputs": {
+    "repo_root": "repo",
+    "evidence_sources": [
+      "docs/ai/specs/.process/SPEC-010B-workflow.md"
+    ],
+    "required_markers": [
+      "uat_run_id",
+      "merge_commit"
+    ]
+  },
+  "expected": {
+    "exit_code": 1,
+    "summary": {
+      "finding_count": 1,
+      "recommendation_count": 1,
+      "error_count": 0,
+      "warning_count": 0,
+      "hard_failure_count": 1
+    },
+    "findings": [
+      {
+        "drift_class": "missing_required_evidence",
+        "source_path": "docs/ai/specs/.process/SPEC-010B-workflow.md",
+        "anchor": "Closeout Evidence",
+        "owner": {
+          "name": "Docs Integrity",
+          "owner_key": "docs-integrity",
+          "owner_source": "spec_family",
+          "confidence": "medium"
+        },
+        "severity": "error",
+        "evidence": [
+          {
+            "source_path": "docs/ai/specs/.process/SPEC-010B-workflow.md",
+            "anchor": "Closeout Evidence",
+            "summary": "Complete status is missing UAT run id"
+          }
+        ],
+        "warnings": [],
+        "remediation_summary": "Add the exact UAT run id closeout marker or downgrade the status claim."
+      }
+    ]
+  }
+}

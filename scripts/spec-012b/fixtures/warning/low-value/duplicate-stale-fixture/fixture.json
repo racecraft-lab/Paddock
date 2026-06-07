@@ -1,0 +1,24 @@
+{
+  "fixture_version": "harness_gardening_fixture.v1",
+  "case_id": "warning/low-value/duplicate-stale-fixture",
+  "as_of": "2026-06-06",
+  "description": "Two stale-status fixtures carry the same drift tuple and should warn as duplicate low-value coverage.",
+  "inputs": {
+    "repo_root": "repo",
+    "duplicate_stale_fixtures": [
+      "scripts/spec-012b/fixtures/hard/stale-status/copy-a/fixture.json",
+      "scripts/spec-012b/fixtures/hard/stale-status/copy-b/fixture.json"
+    ]
+  },
+  "expected": {
+    "exit_code": 0,
+    "findings": [
+      {
+        "drift_class": "deterministic_low_value_test_pattern",
+        "source_path": "scripts/spec-012b/fixtures/hard/stale-status/copy-b/fixture.json",
+        "anchor": "duplicate-stale-fixture",
+        "severity": "warning"
+      }
+    ]
+  }
+}

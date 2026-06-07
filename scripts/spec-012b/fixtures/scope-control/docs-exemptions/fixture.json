@@ -1,0 +1,21 @@
+{
+  "schema_version": "scope_control_fixture.v1",
+  "case_id": "docs-exemptions",
+  "changed_files": [
+    "specs/012b-harness-gardening-guards/quickstart.md",
+    "scripts/spec-012b/fixtures/scope-control/forbidden-tokens/fixture.json"
+  ],
+  "added_lines": [
+    {
+      "path": "specs/012b-harness-gardening-guards/quickstart.md",
+      "line": "Forbidden examples include createTask, dispatchTask, claimTask, launchHarness, enablePullRequestAutoMerge, and --apply-cleanup."
+    },
+    {
+      "path": "scripts/spec-012b/fixtures/scope-control/forbidden-tokens/fixture.json",
+      "line": "Fixture-only examples may include octokit.rest.issues.create and fetch('https://openai.com/index/harness-engineering/')."
+    }
+  ],
+  "expected": {
+    "failure_count": 0
+  }
+}

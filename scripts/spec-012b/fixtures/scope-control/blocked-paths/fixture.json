@@ -1,0 +1,14 @@
+{
+  "schema_version": "scope_control_fixture.v1",
+  "case_id": "blocked-paths",
+  "changed_files": [
+    "src/app/api/tasks/route.ts",
+    "docs/migrations/rollback-M99.sql",
+    "migrations/099_runtime_change.sql",
+    "specs/999-old-complete/spec.md"
+  ],
+  "added_lines": [],
+  "expected": {
+    "failure_count": 4
+  }
+}

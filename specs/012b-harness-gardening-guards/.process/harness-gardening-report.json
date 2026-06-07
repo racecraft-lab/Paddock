@@ -1,0 +1,50 @@
+{
+  "schema_version": "harness_gardening_report.v1",
+  "as_of": "1970-01-01",
+  "detector_statuses": [
+    {
+      "detector": "stale_claims",
+      "status": "passed",
+      "message": "Scanned 2 active SPEC-012B status pointer artifact(s)."
+    },
+    {
+      "detector": "missing_required_evidence",
+      "status": "passed",
+      "message": "No default closeout marker requirements are active before merge."
+    },
+    {
+      "detector": "stale_feature_flag_status",
+      "status": "passed",
+      "message": "Scanned the checked-in feature flag registry as a required repo artifact."
+    },
+    {
+      "detector": "deterministic_low_value_test_pattern",
+      "status": "passed",
+      "message": "Scanned 11 SPEC-012B guard test file(s)."
+    },
+    {
+      "detector": "strict_scope_drift",
+      "status": "passed",
+      "message": "Scanned the SPEC-012B plan as the default strict-scope artifact."
+    },
+    {
+      "detector": "source_of_truth_links",
+      "status": "passed",
+      "message": "Scanned 8 repo-owned source link(s) from docs/ai/repo-knowledge-index.json."
+    },
+    {
+      "detector": "archive_cleanup_eligibility",
+      "status": "passed",
+      "message": "No default archive cleanup candidate is active; cleanup remains recommendation-only."
+    }
+  ],
+  "summary": {
+    "finding_count": 0,
+    "recommendation_count": 0,
+    "error_count": 0,
+    "warning_count": 0,
+    "hard_failure_count": 0
+  },
+  "findings": [],
+  "errors": []
+}

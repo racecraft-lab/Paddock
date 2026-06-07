@@ -84,6 +84,9 @@ Path alias: `@/*` maps to `./src/*`
 - Current SpecKit ledgers and status pointers: `docs/ai/specs/`,
   `docs/ai/specs/SPEC-012A-workflow.md`, and
   `docs/ai/specs/autopilot-state.json`.
+- Current SPEC-012B workflow and generated artifacts:
+  `docs/ai/specs/.process/SPEC-012B-workflow.md` and
+  `specs/012b-harness-gardening-guards/`.
 - QA and recovery evidence: `docs/qa/pilot-smoke-checklist.md` and
   `docs/runbook/migration-rollback.md`.
 - Workflow contract source: `docs/ai/workflows/paddock/workflow-contract.yaml`.
@@ -170,6 +173,8 @@ OpenAPI spec: `openapi.json`. Interactive docs at `/docs` when running.
 - SQLite through existing `better-sqlite3` helpers; no migration and no rollback SQL planned (009e-pilot-evidence-surfaces)
 - TypeScript 5.7 strict for the repository baseline; SPEC-012A-owned guard scripts use Node.js >=22 `.mjs` with built-in modules only + Next.js 16 App Router, React 19, better-sqlite3, Zustand, Tailwind CSS 3 remain unchanged; no new runtime dependency and no new parser dependency (012a-repo-knowledge-index)
 - Checked-in JSON, JSON Schema, Markdown docs, and fixture files under `docs/ai/`, root `AGENTS.md`, `scripts/spec-012a/`, and `specs/012a-repo-knowledge-index/` (012a-repo-knowledge-index)
+- Node.js >=22 `.mjs` process tooling with built-in modules where practical + existing pnpm, Vitest, guardrails, and repository baseline; no new runtime dependency planned (012b-harness-gardening-guards)
+- Checked-in JSON/Markdown fixtures, JSON schema contracts, and deterministic process reports under `scripts/spec-012b/` and `specs/012b-harness-gardening-guards/`; no SQLite migration or runtime persistence (012b-harness-gardening-guards)
 - TypeScript 5.7 strict in a Next.js 16 App Router / React 19 application on Node >=22 + Existing Next.js, React, Zustand where already used, `better-sqlite3`, Tailwind CSS 3, Vitest, Playwright; no new runtime dependency (009f-production-triage-routing)
 - Existing SQLite tables through `better-sqlite3`: `tasks`, `workflow_templates`, `task_dispositions`, `task_artifacts`, `activities`, `projects`, `project_agent_assignments`, and `agents`; no migration (009f-production-triage-routing)
 - TypeScript 5.7 strict on Node.js >=22 in the existing Next.js 16 / React 19 repository baseline + Existing Next.js/React/Zustand stack, `better-sqlite3`, direct `yaml@2.8.3`, existing workflow-contract tooling, existing feature-flag registry; no new runtime dependency (010a-generic-product-line-seeder)
@@ -219,5 +224,5 @@ OpenAPI spec: `openapi.json`. Interactive docs at `/docs` when running.
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read
-`specs/010b-product-line-b-smoke/plan.md`.
+`specs/012b-harness-gardening-guards/plan.md`.
 <!-- SPECKIT END -->

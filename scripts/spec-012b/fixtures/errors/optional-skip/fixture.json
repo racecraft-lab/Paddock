@@ -1,0 +1,25 @@
+{
+  "fixture_version": "harness_gardening_fixture.v1",
+  "case_id": "errors/optional-skip",
+  "as_of": "2026-06-06",
+  "description": "Optional detector input is missing and should skip without hard failure.",
+  "inputs": {
+    "repo_root": "repo",
+    "optional_inputs": [
+      "docs/optional-context.md"
+    ]
+  },
+  "expected": {
+    "exit_code": 0,
+    "detector_statuses": [
+      {
+        "detector": "optional_external_context",
+        "status": "skipped_detector",
+        "code": "repo_artifact_missing"
+      }
+    ],
+    "summary": {
+      "hard_failure_count": 0
+    }
+  }
+}

@@ -1,0 +1,3 @@
+# Wiki
+
+See [[Future Note]].

@@ -1,0 +1,45 @@
+{
+  "fixture_version": "harness_gardening_fixture.v1",
+  "case_id": "hard/feature-flag/absent-required-flag",
+  "as_of": "2026-06-06",
+  "description": "Spec requires a feature flag that is absent from FEATURE_FLAG_REGISTRY.",
+  "inputs": {
+    "repo_root": "repo",
+    "required_feature_flags": [
+      "FEATURE_SPEC_012B_GARDENING"
+    ]
+  },
+  "expected": {
+    "exit_code": 1,
+    "summary": {
+      "finding_count": 1,
+      "recommendation_count": 1,
+      "error_count": 0,
+      "warning_count": 0,
+      "hard_failure_count": 1
+    },
+    "findings": [
+      {
+        "drift_class": "stale_feature_flag_status",
+        "source_path": "docs/feature-flags.md",
+        "anchor": "FEATURE_SPEC_012B_GARDENING",
+        "owner": {
+          "name": "Feature Flags",
+          "owner_key": "feature-flags",
+          "owner_source": "roadmap_path_class",
+          "confidence": "low"
+        },
+        "severity": "error",
+        "evidence": [
+          {
+            "source_path": "src/lib/feature-flags.ts",
+            "anchor": "FEATURE_FLAG_REGISTRY",
+            "summary": "Required flag FEATURE_SPEC_012B_GARDENING is absent from registry"
+          }
+        ],
+        "warnings": [],
+        "remediation_summary": "Add the missing disabled-by-default registry entry or remove the documented requirement."
+      }
+    ]
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "fixture_version": "harness_gardening_fixture.v1",
+  "case_id": "warning/source-links/optional-missing-link",
+  "as_of": "2026-06-06",
+  "description": "Optional missing repo link is warning-only.",
+  "inputs": {
+    "repo_root": "repo",
+    "source_links": [
+      {
+        "source_path": "docs/source-link-policy.md",
+        "anchor": "Optional Links",
+        "target": "docs/optional/missing.md",
+        "required": false,
+        "repo_owned": true,
+        "expected_classification": "optional_missing_repo_owned"
+      }
+    ]
+  },
+  "expected": {
+    "exit_code": 0,
+    "findings": [
+      {
+        "drift_class": "broken_source_of_truth_link",
+        "source_path": "docs/source-link-policy.md",
+        "anchor": "Optional Links",
+        "severity": "warning"
+      }
+    ]
+  }
+}

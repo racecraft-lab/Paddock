@@ -1,0 +1,14 @@
+{
+  "fixture_version": "harness_gardening_fixture.v1",
+  "case_id": "hard/stale-status/duplicate-b",
+  "expected": {
+    "findings": [
+      {
+        "drift_class": "stale_workflow_claim",
+        "source_path": "docs/ai/specs/.process/SPEC-010A-workflow.md",
+        "anchor": "Phase 6 Closeout",
+        "severity": "error"
+      }
+    ]
+  }
+}

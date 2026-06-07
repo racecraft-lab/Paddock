@@ -264,6 +264,11 @@ const guardrailSuites = [
     label: 'Repo knowledge index guard',
     run: () => runNodeScriptGuardrail('scripts/spec-012a/verify-repo-knowledge-index.mjs'),
   },
+  {
+    key: 'harness-gardening',
+    label: 'SPEC-012B harness gardening guard',
+    run: () => runNodeScriptGuardrail('scripts/spec-012b/harness-gardening-check.mjs'),
+  },
 ]
 
 function main() {

@@ -1,0 +1,95 @@
+{
+  "fixture_version": "harness_gardening_fixture.v1",
+  "case_id": "dedupe/repeated-drift",
+  "as_of": "2026-06-06",
+  "description": "Duplicate raw findings collapse by drift_class, source_path, anchor, and owner_key.",
+  "inputs": {
+    "repo_root": "repo",
+    "raw_findings": [
+      {
+        "drift_class": "missing_required_evidence",
+        "source_path": "docs/ai/specs/SPEC-012B-workflow.md",
+        "anchor": "Closeout Evidence",
+        "owner": {
+          "name": "Docs Integrity",
+          "owner_key": "docs-integrity",
+          "owner_source": "spec_family",
+          "confidence": "medium"
+        },
+        "severity": "warning",
+        "evidence": [
+          {
+            "source_path": "docs/ai/specs/SPEC-012B-workflow.md",
+            "anchor": "marker:b",
+            "summary": "missing merge_commit marker"
+          }
+        ],
+        "warnings": [
+          {
+            "code": "owner_display_variant",
+            "message": "owner display name differs"
+          }
+        ]
+      },
+      {
+        "drift_class": "missing_required_evidence",
+        "source_path": "docs/ai/specs/SPEC-012B-workflow.md",
+        "anchor": "Closeout Evidence",
+        "owner": {
+          "name": "docs-integrity",
+          "owner_key": "docs-integrity",
+          "owner_source": "spec_family",
+          "confidence": "medium"
+        },
+        "severity": "error",
+        "evidence": [
+          {
+            "source_path": "docs/ai/specs/SPEC-012B-workflow.md",
+            "anchor": "marker:a",
+            "summary": "missing pr marker"
+          }
+        ],
+        "warnings": []
+      },
+      {
+        "drift_class": "missing_required_evidence",
+        "source_path": "docs/ai/specs/SPEC-012B-workflow.md",
+        "anchor": "Closeout Evidence",
+        "owner": {
+          "name": "Docs Integrity",
+          "owner_key": "docs-integrity",
+          "owner_source": "spec_family",
+          "confidence": "medium"
+        },
+        "severity": "warning",
+        "evidence": [
+          {
+            "source_path": "docs/ai/specs/SPEC-012B-workflow.md",
+            "anchor": "marker:a",
+            "summary": "missing pr marker"
+          }
+        ],
+        "warnings": [
+          {
+            "code": "duplicate_fixture",
+            "message": "duplicate raw finding merged"
+          }
+        ]
+      }
+    ]
+  },
+  "expected": {
+    "exit_code": 1,
+    "findings": [
+      {
+        "drift_class": "missing_required_evidence",
+        "source_path": "docs/ai/specs/SPEC-012B-workflow.md",
+        "anchor": "Closeout Evidence",
+        "owner_key": "docs-integrity",
+        "severity": "error",
+        "evidence_count": 2,
+        "warning_count": 2
+      }
+    ]
+  }
+}

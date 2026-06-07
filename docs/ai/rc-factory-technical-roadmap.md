@@ -213,7 +213,7 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 | SPEC-010B | 9B | Product Line B Onboarding Smoke | product-line-b-smoke | Complete | P2 | SPEC-009C4, SPEC-010A | SPEC-012B | Phase 9B |
 | SPEC-011 | 7.5 | CrabTrap Honeypot Adapter | crabtrap-honeypot | Pending | P2 | SPEC-008 | — | Phase 7.5 |
 | SPEC-012A | 10A | Repo Knowledge Index and AGENTS Map | repo-knowledge-index | Complete | P1 | SPEC-002A, SPEC-009A | SPEC-012B, SPEC-013A | Phase 10A |
-| SPEC-012B | 10B | Harness-Gardening Drift Guards | harness-gardening-guards | Pending | P1 | SPEC-010B, SPEC-012A | Later cleanup specs | Phase 10B |
+| SPEC-012B | 10B | Harness-Gardening Drift Guards | harness-gardening-guards | In Progress | P1 | SPEC-010B, SPEC-012A | Later cleanup specs | Phase 10B |
 | SPEC-013A | 11A | Run-State Persistence Spine | run-state-spine | Complete | P1 | SPEC-009D, SPEC-012A | SPEC-013A1 | Phase 11A |
 | SPEC-013A1 | 11A1 | GitHub Sync Automation and Poller Lifecycle | github-sync-automation | Complete | P1 | SPEC-009D, SPEC-012A, SPEC-013A | SPEC-013B | Phase 11A1 |
 | SPEC-013B | 11B | Claim and Reconciliation Authority | claim-reconciliation | Complete | P1 | SPEC-004, SPEC-006, SPEC-008, SPEC-013A1 | SPEC-013C, SPEC-014A | Phase 11B |
@@ -665,7 +665,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 
 ### SPEC-012B: Harness-Gardening Drift Guards
 
-- **Status:** Pending
+- **Status:** In Progress - scaffolded on branch `012b-harness-gardening-guards`
 - **Priority:** P1
 - **Branch short name:** `harness-gardening-guards`
 - **Dependencies:** SPEC-010B, SPEC-012A
@@ -677,6 +677,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Strict Scope:** guard scripts, cleanup workflow template, docs/checklist updates, and tests over representative stale/fresh fixtures. No runtime product behavior.
 - **Autopilot notes:** This spec converts harness engineering into recurring small Paddock tasks, not periodic broad rewrites. Before Specify or Plan, fetch the current OpenAI Harness Engineering article and Symphony announcement/SPEC into context and record retrieval evidence in the workflow; do not infer the drift taxonomy from training data.
 - **Definition of done:** A guard can create or recommend one narrow Paddock cleanup task for each supported drift class, with evidence and owner metadata attached.
+- **Setup evidence:** Branch/worktree `012b-harness-gardening-guards` was created from `origin/main` on 2026-06-06 after SPEC-010B closeout. Grill Me setup decisions are recorded in `docs/ai/specs/.process/SPEC-012B-design-concept.md`; the autopilot workflow is `docs/ai/specs/.process/SPEC-012B-workflow.md`. Reviewability preset resolution passed after refresh to speckit-pro 2.7.0.
 
 ### SPEC-013A: Run-State Persistence Spine
 
