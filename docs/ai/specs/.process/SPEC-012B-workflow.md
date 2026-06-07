@@ -753,6 +753,8 @@ During implementation:
 | Self-Review | Complete | PR review packet, verify report, review report, cleanup report, and retrospective agree on process/tooling-only scope and no live mutation |
 | UAT Runbook Generation | Complete | `specs/012b-harness-gardening-guards/uat-runbook.md` generated for local fixture/guardrail UAT |
 | PR Body Generation | Complete | `specs/012b-harness-gardening-guards/.process/pr-body.md` generated |
+| PR Creation | Complete | PR #84 opened at https://github.com/racecraft-lab/Paddock/pull/84; initial checks pending |
+| Review Remediation | Complete | `gh pr view 84` returned no comments and no reviews at creation time; review decision is `REVIEW_REQUIRED` |
 | Retrospective | Complete | `specs/012b-harness-gardening-guards/retrospective.md` records 100% task completion, 100% spec adherence, and 0 critical findings |
 
 ---
