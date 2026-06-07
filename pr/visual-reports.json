@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-06-07T05:39:38.149Z",
+  "updatedAt": "2026-06-07T05:49:43.017Z",
   "prs": [
     {
       "prNumber": "84",
@@ -9,14 +9,14 @@
       "indexHref": "https://racecraft-lab.github.io/Paddock/pr/84/",
       "headRef": "012b-harness-gardening-guards",
       "baseRef": "main",
-      "updatedAt": "2026-06-07T05:39:38.149Z",
+      "updatedAt": "2026-06-07T05:49:43.017Z",
       "latest": {
         "playwright": {
-          "runId": "27083821523",
-          "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/27083821523",
-          "latestHref": "https://racecraft-lab.github.io/Paddock/pr/84/playwright/latest/?v=27083821523-attempt-1",
-          "reportHref": "https://racecraft-lab.github.io/Paddock/pr/84/runs/27083821523-attempt-1/playwright/",
-          "updatedAt": "2026-06-07T05:39:38.149Z"
+          "runId": "27083848873",
+          "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/27083848873",
+          "latestHref": "https://racecraft-lab.github.io/Paddock/pr/84/playwright/latest/?v=27083848873-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/Paddock/pr/84/runs/27083848873-attempt-1/playwright/",
+          "updatedAt": "2026-06-07T05:49:43.017Z"
         },
         "storybook": {
           "runId": "27083848849",
