@@ -2,6 +2,33 @@
   "version": 1,
   "reports": [
     {
+      "surface": "storybook",
+      "runId": "27097991528",
+      "runAttempt": "1",
+      "runKey": "27097991528-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/27097991528",
+      "reportKey": "77c6ce44bb10ac89b43ffcaab2b9ea35e7ea2f39",
+      "reportHref": "https://racecraft-lab.github.io/Paddock/storybook/77c6ce44bb10ac89b43ffcaab2b9ea35e7ea2f39/",
+      "latestHref": "https://racecraft-lab.github.io/Paddock/storybook/latest/?v=27097991528-attempt-1",
+      "headSha": "77c6ce44bb10ac89b43ffcaab2b9ea35e7ea2f39",
+      "headRef": "main",
+      "baseRef": "main",
+      "workflowName": "Visual Storybook Snapshots",
+      "workflowFile": "visual-storybook.yml",
+      "surfaceLabel": "Storybook Components",
+      "sourcePullRequest": {
+        "baseRef": "main",
+        "headRef": "012b-harness-gardening-guards",
+        "headSha": "ffd3ef591b64c2924907e35e012687282caafbcf",
+        "indexHref": "https://racecraft-lab.github.io/Paddock/pr/84/",
+        "mergeCommitSha": "",
+        "number": "84",
+        "title": "SPEC-012B Harness-Gardening Drift Guards",
+        "url": "https://github.com/racecraft-lab/Paddock/pull/84"
+      },
+      "createdAt": "2026-06-07T16:20:22.197Z"
+    },
+    {
       "surface": "playwright",
       "runId": "26926226519",
       "runAttempt": "1",
@@ -1281,5 +1308,5 @@
       "createdAt": "2026-05-05T00:17:55.366Z"
     }
   ],
-  "updatedAt": "2026-06-04T02:31:26.842Z"
+  "updatedAt": "2026-06-07T16:20:22.197Z"
 }
