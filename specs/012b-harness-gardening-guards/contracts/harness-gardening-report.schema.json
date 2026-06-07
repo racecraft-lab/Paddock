@@ -2,6 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://racecraft.local/specs/012b/harness-gardening-report.schema.json",
   "title": "Harness Gardening Report",
+  "$comment": "This schema validates report shape, constants, enums, and path/message bounds. Cross-field invariants such as summary counts, recommendation-parent equality, stable sorting, dedupe grouping, and stable ID tuple hashing must be verified by fixture-backed contract tests or generator assertions.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -72,6 +73,7 @@
     },
     "summary": {
       "type": "object",
+      "$comment": "Counts must equal emitted report content and derived totals; this schema only validates nonnegative integer shape.",
       "additionalProperties": false,
       "required": [
         "finding_count",
@@ -149,6 +151,7 @@
     },
     "recommendation": {
       "type": "object",
+      "$comment": "recommendation_id must equal stable_finding_id, and copied fields must match the parent finding; this parent-child equality is enforced outside this schema.",
       "additionalProperties": false,
       "required": [
         "schema_version",
@@ -429,6 +432,8 @@
     },
     "evidence_list": {
       "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
       "items": {
         "type": "object",
         "additionalProperties": false,
@@ -452,6 +457,7 @@
     },
     "warning_list": {
       "type": "array",
+      "uniqueItems": true,
       "items": {
         "type": "object",
         "additionalProperties": false,

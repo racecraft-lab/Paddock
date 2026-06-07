@@ -18,7 +18,7 @@ Add a focused offline harness-gardening guard that reads checked-in repo artifac
 
 **Storage**: Checked-in JSON/Markdown fixture and contract artifacts plus deterministic local/CI report outputs. No SQLite migration, runtime persistence, Paddock row, GitHub issue, scheduler state, or durable dedupe ledger.
 
-**Testing**: Fixture-backed Vitest or Node test coverage, package-script checks, `pnpm guardrails -- --suite harness-gardening`, `pnpm knowledge:index:check`, `pnpm guardrails -- --suite repo-knowledge-index`, and `git diff --check`.
+**Testing**: Fixture-backed Vitest or Node test coverage, package-script checks, docs-integrity artifact review, `pnpm spec:012b:harness-gardening -- --fixtures scripts/spec-012b/fixtures --as-of 2026-06-06`, `pnpm spec:012b:harness-gardening -- --json`, `pnpm guardrails -- --suite harness-gardening`, full `pnpm guardrails`, `pnpm knowledge:index:check`, `pnpm guardrails -- --suite repo-knowledge-index`, and `git diff --check`.
 
 **Target Platform**: Local developer and CI execution on Node.js >=22 through pnpm; no browser, service, database, HAL, GitHub, or deployed Paddock dependency.
 
@@ -27,6 +27,12 @@ Add a focused offline harness-gardening guard that reads checked-in repo artifac
 **Performance Goals**: Deterministic bounded scans over the fixture corpus and explicit repo-owned artifacts; no broad semantic scoring, live network fetch, hidden wall-clock report fields, or unbounded repository crawl in the default guard path.
 
 **Constraints**: Recommendation-only default behavior; repo-artifact-only truth; explicit `--as-of YYYY-MM-DD` for freshness; sanitized closed error enum; stable IDs from `drift_class + source_path + anchor + owner_key`; no runtime surfaces or live mutation; no automatic `specs/**` cleanup.
+
+**Error Boundary Constants**: Guarded repo artifacts are limited to `1,048,576` bytes per file. Fixture input files are limited to `262,144` bytes per file. Oversized inputs use `artifact_too_large` with the required-vs-optional CI behavior defined in the spec.
+
+**Fixture Path Boundary**: Fixture-declared paths normalize and resolve under the fixture case root before reads. Simulated repo reads must stay under that case's `repo/` mini-tree. Containment escapes use `fixture_unsafe_path` and hard-fail before file content is read.
+
+**Redaction Truth Semantics**: `redacted` is `true` when forbidden or untrusted content was removed, replaced, or withheld; `false` only for safe template diagnostics with no redaction.
 
 **Scale/Scope**: V1 supports stale PRD/roadmap/workflow claims, missing required evidence, stale feature-flag status, deterministic low-value test patterns, strict-scope drift, broken source-of-truth links, and warning-only archive cleanup eligibility.
 
@@ -73,11 +79,20 @@ specs/012b-harness-gardening-guards/
 ├── research.md
 ├── data-model.md
 ├── quickstart.md
+├── checklists/
+│   └── docs-integrity.md
 ├── contracts/
 │   └── harness-gardening-report.schema.json
 └── .process/
     ├── harness-gardening-report.json
     └── harness-gardening-report.md
+
+docs/ai/specs/.process/
+├── SPEC-012B-design-concept.md
+└── SPEC-012B-workflow.md
+
+docs/ai/repo-knowledge-index.json
+AGENTS.md
 ```
 
 ### Source Code (repository root)
@@ -86,6 +101,7 @@ specs/012b-harness-gardening-guards/
 scripts/spec-012b/
 ├── harness-gardening-check.mjs
 ├── harness-gardening-report.mjs
+├── check-scope-control.mjs
 ├── fixtures/
 │   ├── fresh/
 │   ├── hard/
@@ -103,6 +119,18 @@ pnpm-lock.yaml
 ```
 
 **Structure Decision**: Use process tooling under `scripts/spec-012b/` plus contract and process artifacts under `specs/012b-harness-gardening-guards/`. Keep runtime `src/**`, migrations, UI, API routes, scheduler, dispatch, sandbox, and harness adapter files out of scope.
+Docs-discoverability updates are part of this process/tooling surface: the repo knowledge index, concise `AGENTS.md` map, workflow checklist status, and docs-integrity checklist must point at SPEC-012B artifacts without claiming package commands exist before implementation adds them.
+
+### Guardrail Wiring Ownership
+
+- `package.json` owns the future `spec:012b:harness-gardening` package script, following the existing `pnpm run verify:node && node ...` script pattern.
+- `scripts/spec-012b/harness-gardening-check.mjs` owns the focused command, argument parsing, fixture mode, `--json`, `--as-of`, local report output, and exit-code policy.
+- `scripts/spec-012b/check-scope-control.mjs` owns SPEC-012B static scope-control verification: changed-file allowlist and blocklist checks, added-line forbidden-token scanning, `--self-test` fixtures, current-diff mode, docs/process prose exemptions, and changed-file/scanned-entry count reporting.
+- `scripts/spec-012b/fixtures/**` owns SPEC-012B fixture inputs.
+- `specs/012b-harness-gardening-guards/.process/**` owns default generated JSON/Markdown reports.
+- `scripts/check-guardrails.mjs` owns the `harness-gardening` suite registration, selected `--suite` behavior, and known-suite diagnostics.
+- Existing guardrail suite keys `task-pipeline`, `spec-evidence-screenshots`, and `repo-knowledge-index` must remain unchanged.
+- `scripts/spec-012a/verify-repo-knowledge-index.mjs` remains SPEC-012A-owned and must not be edited for SPEC-012B except as a compatibility verification target.
 
 ## Phase 0 Research
 
@@ -129,6 +157,10 @@ Key contract decisions:
 - Report envelope schema version: `harness_gardening_report.v1`.
 - Recommendation item schema version: `harness_gardening_recommendation.v1`.
 - Error enum schema version: `harness_gardening_error_code.v1`.
+- Stable finding identity uses normalized `drift_class + source_path + anchor + owner_key`; display owner metadata is retained for routing and review but does not replace `owner_key` in the hash tuple.
+- Source-of-truth link checks classify required repo-owned links separately from optional, external, and informational links before assigning hard-failure or warning severity.
+- Source-link and evidence recommendations name the repo-relative source path, anchor, affected link target or evidence marker, owner metadata, and one narrow remediation edit.
+- JSON Schema validates shape, constants, enums, and path/message bounds; fixture-backed contract tests or generator assertions verify summary counts, recommendation-parent equality, stable sorting, dedupe grouping, severity aggregation, and `recommendation_id == stable_finding_id`.
 - JSON output must be deterministic for a fixed input and `--as-of` value.
 - Markdown output is a human-readable projection of the JSON report.
 

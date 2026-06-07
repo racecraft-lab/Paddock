@@ -38,7 +38,7 @@ Re-read it before each phase if you need to disambiguate a prompt. The Specify a
 | Specify | `$speckit-specify` | Complete | Generated `spec.md` and requirements checklist; G1 passed with 0 clarification markers |
 | Clarify | `$speckit-clarify` | Complete | Five sessions resolved schema, taxonomy, thresholds, ownership, fixtures, dedupe, scope, cleanup, and guardrails boundaries; G2 passed |
 | Plan | `$speckit-plan` | Complete | Generated plan, research, data model, quickstart, and report contract schema; G3 passed |
-| Checklist | `$speckit-checklist` | Pending | Suggested domains: data-integrity, docs-integrity, guardrail-integration, error-handling, testing-strategy, scope-control |
+| Checklist | `$speckit-checklist` | Complete | Completed six domains; all gaps remediated with final marker count 0 |
 | Tasks | `$speckit-tasks` | Pending | Generate TDD-first tasks for fixture RED tests, schemas, guard implementation, package scripts, docs, and verification |
 | Analyze | `$speckit-analyze` | Pending | Check drift between roadmap, Design Concept, spec, plan, tasks, and external-context gates |
 | Implement | `$speckit-implement` | Pending | Execute only after G1-G6 pass and scope ownership is still process/tooling only |
@@ -194,6 +194,7 @@ Forbidden:
 - Q5: Each finding emits one canonical Paddock cleanup-task payload, plus optional GitHub issue export fields.
 - Q6: Sources of truth are checked-in repo artifacts only.
 - Q7: Dedupe uses stable IDs from `drift_class + source_path + anchor + owner`.
+- Identity terminology note: setup Q7 used `owner`; Clarify Session 4, plan, research, and data model refine stable identity to normalized `owner_key` while retaining full owner metadata in the emitted finding and recommendation.
 - Q8: Fresh external-context retrieval is a workflow gate, but the guard remains repo-artifact-only.
 - Q9: Fixture corpus uses small synthetic docs/JSON plus reduced historical drift examples.
 - Q10: Strict scope is scripts, fixtures, schema/template, docs/checklists, package wiring, and tests.
@@ -366,6 +367,7 @@ Focus on scope boundaries:
 | Clarify Session 1 Q3 GitHub issue export fields | 1 | security, domain | Export-only create-issue draft accepted with fixed `export_only: true` and `live_mutation: false`; `repository` is an export target, optional GitHub fields are proposed metadata only, and v1 performs no GitHub/Paddock mutation | codebase-analyst, spec-context-analyst, domain-researcher |
 | Clarify Session 2 Q5 sanitized diagnostics | 1 | security | Closed `harness_gardening_error_code.v1` enum accepted; required inputs, fixture expectation mismatches, and unsafe fixture paths fail CI; optional detector inputs warn with `detector_status: "skipped_detector"` and reports omit raw contents, absolute paths, stack traces, env values, tokens, and secrets | codebase-analyst, spec-context-analyst, domain-researcher |
 | Clarify Session 3 Q1 freshness thresholds | 1 | spec, codebase | Explicit `freshness.stale_after_days` overrides defaults; absent thresholds use 2-day status pointers, 7-day active workflow evidence, 30-day execution/QA/contract/operator/rollback docs, and 45-day durable intent; `--as-of` required for deterministic tests and freshness-only staleness warns only | codebase-analyst, spec-context-analyst |
+| Checklist scope-control CHK009 static scope guard | 1 | security, codebase | Applied static changed-file allowlist/blocklist and forbidden live-mutation/runtime added-line scan requirements accepted; no further artifact edits required beyond marking Checklist complete and listing `check-scope-control.mjs` in the planned source tree | codebase-analyst, spec-context-analyst, domain-researcher |
 
 ### G2 Validation
 
@@ -451,12 +453,59 @@ Focus on scope boundaries:
 
 | Domain | Status | Findings | Notes |
 |--------|--------|----------|-------|
-| data-integrity | Pending | Pending | Finding IDs, dedupe, severity, and owner metadata |
-| docs-integrity | Pending | Pending | PRD/roadmap/workflow/source-link/evidence drift |
-| guardrail-integration | Pending | Pending | Package scripts, `pnpm guardrails`, and `knowledge:index` compatibility |
-| error-handling | Pending | Pending | Malformed repo artifacts, missing metadata, unknown owner, and warning/failure handling |
-| testing-strategy | Pending | Pending | Fixture corpus, historical patterns, and low-value test determinism |
-| scope-control | Pending | Pending | No runtime/live mutation and archive cleanup boundary |
+| data-integrity | Complete | 9 gaps remediated; final marker count 0 | Finding IDs, dedupe, severity, report schema boundaries, owner metadata, sanitized errors, and deterministic sorting |
+| docs-integrity | Complete | 7 gaps remediated; final marker count 0 | PRD/roadmap/workflow/source-link/evidence drift, external-context evidence, source-of-truth link rules, exact recommendation evidence, and repo-map discoverability |
+| guardrail-integration | Complete | 6 gaps remediated; final marker count 0 | Canonical command, command modes, default/selected guardrails behavior, known-suite diagnostics, SPEC-012A compatibility, and exact owner files documented |
+| error-handling | Complete | 3 gaps remediated; final marker count 0 | Artifact/fixture size limits, redaction true/false semantics, fixture containment-before-read, and required-vs-optional error behavior |
+| testing-strategy | Complete | 0 gaps; final marker count 0 | Fixture corpus, historical patterns, low-value test determinism, RED sequencing, schema validation, stable IDs, sort/dedupe tests, and command verification |
+| scope-control | Complete | 1 gap remediated; final marker count 0 | Static changed-file scope guard, forbidden live-mutation/runtime token matrix, self-test/current-diff evidence, and archive cleanup boundary |
+
+### Docs-Integrity Results
+
+- Generated `specs/012b-harness-gardening-guards/checklists/docs-integrity.md`.
+- Remediated source-of-truth link classification, exact docs/evidence recommendation fields, SPEC-012B repo-map discoverability, docs-integrity verification, and workflow completion evidence.
+- Modified docs/spec/index/map artifacts only: `spec.md`, `plan.md`, `quickstart.md`, `docs/ai/repo-knowledge-index.json`, `AGENTS.md`, this workflow ledger, and the docs-integrity checklist.
+- No runtime source behavior, migration, UI/API endpoint, scheduler/dispatch behavior, claim/retry behavior, sandbox behavior, harness adapter behavior, live GitHub write, live Paddock task creation, auto-merge behavior, live-state validation, or automatic `specs/**` cleanup was added.
+- Final marker verification: 0 `[Gap]` markers by deterministic grep fallback after the installed `count-markers.sh gaps` helper exited on its known jq `details` assembly edge.
+
+### Guardrail-Integration Results
+
+- Generated `specs/012b-harness-gardening-guards/checklists/guardrail-integration.md`.
+- Remediated canonical package command naming, focused command modes, full/default and selected guardrails behavior, known-suite diagnostics, standalone SPEC-012A `knowledge:index` compatibility, and exact guardrail wiring owner files.
+- Modified spec/process artifacts only: `spec.md`, `plan.md`, `quickstart.md`, this workflow ledger, and the guardrail-integration checklist.
+- No runtime source behavior, migration, UI/API endpoint, scheduler/dispatch behavior, claim/retry behavior, sandbox behavior, harness adapter behavior, live GitHub write, live Paddock task creation, auto-merge behavior, live-state validation, repo-knowledge verifier rewrite, or automatic `specs/**` cleanup was added.
+- Final marker verification: 0 `[Gap]` markers by deterministic grep fallback after the installed `count-markers.sh gaps` helper exited on its known jq `details` assembly edge.
+
+### Error-Handling Results
+
+- Generated `specs/012b-harness-gardening-guards/checklists/error-handling.md`.
+- Remediated explicit `artifact_too_large` byte limits, deterministic `redacted` truth semantics, and fixture containment-before-read handling.
+- Modified process/spec artifacts only: `spec.md`, `plan.md`, `data-model.md`, `quickstart.md`, this workflow ledger, and the error-handling checklist.
+- No runtime source behavior, migration, UI/API endpoint, scheduler/dispatch behavior, claim/retry behavior, sandbox lifecycle behavior, harness adapter behavior, live GitHub write, live Paddock task creation, auto-merge behavior, live-state validation, or automatic `specs/**` cleanup was added.
+- Final marker verification: `count-markers.sh all specs/012b-harness-gardening-guards` reported 0 gaps; deterministic grep fallback also found 0 `[Gap]` markers after the installed `count-markers.sh gaps` helper exited on its known jq `details` assembly edge.
+
+### Testing-Strategy Results
+
+- Generated `specs/012b-harness-gardening-guards/checklists/testing-strategy.md`.
+- Validated fixture corpus coverage, reduced historical drift patterns, deterministic low-value-test warning policy, TDD RED sequencing, schema/report validation, hard-vs-warning policy tests, stable IDs, deterministic sort, duplicate suppression, and command verification.
+- No `[Gap]` markers were produced; no spec, plan, data-model, quickstart, or schema remediation was required for this domain.
+- Modified process artifacts only: this workflow ledger and the testing-strategy checklist.
+- No runtime source behavior, migration, UI/API endpoint, scheduler/dispatch behavior, claim/retry behavior, sandbox lifecycle behavior, harness adapter behavior, live GitHub write, live Paddock task creation, auto-merge behavior, live-state validation, or automatic `specs/**` cleanup was added.
+- Final marker verification: `count-markers.sh all specs/012b-harness-gardening-guards` reported 0 gaps; deterministic grep fallback also found 0 `[Gap]` markers after the installed `count-markers.sh gaps` helper exited on its known jq `details` assembly edge.
+
+### Scope-Control Results
+
+- Generated `specs/012b-harness-gardening-guards/checklists/scope-control.md`.
+- Remediated CHK009 by adding deterministic static scope-control requirements for changed-file allowlists/blocklists, forbidden live-mutation/runtime added-line tokens, self-test mode, current-diff mode, docs/process prose exemptions, and changed-file/scanned-entry evidence.
+- Modified process/spec artifacts only: `spec.md`, `plan.md`, `quickstart.md`, this workflow ledger, and the scope-control checklist.
+- No runtime source behavior, migration, UI/API endpoint, scheduler/dispatch behavior, claim/retry behavior, sandbox lifecycle behavior, harness adapter behavior, live GitHub write, live Paddock task creation, auto-merge behavior, live-state validation, external OpenAI fetch during default guard execution, or automatic `specs/**` cleanup was added.
+- Final marker verification: `count-markers.sh all specs/012b-harness-gardening-guards` reported 0 gaps; deterministic grep fallback also found 0 `[Gap]` markers after the installed `count-markers.sh gaps` helper exited on its known jq `details` assembly edge.
+
+### G4 Validation
+
+- `validate-gate.sh G4 specs/012b-harness-gardening-guards`: pass.
+- `count-markers.sh all specs/012b-harness-gardening-guards`: 0 gaps, 0 clarifications, 0 CRITICAL, 0 HIGH, 0 MEDIUM, 0 LOW.
+- All six required domains are complete; remaining `rg` matches are explanatory gate text, not active markers.
 
 ---
 
@@ -484,8 +533,9 @@ Required task properties:
 - Include tests for hard failure versus warning policy.
 - Include tests for stable finding IDs, deterministic sort, dedupe, owner derivation, and JSON schema validation.
 - Include tests that `specs/**` cleanup is recommendation-only and never deletes source folders.
-- Include package-script and `pnpm guardrails` integration tasks.
-- Include compatibility checks with `pnpm knowledge:index:check`.
+- Use `pnpm spec:012b:harness-gardening` as the single focused command and include package-script wiring only in `package.json`.
+- Add guardrail-suite wiring only in `scripts/check-guardrails.mjs`, preserving existing suite keys and known-suite diagnostics.
+- Do not edit `scripts/spec-012a/verify-repo-knowledge-index.mjs`; verify compatibility through `pnpm knowledge:index:check` and `pnpm guardrails -- --suite repo-knowledge-index`.
 - Include static/scope guard tasks proving no runtime behavior, migrations, UI, API endpoint, scheduler, dispatch, claim/retry, sandbox, harness adapter, live GitHub write, live Paddock task creation, or auto-merge behavior.
 - Keep low-value test detection deterministic and fixture-backed only.
 ```
@@ -577,8 +627,8 @@ During implementation:
 - Write RED tests first for every production guard behavior change.
 - Keep guard execution repo-artifact-only.
 - Keep live external/HAL/GitHub state out of the default guard.
-- Preserve `pnpm knowledge:index:check`.
-- Wire the focused suite into `pnpm guardrails`.
+- Preserve standalone `pnpm knowledge:index:check`.
+- Wire the focused suite into `pnpm guardrails` as `harness-gardening` without replacing existing suite keys.
 - Emit deterministic JSON and local/CI report evidence.
 ```
 
@@ -588,8 +638,9 @@ During implementation:
 - JSON schema/output validation for recommendations.
 - `pnpm knowledge:index:check`.
 - `pnpm guardrails -- --suite repo-knowledge-index`.
-- New focused guardrails suite command for SPEC-012B.
-- Full `pnpm guardrails` if scope changes guardrail wiring.
+- `pnpm spec:012b:harness-gardening -- --fixtures scripts/spec-012b/fixtures --as-of 2026-06-06`.
+- `pnpm guardrails -- --suite harness-gardening`.
+- Full `pnpm guardrails` after guardrail wiring changes.
 - `pnpm typecheck` and `pnpm lint` if TypeScript/config changes.
 - `git diff --check`.
 - Scope/static checks proving no forbidden runtime/live-mutation surfaces.

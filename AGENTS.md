@@ -84,6 +84,9 @@ Path alias: `@/*` maps to `./src/*`
 - Current SpecKit ledgers and status pointers: `docs/ai/specs/`,
   `docs/ai/specs/SPEC-012A-workflow.md`, and
   `docs/ai/specs/autopilot-state.json`.
+- Current SPEC-012B workflow and generated artifacts:
+  `docs/ai/specs/.process/SPEC-012B-workflow.md` and
+  `specs/012b-harness-gardening-guards/`.
 - QA and recovery evidence: `docs/qa/pilot-smoke-checklist.md` and
   `docs/runbook/migration-rollback.md`.
 - Workflow contract source: `docs/ai/workflows/paddock/workflow-contract.yaml`.

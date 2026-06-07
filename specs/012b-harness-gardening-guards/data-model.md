@@ -18,7 +18,9 @@ Validation rules:
 - No default wall-clock timestamp appears in deterministic JSON.
 - Paths are repo-relative POSIX paths.
 - Findings are sorted by severity, drift class, source path, anchor, owner key, then stable ID.
+- Summary counts match emitted report content: findings, recommendations, guard errors, warnings, and hard failures.
 - For a fixed input corpus and `--as-of`, repeated runs produce byte-for-byte equivalent JSON after stable formatting.
+- JSON Schema validates shape and constants; cross-field invariants are enforced by generator assertions or fixture-backed contract tests.
 
 ## Drift Finding
 
@@ -39,8 +41,9 @@ Fields:
 Validation rules:
 
 - Exact normalized tuple matches dedupe to one active finding.
-- Duplicate evidence is merged deterministically.
-- Effective severity is the maximum severity across duplicate inputs.
+- The normalized tuple is `drift_class + source_path + anchor + owner_key`.
+- Duplicate evidence and warnings are merged into sorted unique lists.
+- Effective severity is the maximum severity across duplicate inputs using rank `error > warning`.
 
 ## Cleanup Recommendation
 
@@ -59,6 +62,8 @@ Fields:
 Validation rules:
 
 - Exactly one active recommendation exists for each stable finding ID.
+- `recommendation_id` equals `stable_finding_id`.
+- Copied fields match the parent finding exactly: `drift_class`, `source_path`, `anchor`, `owner`, `severity`, `evidence`, and `warnings`.
 - `paddock_cleanup_task.live_mutation` is always `false`.
 - `github_issue_export.export_only` and `github_issue_export.live_mutation` are always `true` and `false`, respectively, when present.
 
@@ -115,6 +120,12 @@ Derivation order:
 5. Roadmap or path-class convention.
 6. `owner: unknown` with warning fallback.
 
+Validation rules:
+
+- Owner identity for stable IDs uses `owner_key`, not the display `name`.
+- Missing or empty `owner` on a required repo-knowledge-index entry is a hard artifact error.
+- Unknown owner on a derived drift finding emits owner metadata with `name: "unknown"`, `owner_key: "unknown"`, `owner_source: "unknown"`, `confidence: "unknown"`, and a warning.
+
 ## Guard Error
 
 Sanitized record for artifact, parse, schema, format, path, size, or fixture expectation failures.
@@ -132,7 +143,28 @@ Validation rules:
 
 - Required repo artifacts, required fixtures, required detector inputs, fixture expectation mismatches, and unsafe fixture paths fail CI.
 - Optional detector inputs warn with `detector_status: "skipped_detector"`.
+- Size checks are deterministic boundary checks performed before parse or format-specific validation. An individual guarded repo artifact larger than `1,048,576` bytes is `artifact_too_large`. An individual fixture input file larger than `262,144` bytes is `artifact_too_large`.
+- Required oversized repo artifacts, required oversized fixtures, and required oversized detector inputs fail CI. Optional oversized detector inputs warn with `detector_status: "skipped_detector"` unless another hard-drift finding exists.
+- Oversize messages may include only the repo-relative source path, detector, configured byte limit, observed byte count, required flag, and closed code; they must not include file contents.
 - Error records must not expose raw artifact contents, absolute host paths, stack traces, environment values, tokens, credentials, secrets, secret-shaped values, or matched substrings.
+- Error messages remain bounded, repo-relative, and sanitized even when the underlying parser or filesystem error includes forbidden content.
+- `redacted: true` means the sanitizer removed, replaced, or withheld forbidden or untrusted content before emitting the bounded message.
+- `redacted: false` means the message was generated only from safe constant templates and allowed bounded fields, and no forbidden content was removed, replaced, or withheld.
+- If the sanitizer cannot prove that no forbidden content was removed or withheld, it must emit `redacted: true`.
+
+## Cross-Entity Integrity Invariants
+
+These invariants are required for every emitted report. They are not all fully expressible in the JSON Schema as written and must be verified by fixture-backed contract tests or generator assertions:
+
+- Stable ID input tuple is normalized `drift_class + source_path + anchor + owner_key`.
+- Duplicate raw drift inputs group by stable ID.
+- Evidence and warnings are sorted unique lists after aggregation.
+- Effective severity is max-rank severity with `error > warning`.
+- Findings sort by severity, drift class, source path, anchor, owner key, then stable ID.
+- Each finding has exactly one embedded recommendation.
+- Recommendation `stable_finding_id` and `recommendation_id` equal the parent finding `stable_finding_id`.
+- Recommendation copied fields match the parent finding.
+- Summary counts equal emitted arrays and derived totals.
 
 ## Fixture Case
 
@@ -150,4 +182,9 @@ Validation rules:
 
 - Each supported drift class has at least one fresh case and one stale/warning/error case as applicable.
 - Fixture paths must stay within the fixture mini-tree.
+- Fixture-declared paths are normalized and resolved against the fixture case root before any read.
+- Simulated repo reads must resolve inside that fixture case's `repo/` mini-tree.
+- Absolute paths, parent traversal, Windows separators, symlink traversal outside the fixture mini-tree, or any post-normalization containment escape are classified as `fixture_unsafe_path`.
+- `fixture_unsafe_path` is always a required CI failure, not an optional detector skip.
+- No file content is read after a fixture path has been classified as unsafe.
 - Fixture expected fields are deterministic and include the `--as-of` date.
