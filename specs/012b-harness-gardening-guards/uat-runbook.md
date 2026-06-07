@@ -9,7 +9,7 @@ SPEC-012B is process/tooling-only. UAT is local guard verification against check
 | Item | Value |
 |------|-------|
 | Branch | `012b-harness-gardening-guards` |
-| Node | `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH` |
+| Node | Node 22.22.2 via local version manager or equivalent PATH management |
 | Package manager | `pnpm` |
 | Feature directory | `specs/012b-harness-gardening-guards` |
 

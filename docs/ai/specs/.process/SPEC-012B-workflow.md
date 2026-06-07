@@ -82,7 +82,7 @@ Before starting any workflow phase, verify alignment with `.specify/memory/const
 Setup ran:
 
 ```bash
-/Users/fredrickgabelmann/.codex/plugins/cache/racecraft-plugins-public/speckit-pro/2.7.0/skills/speckit-autopilot/scripts/reviewability-gate.sh setup docs/ai/rc-factory-technical-roadmap.md
+reviewability-gate.sh setup docs/ai/rc-factory-technical-roadmap.md
 ```
 
 Result:
@@ -719,9 +719,9 @@ During implementation:
 
 ### US3 Verification
 
-- `node --test scripts/spec-012b/__tests__/*.test.mjs`: pass, 37 tests.
+- `node --test scripts/spec-012b/__tests__/*.test.mjs`: pass, 38 tests.
 - `node scripts/spec-012b/check-scope-control.mjs --self-test`: pass with 12 changed files, 29 scanned entries, 0 failures, and all four self-test cases passed.
-- `node scripts/spec-012b/check-scope-control.mjs`: pass with 17 changed files, 1069 scanned entries, and 0 failures.
+- `node scripts/spec-012b/check-scope-control.mjs`: pass with 12 changed files, 2228 scanned entries, and 0 failures.
 - `pnpm spec:012b:harness-gardening -- --fixtures scripts/spec-012b/fixtures/warning --as-of 2026-06-06 --json`: pass with 9 warning findings, 9 recommendations, and 0 hard failures.
 - `git diff --check`: pass.
 
@@ -730,11 +730,12 @@ During implementation:
 - Review packet: `specs/012b-harness-gardening-guards/.process/pr-review-packet.md` finalized with change summary, non-goals, review order, scope budget, traceability, verification evidence, known gaps, and rollback notes.
 - Discoverability: `docs/ai/repo-knowledge-index.json` already includes SPEC-012B design concept, workflow ledger, generated spec folder, and report-artifact entries; `AGENTS.md` already points to the current SPEC-012B workflow and generated artifacts.
 - Scope self-test: `node scripts/spec-012b/check-scope-control.mjs --self-test` passed with 12 changed files, 29 scanned entries, 0 failures, and all four self-test cases passed.
-- Scope current-diff: final post-closeout report diff passed with 11 changed files, 439 scanned entries, and 0 failures.
+- Scope current-diff: final post-review-remediation diff passed with 12 changed files, 2228 scanned entries, and 0 failures.
 - Full fixture matrix: `pnpm spec:012b:harness-gardening -- --fixtures scripts/spec-012b/fixtures --as-of 2026-06-06` exited 1 as expected for hard fixtures, with 15 findings, 15 recommendations, 28 hard failures, 19 warnings, and 22 guard errors.
 - Deterministic JSON: two full-corpus JSON runs matched byte-for-byte; both exited 1 as expected and produced 76,865 bytes.
 - Guardrails: `pnpm guardrails -- --suite harness-gardening` passed; `pnpm guardrails` passed 4 suites; `pnpm knowledge:index:check` passed with 0 warnings; `pnpm guardrails -- --suite repo-knowledge-index` passed.
-- Baseline checks under Node v22.22.2: `pnpm typecheck` passed; `pnpm lint` passed; `node --test scripts/spec-012b/__tests__/*.test.mjs` passed 37 tests; `pnpm test` passed 327 files / 3391 tests with 4 skipped and 84 todo.
+- Baseline checks under Node v22.22.2: `pnpm typecheck` passed; `pnpm lint` passed; `node --test scripts/spec-012b/__tests__/*.test.mjs` passed 38 tests; `pnpm test` passed outside the sandbox with 327 files / 3391 tests with 4 skipped and 84 todo.
+- PR review remediation: Copilot and GitHub Code Quality comments were remediated by adding default checked-in repo-artifact scanning, replacing local absolute paths with portable/redacted forms, and replacing the no-op fixture expression while preserving the warning-only no-assertion fixture behavior.
 - G7 validation: `validate-gate.sh G7 specs/012b-harness-gardening-guards` passed after normalizing task markers to the plugin lowercase `[x]` convention.
 
 ---
@@ -754,7 +755,7 @@ During implementation:
 | UAT Runbook Generation | Complete | `specs/012b-harness-gardening-guards/uat-runbook.md` generated for local fixture/guardrail UAT |
 | PR Body Generation | Complete | `specs/012b-harness-gardening-guards/.process/pr-body.md` generated |
 | PR Creation | Complete | PR #84 opened at https://github.com/racecraft-lab/Paddock/pull/84; initial checks pending |
-| Review Remediation | Complete | `gh pr view 84` returned no comments and no reviews at creation time; review decision is `REVIEW_REQUIRED` |
+| Review Remediation | Complete | GitHub Code Quality and Copilot comments were addressed in branch updates; focused SPEC-012B tests, guardrails, knowledge-index check, typecheck, lint, diff whitespace, and unsandboxed full test suite passed after remediation |
 | Retrospective | Complete | `specs/012b-harness-gardening-guards/retrospective.md` records 100% task completion, 100% spec adherence, and 0 critical findings |
 
 ---

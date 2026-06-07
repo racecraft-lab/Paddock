@@ -6,6 +6,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
+const guardScript = join(repoRoot, 'scripts/spec-012b/harness-gardening-check.mjs');
 const packageJson = JSON.parse(readFileSync(join(repoRoot, 'package.json'), 'utf8'));
 const guardrailsSource = readFileSync(join(repoRoot, 'scripts/check-guardrails.mjs'), 'utf8');
 const spec012aSource = readFileSync(
@@ -53,6 +54,29 @@ test('focused package command accepts pnpm argument separator and emits JSON', (
   assert.equal(result.status, 0);
   assert.doesNotMatch(`${result.stdout}\n${result.stderr}`, /Unknown argument: --/);
   assert.match(result.stdout, /"finding_count": 0/);
+});
+
+test('default command scans checked-in repo artifacts instead of returning a no-op pass', () => {
+  const result = spawnSync(
+    process.execPath,
+    [guardScript, '--as-of', '2026-06-06', '--json'],
+    { cwd: repoRoot, encoding: 'utf8' },
+  );
+
+  assert.equal(result.status, 0);
+  assert.equal(result.stderr, '');
+
+  const report = JSON.parse(result.stdout);
+  assert.equal(report.summary.finding_count, 0);
+  assert.equal(report.summary.error_count, 0);
+  assert.match(
+    report.detector_statuses.find((entry) => entry.detector === 'source_of_truth_links')?.message || '',
+    /repo-owned source link/,
+  );
+  assert.match(
+    report.detector_statuses.find((entry) => entry.detector === 'deterministic_low_value_test_pattern')?.message || '',
+    /SPEC-012B guard test file/,
+  );
 });
 
 test('unknown-suite diagnostics include harness-gardening and preserve SPEC-012A suite names', () => {

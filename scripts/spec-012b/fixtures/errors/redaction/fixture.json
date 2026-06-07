@@ -8,7 +8,7 @@
     "forbidden_examples": [
       "TOKEN=do-not-emit",
       "sk-test-do-not-emit",
-      "/Users/fredrickgabelmann/private/path"
+      "/example/redaction-sentinel"
     ]
   },
   "expected": {

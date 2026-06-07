@@ -19,9 +19,9 @@
 - `pnpm guardrails`
 - `pnpm knowledge:index:check`
 - `pnpm guardrails -- --suite repo-knowledge-index`
-- `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm typecheck`
-- `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm lint`
-- `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test`
+- `pnpm typecheck` under Node 22.22.2
+- `pnpm lint` under Node 22.22.2
+- `pnpm test` under Node 22.22.2
 - `git diff --check`
 
 ## Notes

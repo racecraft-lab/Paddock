@@ -10,6 +10,7 @@ import {
   ERROR_CODES,
   FRESHNESS_DEFAULTS,
   FIXTURE_FILE_LIMIT_BYTES,
+  REPO_ARTIFACT_LIMIT_BYTES,
   buildReport,
   renderJsonReport,
   renderMarkdownReport,
@@ -92,8 +93,12 @@ export function runHarnessGardening(args) {
     repoKnowledgeEntries.push(...loaded.repoKnowledgeEntries)
   }
 
-  if (fixtureCases.length === 0 && errors.length === 0) {
-    detectorStatuses.push(...DETECTOR_NAMES.map((detector) => ({ detector, status: 'passed' })))
+  if (!args.fixtures) {
+    const loaded = loadDefaultRepoArtifacts(args)
+    errors.push(...loaded.errors)
+    detectorStatuses.push(...loaded.detectorStatuses)
+    rawFindings.push(...loaded.rawFindings)
+    repoKnowledgeEntries.push(...loaded.repoKnowledgeEntries)
   }
 
   return buildReport({
@@ -103,6 +108,154 @@ export function runHarnessGardening(args) {
     detectorStatuses,
     repoKnowledgeEntries,
   })
+}
+
+function loadDefaultRepoArtifacts(args) {
+  const fixture = {
+    fixture_version: 'harness_gardening_fixture.v1',
+    case_id: 'default/repo-artifacts',
+    as_of: args.asOf,
+    inputs: {
+      repo_root: '.',
+      source_links: collectDefaultRepoKnowledgeLinks(),
+      status_pointers: [
+        'docs/ai/specs/.process/autopilot-state.json',
+        'docs/ai/specs/.process/SPEC-012B-workflow.md',
+      ],
+      test_files: collectDefaultSpec012bTests(),
+    },
+  }
+
+  const errors = validateDefaultRequiredArtifacts()
+  const rawFindings = [
+    ...detectStaleStatusPointers(repoRoot, fixture),
+    ...detectMissingRequiredEvidence(repoRoot, fixture),
+    ...detectStaleFeatureFlags(repoRoot, fixture),
+    ...detectStrictScopeDrift(repoRoot, fixture),
+    ...detectBrokenSourceLinks(repoRoot, fixture),
+    ...detectLowValueTestPatterns(repoRoot, fixture),
+    ...detectWarningFreshness(fixture),
+    ...detectWarningSourceFreshness(repoRoot, fixture),
+    ...detectArchiveCleanupEligibility(repoRoot, fixture),
+  ]
+
+  return {
+    errors,
+    detectorStatuses: defaultDetectorStatuses(fixture),
+    rawFindings,
+    repoKnowledgeEntries: readFixtureRepoKnowledge(repoRoot),
+  }
+}
+
+function collectDefaultRepoKnowledgeLinks() {
+  return readFixtureRepoKnowledge(repoRoot).flatMap((entry) => {
+    if (!Array.isArray(entry?.links)) return []
+    return entry.links.map((link) => ({
+      source_path: entry.path,
+      target: link.target,
+      required: Boolean(link.required),
+      repo_owned: Boolean(link.repo_owned),
+      anchor: link.description || link.target,
+    }))
+  })
+}
+
+function collectDefaultSpec012bTests() {
+  const testsRoot = join(repoRoot, 'scripts/spec-012b/__tests__')
+  if (!existsSync(testsRoot)) return []
+  const files = []
+  for (const entry of readdirSync(testsRoot, { withFileTypes: true })) {
+    if (!entry.isFile() || !entry.name.endsWith('.mjs')) continue
+    files.push(`scripts/spec-012b/__tests__/${entry.name}`)
+  }
+  return files.sort()
+}
+
+function validateDefaultRequiredArtifacts() {
+  const requiredArtifacts = [
+    { source_path: 'AGENTS.md', detector: 'source_of_truth_links', format: 'markdown' },
+    { source_path: 'docs/ai/repo-knowledge-index.json', detector: 'source_of_truth_links', format: 'json' },
+    { source_path: 'docs/ai/specs/.process/SPEC-012B-workflow.md', detector: 'stale_claims', format: 'markdown' },
+    { source_path: 'docs/ai/specs/.process/autopilot-state.json', detector: 'stale_claims', format: 'json' },
+    { source_path: 'specs/012b-harness-gardening-guards/spec.md', detector: 'stale_claims', format: 'markdown' },
+    { source_path: 'specs/012b-harness-gardening-guards/plan.md', detector: 'strict_scope_drift', format: 'markdown' },
+    { source_path: 'src/lib/feature-flags.ts', detector: 'stale_feature_flag_status', format: 'typescript' },
+  ]
+
+  return requiredArtifacts.flatMap((artifact) => validateDefaultRequiredArtifact(artifact))
+}
+
+function validateDefaultRequiredArtifact({ source_path: sourcePath, detector, format }) {
+  const result = resolveFixtureRelativePath(repoRoot, sourcePath, { mustStayInRepo: true })
+  if (!result.safe || !existsSync(result.absolute)) {
+    return [sanitizeGuardError({
+      source_path: sourcePath,
+      detector,
+      code: 'repo_artifact_missing',
+      message: `Required repo artifact is missing: ${sourcePath}`,
+      required: true,
+      redacted: false,
+    })]
+  }
+
+  const stats = statSync(result.absolute)
+  if (!stats.isFile()) {
+    return [sanitizeGuardError({
+      source_path: sourcePath,
+      detector,
+      code: 'artifact_unsupported_format',
+      message: `Required repo artifact is not a file: ${sourcePath}`,
+      required: true,
+      redacted: false,
+    })]
+  }
+  if (stats.size > REPO_ARTIFACT_LIMIT_BYTES) {
+    return [sanitizeGuardError({
+      source_path: sourcePath,
+      detector,
+      code: 'artifact_too_large',
+      message: `Required repo artifact exceeds ${REPO_ARTIFACT_LIMIT_BYTES} bytes: ${sourcePath}`,
+      required: true,
+      redacted: false,
+    })]
+  }
+
+  if (format === 'json') {
+    try {
+      JSON.parse(readFileSync(result.absolute, 'utf8'))
+    } catch {
+      return [sanitizeGuardError({
+        source_path: sourcePath,
+        detector,
+        code: 'repo_artifact_malformed_json',
+        message: `Required repo artifact is malformed JSON: ${sourcePath}`,
+        required: true,
+        redacted: true,
+      })]
+    }
+  }
+
+  return []
+}
+
+function defaultDetectorStatuses(fixture) {
+  const linkCount = fixture.inputs.source_links.length
+  const testCount = fixture.inputs.test_files.length
+  const messages = {
+    stale_claims: `Scanned ${fixture.inputs.status_pointers.length} active SPEC-012B status pointer artifact(s).`,
+    missing_required_evidence: 'No default closeout marker requirements are active before merge.',
+    stale_feature_flag_status: 'Scanned the checked-in feature flag registry as a required repo artifact.',
+    deterministic_low_value_test_pattern: `Scanned ${testCount} SPEC-012B guard test file(s).`,
+    strict_scope_drift: 'Scanned the SPEC-012B plan as the default strict-scope artifact.',
+    source_of_truth_links: `Scanned ${linkCount} repo-owned source link(s) from docs/ai/repo-knowledge-index.json.`,
+    archive_cleanup_eligibility: 'No default archive cleanup candidate is active; cleanup remains recommendation-only.',
+  }
+
+  return DETECTOR_NAMES.map((detector) => ({
+    detector,
+    status: 'passed',
+    message: messages[detector] || 'Default repo-artifact scan completed.',
+  }))
 }
 
 function collectFixtureCases(inputPath) {
@@ -425,7 +578,7 @@ function detectStaleStatusPointers(caseRoot, fixture) {
 
   const autopilotPath = pointers.find((pointer) => pointer.endsWith('autopilot-state.json'))
   const autopilot = autopilotPath ? readRepoJson(caseRoot, autopilotPath) : null
-  const currentSpec = specIdFromValue(autopilot?.current_spec)
+  const currentSpec = specIdFromValue(autopilot?.current_spec || autopilot?.spec_id || autopilot?.feature_dir)
   if (!currentSpec) return []
 
   return pointers
@@ -746,16 +899,17 @@ function readRepoJson(caseRoot, repoPath) {
 function readRepoText(caseRoot, repoPath) {
   const result = resolveFixtureRelativePath(caseRoot, repoPath, { mustStayInRepo: true })
   if (!result.safe || !existsSync(result.absolute)) return ''
-  if (!realPathStaysInside(result.absolute, join(caseRoot, 'repo'))) return ''
+  if (!realPathStaysInside(result.absolute, caseRepoRoot(caseRoot))) return ''
 
   const stats = statSync(result.absolute)
-  if (stats.size > FIXTURE_FILE_LIMIT_BYTES) return ''
+  if (!stats.isFile()) return ''
+  if (stats.size > repoFileLimitBytes(caseRoot)) return ''
   return readFileSync(result.absolute, 'utf8')
 }
 
 function repoFileExists(caseRoot, repoPath) {
   const result = resolveFixtureRelativePath(caseRoot, repoPath, { mustStayInRepo: true })
-  return result.safe && existsSync(result.absolute) && realPathStaysInside(result.absolute, join(caseRoot, 'repo'))
+  return result.safe && existsSync(result.absolute) && realPathStaysInside(result.absolute, caseRepoRoot(caseRoot))
 }
 
 function specIdFromValue(value) {
@@ -875,7 +1029,7 @@ function evaluateFixtureBoundaries(caseRoot, fixture) {
 }
 
 function readFixtureRepoKnowledge(caseRoot) {
-  const indexPath = join(caseRoot, 'repo/docs/ai/repo-knowledge-index.json')
+  const indexPath = join(caseRepoRoot(caseRoot), 'docs/ai/repo-knowledge-index.json')
   if (!existsSync(indexPath)) return []
   try {
     const parsed = JSON.parse(readFileSync(indexPath, 'utf8'))
@@ -901,7 +1055,7 @@ function resolveFixtureRelativePath(caseRoot, declaredPath, { mustStayInRepo }) 
     return { safe: false, reason: 'parent traversal' }
   }
 
-  const base = mustStayInRepo ? join(caseRoot, 'repo') : caseRoot
+  const base = mustStayInRepo ? caseRepoRoot(caseRoot) : caseRoot
   const absolute = resolve(base, declaredPath)
   if (!isWithin(absolute, base)) {
     return { safe: false, reason: 'containment escape' }
@@ -920,6 +1074,14 @@ function realPathStaysInside(absolutePath, boundaryRoot) {
   } catch {
     return false
   }
+}
+
+function caseRepoRoot(caseRoot) {
+  return caseRoot === repoRoot ? repoRoot : join(caseRoot, 'repo')
+}
+
+function repoFileLimitBytes(caseRoot) {
+  return caseRoot === repoRoot ? REPO_ARTIFACT_LIMIT_BYTES : FIXTURE_FILE_LIMIT_BYTES
 }
 
 function fixtureError(fixture, error) {

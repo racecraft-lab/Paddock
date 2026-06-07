@@ -47,17 +47,25 @@ No verification findings were found. SPEC-012B implements the offline harness-ga
 | `count-markers.sh all specs/012b-harness-gardening-guards` | PASS | 0 gaps, 0 clarifications, 0 critical, 0 high, 0 medium, 0 low |
 | `reviewability-gate.sh diff origin/main...HEAD` | PASS WITH EXCEPTION | Transition exception recorded for 6264 reviewable LOC, 64 production files, 99 total files, and 6 primary surfaces |
 | `node scripts/spec-012b/check-scope-control.mjs --self-test` | PASS | 12 changed files, 29 scanned entries, 0 failures |
-| `node scripts/spec-012b/check-scope-control.mjs` | PASS | 11 changed files, 439 scanned entries, 0 failures at post-closeout report finalization |
+| `node scripts/spec-012b/check-scope-control.mjs` | PASS | 12 changed files, 2228 scanned entries, 0 failures after PR review remediation |
 | `pnpm spec:012b:harness-gardening -- --fixtures scripts/spec-012b/fixtures --as-of 2026-06-06` | EXPECTED HARD FAILURE | 15 findings, 15 recommendations, 28 hard failures, 19 warnings, 22 guard errors |
 | `pnpm --silent spec:012b:harness-gardening -- --fixtures scripts/spec-012b/fixtures --as-of 2026-06-06 --json` twice | PASS | Outputs matched byte-for-byte; both exited 1 as expected for hard fixtures |
 | `pnpm guardrails -- --suite harness-gardening` | PASS | Focused suite passed |
 | `pnpm guardrails` | PASS | 4 guardrail suites passed |
 | `pnpm knowledge:index:check` | PASS | 0 warnings |
 | `pnpm guardrails -- --suite repo-knowledge-index` | PASS | Repo knowledge suite passed |
-| `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm typecheck` | PASS | TypeScript completed with no diagnostics |
-| `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm lint` | PASS | ESLint completed with no diagnostics |
-| `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test` | PASS | 327 files passed, 3391 tests passed, 4 skipped, 84 todo |
+| `pnpm typecheck` | PASS | TypeScript completed with no diagnostics under Node 22.22.2 |
+| `pnpm lint` | PASS | ESLint completed with no diagnostics under Node 22.22.2 |
+| `pnpm test` | PASS | Unsandboxed run: 327 files passed, 3391 tests passed, 4 skipped, 84 todo under Node 22.22.2 |
 | `git diff --check` | PASS | No whitespace errors |
+
+## PR Review Remediation
+
+- Default no-fixture guardrails now scan checked-in repo artifacts and record detector-status messages for required repo files, SPEC-012B status pointers, repo knowledge links, feature-flag registry presence, strict-scope plan evidence, and SPEC-012B guard tests.
+- Local absolute paths were removed from workflow/state/runbook/report/PR-body artifacts.
+- Redaction fixtures now use a neutral sentinel path.
+- The warning-only no-assertion fixture no longer contains a no-op expression.
+- Post-remediation verification passed focused SPEC-012B tests, full SPEC-012B Node test sweep, full guardrails, knowledge-index check, typecheck, lint, diff whitespace check, expected hard-fixture run, and unsandboxed full unit suite.
 
 ## Constitution Alignment
 

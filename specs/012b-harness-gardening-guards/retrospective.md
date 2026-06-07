@@ -31,7 +31,7 @@ None. The implementation matches the spec and no post-implementation spec edits 
 | Planned Architecture | Actual Result | Drift |
 |----------------------|---------------|-------|
 | Node.js process tooling using built-in modules where practical | Implemented in `scripts/spec-012b/*.mjs` without new runtime dependencies | None |
-| Checked-in fixtures and report artifacts | Implemented under `scripts/spec-012b/fixtures/` and `specs/012b-harness-gardening-guards/.process/` | None |
+| Checked-in fixtures and report artifacts | Implemented under `scripts/spec-012b/fixtures/` and `specs/012b-harness-gardening-guards/.process/`; post-review remediation added default checked-in repo-artifact scanning for no-fixture guardrails runs | None after remediation |
 | Separate guardrails suite preserving SPEC-012A | Implemented `harness-gardening` suite while `repo-knowledge-index` remains separate | None |
 | Recommendation-only cleanup | Implemented non-mutating Paddock import and GitHub export drafts | None |
 | Static scope closeout guard | Implemented self-test and current-diff modes | None |
@@ -42,7 +42,8 @@ None. The implementation matches the spec and no post-implementation spec edits 
 - `count-markers.sh all`: 0 gaps, 0 clarifications, 0 critical, 0 high, 0 medium, 0 low.
 - `reviewability-gate.sh diff origin/main...HEAD`: pass with transition exception.
 - `pnpm guardrails`: pass with 4 suites.
-- `pnpm typecheck`, `pnpm lint`, and `pnpm test`: pass under Node v22.22.2.
+- `pnpm typecheck`, `pnpm lint`, and unsandboxed `pnpm test`: pass under Node v22.22.2.
+- PR review remediation: default no-fixture runs now scan checked-in repo artifacts, local absolute paths are redacted or portable, and the no-op fixture expression is removed without changing warning-only fixture intent.
 - Full fixture matrix: expected hard-failure run with 15 findings and 15 recommendations.
 - Deterministic JSON: two full-corpus runs matched byte-for-byte.
 
@@ -55,6 +56,7 @@ None.
 - The G7 helper currently recognizes lowercase `[x]`; normalizing task markers before G7 avoids false incomplete counts.
 - Node v22.22.2 remains the correct local verification runtime for native SQLite dependencies; Node v26 can break `better-sqlite3` rebuilds.
 - Full fixture corpora that intentionally include hard failures need explicit review-packet wording so nonzero exit status is not confused with a broken guard.
+- Default command paths need explicit tests that prove repo artifacts were scanned; otherwise a clean report can mask a no-op pass.
 
 ## Constitution Compliance
 
