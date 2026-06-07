@@ -7,6 +7,22 @@
   "baseRef": "main",
   "reports": [
     {
+      "surface": "storybook",
+      "runId": "27084426422",
+      "runAttempt": "1",
+      "runKey": "27084426422-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/27084426422",
+      "reportHref": "https://racecraft-lab.github.io/Paddock/pr/84/runs/27084426422-attempt-1/storybook/",
+      "latestHref": "https://racecraft-lab.github.io/Paddock/pr/84/storybook/latest/?v=27084426422-attempt-1",
+      "headSha": "ffd3ef591b64c2924907e35e012687282caafbcf",
+      "headRef": "012b-harness-gardening-guards",
+      "baseRef": "main",
+      "workflowName": "Visual Storybook Snapshots",
+      "workflowFile": "visual-storybook.yml",
+      "surfaceLabel": "Storybook Components",
+      "createdAt": "2026-06-07T06:05:25.347Z"
+    },
+    {
       "surface": "playwright",
       "runId": "27083848873",
       "runAttempt": "1",
@@ -71,5 +87,5 @@
       "createdAt": "2026-06-07T05:33:51.392Z"
     }
   ],
-  "updatedAt": "2026-06-07T05:49:43.017Z"
+  "updatedAt": "2026-06-07T06:05:25.347Z"
 }
