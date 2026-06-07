@@ -38,6 +38,8 @@ Add a focused offline harness-gardening guard that reads checked-in repo artifac
 
 **Reviewability Budget**: Primary surface `docs/process`; secondary surfaces guard scripts, guard configuration, fixture corpus, package/guardrail wiring, and tests. Projected reviewable LOC 350-450, production files 0 runtime production files, total files 10-15. Budget result: warning accepted. Split decision: one spec remains appropriate because all work serves one process/tooling guard and no runtime/live-mutation surface is planned.
 
+**Ratified reviewability exception**: The setup transition exception is ratified for the task gate because the task and plan artifacts necessarily name `contracts/`, workflow ledgers, and harness-gardening process paths that the heuristic classifies as API, runtime, or adapter surfaces. The completed scope-control checklist and consensus confirmed these names are process/tooling artifacts only. The implementation remains one deployable docs/process guard slice, and any task that widens into runtime source, migration, UI/API, scheduler, dispatch, harness adapter, live mutation, or automatic cleanup must stop before implementation.
+
 ## External Context Evidence
 
 Retrieved during Plan on 2026-06-06:

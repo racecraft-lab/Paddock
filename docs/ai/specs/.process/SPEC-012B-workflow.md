@@ -39,7 +39,7 @@ Re-read it before each phase if you need to disambiguate a prompt. The Specify a
 | Clarify | `$speckit-clarify` | Complete | Five sessions resolved schema, taxonomy, thresholds, ownership, fixtures, dedupe, scope, cleanup, and guardrails boundaries; G2 passed |
 | Plan | `$speckit-plan` | Complete | Generated plan, research, data model, quickstart, and report contract schema; G3 passed |
 | Checklist | `$speckit-checklist` | Complete | Completed six domains; all gaps remediated with final marker count 0 |
-| Tasks | `$speckit-tasks` | Pending | Generate TDD-first tasks for fixture RED tests, schemas, guard implementation, package scripts, docs, and verification |
+| Tasks | `$speckit-tasks` | Complete | Generated 55 TDD-first tasks; G5 passed and task reviewability gate passed under ratified process/tooling exception |
 | Analyze | `$speckit-analyze` | Pending | Check drift between roadmap, Design Concept, spec, plan, tasks, and external-context gates |
 | Implement | `$speckit-implement` | Pending | Execute only after G1-G6 pass and scope ownership is still process/tooling only |
 
@@ -555,9 +555,25 @@ Required task properties:
 
 | Item | Status | Evidence |
 |------|--------|----------|
-| Task list | Pending | Pending |
-| Task ordering | Pending | Pending |
-| Reviewability | Pending | Pending |
+| Task list | Complete | `specs/012b-harness-gardening-guards/tasks.md` contains 55 tasks |
+| Task ordering | Complete | Tasks start with RED fixture tests, then shared infrastructure, US1, US2, US3, and polish/verification |
+| Reviewability | Exception | `reviewability-gate.sh tasks specs/012b-harness-gardening-guards` returned `status=exception` under ratified process/tooling exception; G5 passed with 55 tasks |
+
+### Phase 7 Task Groups
+
+- RED fixture tests: T001-T010.
+- Foundational guard infrastructure: T011-T018.
+- US1 hard drift detectors: T019-T026.
+- US2 recommendations and guardrail wiring: T027-T036.
+- US3 advisory signals and scope guard: T037-T044.
+- Polish and cross-cutting verification: T045-T055.
+
+### G5 Validation
+
+- `validate-gate.sh G5 specs/012b-harness-gardening-guards`: pass.
+- `reviewability-gate.sh tasks specs/012b-harness-gardening-guards`: pass via ratified exception; reviewable LOC 2200, production files 30, total files 93, primary surfaces 7 by heuristic.
+- Exception rationale: task and plan artifacts intentionally name `contracts/`, workflow ledgers, and harness-gardening process paths that the heuristic classifies as API/runtime/adapter surfaces; completed scope-control consensus confirmed these are process/tooling artifacts only.
+- `git diff --check`: pass.
 
 ---
 
