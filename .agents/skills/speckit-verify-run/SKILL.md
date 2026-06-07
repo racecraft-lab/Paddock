@@ -32,8 +32,8 @@ Validate the implementation against its specification artifacts (`spec.md`, `pla
 
 Run `.specify/scripts/bash/check-prerequisites.sh --json --paths-only` from repo root.
 
-1. **Script succeeds** (on a feature branch): Parse JSON for FEATURE_DIR. Set `FEATURE_BRANCH = true`. Proceed to next step.
-2. **Script fails** (not on a feature branch): You MUST prompt for available features (Scan `specs/NNN-*/` to get available features). Use Codex's structured `request_user_input` path if it is available; otherwise ask one concise plain-text selection question and wait for the user. **Do NOT guess or auto-select a change. Always let the user choose.**
+1. **Script succeeds**: Parse JSON for FEATURE_DIR and BRANCH. Paths-only mode does not validate the branch; set `FEATURE_BRANCH = true` only when BRANCH is a feature branch. If BRANCH is detached, `main`, or otherwise non-feature, scan `specs/NNN-*/`, ask the user to choose the intended feature, and set `FEATURE_BRANCH = false`.
+2. **Script fails**: You MUST prompt for available features (Scan `specs/NNN-*/` to get available features). Use Codex's structured `request_user_input` path if it is available; otherwise ask one concise plain-text selection question and wait for the user. **Do NOT guess or auto-select a change. Always let the user choose.**
 
 Derive absolute paths: 
 

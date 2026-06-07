@@ -2,7 +2,7 @@
 
 ## Scope
 
-The generic product-line seeder applies reviewed config-owned Paddock seed state from YAML. SPEC-010A validates Paddock parity only. SPEC-010A does not create Product Line B, add live enablement, mutate GitHub, create tasks, dispatch or claim work, launch runners, create sandboxes, add harness adapters, auto-merge, or invoke SpecKit setup/autopilot.
+The generic product-line seeder applies reviewed config-owned product-line seed state from YAML. SPEC-010A validated Paddock parity and did not create Product Line B. SPEC-010B later added the reviewed Product Line B config and smoke lifecycle using the same seeder. The seeder still does not mutate GitHub, create tasks, dispatch or claim work, launch runners, create sandboxes, add harness adapters, auto-merge, or invoke SpecKit setup/autopilot.
 
 ## Schema
 
@@ -87,11 +87,17 @@ pnpm seed:paddock -- \
 
 The wrapper delegates to the generic seeder with `docs/ai/product-lines/paddock.yaml`. Wrapper output keeps `entrypoint:"seed:paddock"` while preserving the same schema, modes, evidence categories, existing-target policy, snapshot shape, residue blocking policy, and no-mutation proof model as `pnpm seed:product-line`.
 
-## Product Line B Exclusion
+## Product Line B Boundary
 
-SPEC-010A does not create Product Line B. It also does not add Product Line B config examples, smoke evidence, live enablement, GitHub mutation, task creation, dispatch, claim, runner, sandbox, harness adapter, auto-merge, or SpecKit setup/autopilot behavior.
+SPEC-010A does not create Product Line B. SPEC-010B now provides the reviewed
+`docs/ai/product-lines/product-line-b.yaml` config and the bounded Product Line
+B enable-smoke-disable evidence flow. That smoke flow remains outside this
+generic runbook's Paddock parity examples.
 
-Future product lines must be added through a separate reviewed spec and config path. This runbook only documents the reusable schema and command surface proven with the Paddock config.
+Future product lines must still be added through a separate reviewed spec and
+config path. This runbook documents the reusable schema and command surface;
+product-line-specific smoke evidence belongs in that product line's workflow
+or runbook.
 
 ## Rollback By No-Op
 
