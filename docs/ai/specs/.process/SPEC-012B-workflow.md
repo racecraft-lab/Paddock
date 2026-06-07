@@ -730,11 +730,30 @@ During implementation:
 - Review packet: `specs/012b-harness-gardening-guards/.process/pr-review-packet.md` finalized with change summary, non-goals, review order, scope budget, traceability, verification evidence, known gaps, and rollback notes.
 - Discoverability: `docs/ai/repo-knowledge-index.json` already includes SPEC-012B design concept, workflow ledger, generated spec folder, and report-artifact entries; `AGENTS.md` already points to the current SPEC-012B workflow and generated artifacts.
 - Scope self-test: `node scripts/spec-012b/check-scope-control.mjs --self-test` passed with 12 changed files, 29 scanned entries, 0 failures, and all four self-test cases passed.
-- Scope current-diff: final changed-file and scanned-entry counts are recorded in the PR review packet after polish edits; failures remain 0.
+- Scope current-diff: final post-closeout report diff passed with 11 changed files, 439 scanned entries, and 0 failures.
 - Full fixture matrix: `pnpm spec:012b:harness-gardening -- --fixtures scripts/spec-012b/fixtures --as-of 2026-06-06` exited 1 as expected for hard fixtures, with 15 findings, 15 recommendations, 28 hard failures, 19 warnings, and 22 guard errors.
 - Deterministic JSON: two full-corpus JSON runs matched byte-for-byte; both exited 1 as expected and produced 76,865 bytes.
 - Guardrails: `pnpm guardrails -- --suite harness-gardening` passed; `pnpm guardrails` passed 4 suites; `pnpm knowledge:index:check` passed with 0 warnings; `pnpm guardrails -- --suite repo-knowledge-index` passed.
 - Baseline checks under Node v22.22.2: `pnpm typecheck` passed; `pnpm lint` passed; `node --test scripts/spec-012b/__tests__/*.test.mjs` passed 37 tests; `pnpm test` passed 327 files / 3391 tests with 4 skipped and 84 todo.
+- G7 validation: `validate-gate.sh G7 specs/012b-harness-gardening-guards` passed after normalizing task markers to the plugin lowercase `[x]` convention.
+
+---
+
+## Post-Implementation Closeout
+
+| Gate | Status | Evidence |
+|------|--------|----------|
+| Doctor Extension Check | Complete | `.specify/extensions/doctor/scripts/bash/doctor.sh` passed all project structure, feature artifact, script, extension, and git branch checks |
+| Verify Implementation | Complete | `specs/012b-harness-gardening-guards/verify-report.md` records 0 CRITICAL/HIGH/MEDIUM/LOW findings |
+| Verify Tasks Phantom Check | Complete | `specs/012b-harness-gardening-guards/verify-tasks-report.md` records 55 verified tasks and 0 partial/weak/not-found/skipped tasks |
+| Code Review | Complete | `specs/012b-harness-gardening-guards/review-report.md` records no critical or important issues |
+| Integration Suite | Complete | Guardrails, knowledge index, typecheck, lint, Node test sweep, full unit suite, and whitespace checks passed under the recorded Node v22.22.2 environment |
+| Cleanup | Complete | `specs/012b-harness-gardening-guards/cleanup-report.md` records no required source cleanup and no follow-up task additions |
+| Reviewability Diff Gate | Complete | `reviewability-gate.sh diff origin/main...HEAD` passed with the recorded transition exception: 6264 reviewable LOC, 64 production files, 99 total files, 6 primary surfaces |
+| Self-Review | Complete | PR review packet, verify report, review report, cleanup report, and retrospective agree on process/tooling-only scope and no live mutation |
+| UAT Runbook Generation | Complete | `specs/012b-harness-gardening-guards/uat-runbook.md` generated for local fixture/guardrail UAT |
+| PR Body Generation | Complete | `specs/012b-harness-gardening-guards/.process/pr-body.md` generated |
+| Retrospective | Complete | `specs/012b-harness-gardening-guards/retrospective.md` records 100% task completion, 100% spec adherence, and 0 critical findings |
 
 ---
 

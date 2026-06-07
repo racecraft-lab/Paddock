@@ -24,16 +24,16 @@
 
 > Run each test task after writing it and confirm it fails for missing SPEC-012B implementation, not for syntax or fixture-shape errors.
 
-- [X] T001 [P] Add RED fresh-fixture tests proving zero active findings for stale claims, missing evidence, feature flags, low-value tests, strict scope, source links, and cleanup eligibility in `scripts/spec-012b/__tests__/fresh-fixtures.test.mjs` with fixtures under `scripts/spec-012b/fixtures/fresh/`
-- [X] T002 [P] Add RED hard stale-status and missing-evidence fixture tests in `scripts/spec-012b/__tests__/hard-status-evidence.test.mjs` with fixtures under `scripts/spec-012b/fixtures/hard/stale-status/` and `scripts/spec-012b/fixtures/hard/missing-evidence/`
-- [X] T003 [P] Add RED hard stale-feature-flag and strict-scope fixture tests in `scripts/spec-012b/__tests__/hard-feature-flag-scope.test.mjs` with fixtures under `scripts/spec-012b/fixtures/hard/feature-flag/` and `scripts/spec-012b/fixtures/hard/strict-scope/`
-- [X] T004 [P] Add RED broken required repo-owned source-link fixture tests in `scripts/spec-012b/__tests__/hard-source-links.test.mjs` with fixtures under `scripts/spec-012b/fixtures/hard/source-links/`
-- [X] T005 [P] Add RED warning-policy fixture tests for deterministic low-value tests, unknown owners, freshness-only staleness, optional links, external URLs, and wiki-style links in `scripts/spec-012b/__tests__/warning-fixtures.test.mjs` with fixtures under `scripts/spec-012b/fixtures/warning/`
-- [X] T006 [P] Add RED `specs/**` cleanup recommendation-only tests that assert no folder deletion or archive-state mutation in `scripts/spec-012b/__tests__/archive-cleanup-fixtures.test.mjs` with fixtures under `scripts/spec-012b/fixtures/warning/specs-cleanup/`
-- [X] T007 [P] Add RED stable ID, normalized `owner_key`, deterministic sort, dedupe, sorted evidence/warning merge, and `error > warning` severity aggregation tests in `scripts/spec-012b/__tests__/dedupe-report.test.mjs` with fixtures under `scripts/spec-012b/fixtures/dedupe/`
-- [X] T008 [P] Add RED JSON Schema, recommendation-parent equality, summary-count, and deterministic byte-for-byte JSON tests in `scripts/spec-012b/__tests__/report-contract.test.mjs` using `specs/012b-harness-gardening-guards/contracts/harness-gardening-report.schema.json`
-- [X] T009 [P] Add RED sanitized error tests for every closed error code, oversize limits, `redacted` true/false behavior, optional detector skips, and fixture containment escapes in `scripts/spec-012b/__tests__/error-handling.test.mjs` with fixtures under `scripts/spec-012b/fixtures/errors/`
-- [X] T010 [P] Add RED focused-command, report-path, guardrails-suite, unknown-suite, and SPEC-012A compatibility tests in `scripts/spec-012b/__tests__/guardrails-integration.test.mjs` covering `package.json`, `scripts/check-guardrails.mjs`, and `scripts/spec-012a/verify-repo-knowledge-index.mjs`
+- [x] T001 [P] Add RED fresh-fixture tests proving zero active findings for stale claims, missing evidence, feature flags, low-value tests, strict scope, source links, and cleanup eligibility in `scripts/spec-012b/__tests__/fresh-fixtures.test.mjs` with fixtures under `scripts/spec-012b/fixtures/fresh/`
+- [x] T002 [P] Add RED hard stale-status and missing-evidence fixture tests in `scripts/spec-012b/__tests__/hard-status-evidence.test.mjs` with fixtures under `scripts/spec-012b/fixtures/hard/stale-status/` and `scripts/spec-012b/fixtures/hard/missing-evidence/`
+- [x] T003 [P] Add RED hard stale-feature-flag and strict-scope fixture tests in `scripts/spec-012b/__tests__/hard-feature-flag-scope.test.mjs` with fixtures under `scripts/spec-012b/fixtures/hard/feature-flag/` and `scripts/spec-012b/fixtures/hard/strict-scope/`
+- [x] T004 [P] Add RED broken required repo-owned source-link fixture tests in `scripts/spec-012b/__tests__/hard-source-links.test.mjs` with fixtures under `scripts/spec-012b/fixtures/hard/source-links/`
+- [x] T005 [P] Add RED warning-policy fixture tests for deterministic low-value tests, unknown owners, freshness-only staleness, optional links, external URLs, and wiki-style links in `scripts/spec-012b/__tests__/warning-fixtures.test.mjs` with fixtures under `scripts/spec-012b/fixtures/warning/`
+- [x] T006 [P] Add RED `specs/**` cleanup recommendation-only tests that assert no folder deletion or archive-state mutation in `scripts/spec-012b/__tests__/archive-cleanup-fixtures.test.mjs` with fixtures under `scripts/spec-012b/fixtures/warning/specs-cleanup/`
+- [x] T007 [P] Add RED stable ID, normalized `owner_key`, deterministic sort, dedupe, sorted evidence/warning merge, and `error > warning` severity aggregation tests in `scripts/spec-012b/__tests__/dedupe-report.test.mjs` with fixtures under `scripts/spec-012b/fixtures/dedupe/`
+- [x] T008 [P] Add RED JSON Schema, recommendation-parent equality, summary-count, and deterministic byte-for-byte JSON tests in `scripts/spec-012b/__tests__/report-contract.test.mjs` using `specs/012b-harness-gardening-guards/contracts/harness-gardening-report.schema.json`
+- [x] T009 [P] Add RED sanitized error tests for every closed error code, oversize limits, `redacted` true/false behavior, optional detector skips, and fixture containment escapes in `scripts/spec-012b/__tests__/error-handling.test.mjs` with fixtures under `scripts/spec-012b/fixtures/errors/`
+- [x] T010 [P] Add RED focused-command, report-path, guardrails-suite, unknown-suite, and SPEC-012A compatibility tests in `scripts/spec-012b/__tests__/guardrails-integration.test.mjs` covering `package.json`, `scripts/check-guardrails.mjs`, and `scripts/spec-012a/verify-repo-knowledge-index.mjs`
 
 **Checkpoint**: RED fixture tests exist and fail before any implementation task starts.
 
@@ -43,14 +43,14 @@
 
 **Purpose**: Build shared process-only helpers required by all user stories.
 
-- [X] T011 Create process-only script skeletons and fixture README boundaries in `scripts/spec-012b/harness-gardening-check.mjs`, `scripts/spec-012b/harness-gardening-report.mjs`, `scripts/spec-012b/check-scope-control.mjs`, and `scripts/spec-012b/fixtures/README.md`
-- [X] T012 Implement report schema constants, closed drift-class enums, closed error-code enums, freshness defaults, size limits, and stable JSON formatting in `scripts/spec-012b/harness-gardening-report.mjs`
-- [X] T013 Implement `stable_finding_id` hashing, deterministic sort, duplicate grouping, sorted unique evidence/warning merge, severity aggregation, and summary-count helpers in `scripts/spec-012b/harness-gardening-report.mjs`
-- [X] T014 Implement owner derivation from repo knowledge exact path, longest prefix, link/source path, SPEC family, roadmap/path class, and unknown fallback in `scripts/spec-012b/harness-gardening-report.mjs`
-- [X] T015 Implement safe repo-artifact and fixture readers with repo-relative path normalization, fixture containment-before-read, byte-limit checks, parse handling, and sanitized guard errors in `scripts/spec-012b/harness-gardening-check.mjs`
-- [X] T016 Implement report contract validation and generator assertions for recommendation equality, `recommendation_id == stable_finding_id`, summary counts, and stable sorting in `scripts/spec-012b/harness-gardening-report.mjs`
-- [X] T017 Implement deterministic JSON and Markdown report rendering, including default writes to `specs/012b-harness-gardening-guards/.process/harness-gardening-report.json` and `specs/012b-harness-gardening-guards/.process/harness-gardening-report.md`
-- [X] T018 Implement CLI argument parsing, `--fixtures`, `--json`, `--as-of YYYY-MM-DD`, default local report paths, detector-status output, and hard-failure exit policy in `scripts/spec-012b/harness-gardening-check.mjs`
+- [x] T011 Create process-only script skeletons and fixture README boundaries in `scripts/spec-012b/harness-gardening-check.mjs`, `scripts/spec-012b/harness-gardening-report.mjs`, `scripts/spec-012b/check-scope-control.mjs`, and `scripts/spec-012b/fixtures/README.md`
+- [x] T012 Implement report schema constants, closed drift-class enums, closed error-code enums, freshness defaults, size limits, and stable JSON formatting in `scripts/spec-012b/harness-gardening-report.mjs`
+- [x] T013 Implement `stable_finding_id` hashing, deterministic sort, duplicate grouping, sorted unique evidence/warning merge, severity aggregation, and summary-count helpers in `scripts/spec-012b/harness-gardening-report.mjs`
+- [x] T014 Implement owner derivation from repo knowledge exact path, longest prefix, link/source path, SPEC family, roadmap/path class, and unknown fallback in `scripts/spec-012b/harness-gardening-report.mjs`
+- [x] T015 Implement safe repo-artifact and fixture readers with repo-relative path normalization, fixture containment-before-read, byte-limit checks, parse handling, and sanitized guard errors in `scripts/spec-012b/harness-gardening-check.mjs`
+- [x] T016 Implement report contract validation and generator assertions for recommendation equality, `recommendation_id == stable_finding_id`, summary counts, and stable sorting in `scripts/spec-012b/harness-gardening-report.mjs`
+- [x] T017 Implement deterministic JSON and Markdown report rendering, including default writes to `specs/012b-harness-gardening-guards/.process/harness-gardening-report.json` and `specs/012b-harness-gardening-guards/.process/harness-gardening-report.md`
+- [x] T018 Implement CLI argument parsing, `--fixtures`, `--json`, `--as-of YYYY-MM-DD`, default local report paths, detector-status output, and hard-failure exit policy in `scripts/spec-012b/harness-gardening-check.mjs`
 
 **Checkpoint**: Shared report, CLI, owner, safety, and fixture helpers are available for story detectors.
 
@@ -64,14 +64,14 @@
 
 ### Implementation for User Story 1
 
-- [X] T019 [US1] Implement stale PRD, roadmap, workflow, and autopilot status-pointer detection in `scripts/spec-012b/harness-gardening-check.mjs`
-- [X] T020 [US1] Implement missing required evidence-marker detection for closeout fields, UAT run IDs, verification rows, and workflow evidence in `scripts/spec-012b/harness-gardening-check.mjs`
-- [X] T021 [US1] Implement stale feature-flag contradiction detection for absent flags, unsafe defaults, enablement contradictions, and completed-evidence contradictions in `scripts/spec-012b/harness-gardening-check.mjs`
-- [X] T022 [US1] Implement strict-scope drift detection for forbidden owned surfaces and missing strict-scope evidence in `scripts/spec-012b/harness-gardening-check.mjs`
-- [X] T023 [US1] Implement source-of-truth link classification and broken required repo-owned link detection in `scripts/spec-012b/harness-gardening-check.mjs`
-- [X] T024 [US1] Emit error-severity findings, hard-failure counts, detector statuses, and narrow remediation summaries for all hard-drift detectors in `scripts/spec-012b/harness-gardening-report.mjs`
-- [X] T025 [US1] Verify fresh hard-drift fixture cases produce zero active findings by updating expectations in `scripts/spec-012b/fixtures/fresh/`
-- [X] T026 [US1] Record US1 hard-drift fixture evidence in `specs/012b-harness-gardening-guards/.process/harness-gardening-report.md`
+- [x] T019 [US1] Implement stale PRD, roadmap, workflow, and autopilot status-pointer detection in `scripts/spec-012b/harness-gardening-check.mjs`
+- [x] T020 [US1] Implement missing required evidence-marker detection for closeout fields, UAT run IDs, verification rows, and workflow evidence in `scripts/spec-012b/harness-gardening-check.mjs`
+- [x] T021 [US1] Implement stale feature-flag contradiction detection for absent flags, unsafe defaults, enablement contradictions, and completed-evidence contradictions in `scripts/spec-012b/harness-gardening-check.mjs`
+- [x] T022 [US1] Implement strict-scope drift detection for forbidden owned surfaces and missing strict-scope evidence in `scripts/spec-012b/harness-gardening-check.mjs`
+- [x] T023 [US1] Implement source-of-truth link classification and broken required repo-owned link detection in `scripts/spec-012b/harness-gardening-check.mjs`
+- [x] T024 [US1] Emit error-severity findings, hard-failure counts, detector statuses, and narrow remediation summaries for all hard-drift detectors in `scripts/spec-012b/harness-gardening-report.mjs`
+- [x] T025 [US1] Verify fresh hard-drift fixture cases produce zero active findings by updating expectations in `scripts/spec-012b/fixtures/fresh/`
+- [x] T026 [US1] Record US1 hard-drift fixture evidence in `specs/012b-harness-gardening-guards/.process/harness-gardening-report.md`
 
 **Checkpoint**: User Story 1 is independently testable and does not require live HAL, GitHub, Paddock, database, service, scheduler, or runtime state.
 
@@ -85,16 +85,16 @@
 
 ### Implementation for User Story 2
 
-- [X] T027 [US2] Implement the `harness_gardening_recommendation.v1` builder with copied parent fields and `recommendation_id == stable_finding_id` in `scripts/spec-012b/harness-gardening-report.mjs`
-- [X] T028 [US2] Implement non-mutating `paddock_cleanup_task_import_draft.v1` payloads with `live_mutation: false`, inbox status, metadata, tags, and optional workspace/project hints in `scripts/spec-012b/harness-gardening-report.mjs`
-- [X] T029 [US2] Implement optional export-only GitHub issue draft fields with `export_only: true`, `live_mutation: false`, repository, title, body, and proposed metadata in `scripts/spec-012b/harness-gardening-report.mjs`
-- [X] T030 [US2] Implement recommendation dedupe so each stable finding ID emits exactly one active recommendation with merged evidence and warnings in `scripts/spec-012b/harness-gardening-report.mjs`
-- [X] T031 [US2] Implement warning records for unknown owners while preserving recommendation emission and hard-drift failure causes in `scripts/spec-012b/harness-gardening-report.mjs`
-- [X] T032 [US2] Add the single focused `spec:012b:harness-gardening` package script to `package.json` without adding new dependencies to `pnpm-lock.yaml`
-- [X] T033 [US2] Register the separate `harness-gardening` suite in `scripts/check-guardrails.mjs` without deleting, renaming, or inlining `task-pipeline`, `spec-evidence-screenshots`, or `repo-knowledge-index`
-- [X] T034 [US2] Preserve selected-suite behavior, full-suite behavior, and unknown-suite diagnostics listing `harness-gardening` plus existing suite keys in `scripts/check-guardrails.mjs`
-- [X] T035 [US2] Leave `scripts/spec-012a/verify-repo-knowledge-index.mjs` unchanged and verify compatibility through assertions in `scripts/spec-012b/__tests__/guardrails-integration.test.mjs`
-- [X] T036 [US2] Write deterministic default JSON and Markdown reports to `specs/012b-harness-gardening-guards/.process/harness-gardening-report.json` and `specs/012b-harness-gardening-guards/.process/harness-gardening-report.md`
+- [x] T027 [US2] Implement the `harness_gardening_recommendation.v1` builder with copied parent fields and `recommendation_id == stable_finding_id` in `scripts/spec-012b/harness-gardening-report.mjs`
+- [x] T028 [US2] Implement non-mutating `paddock_cleanup_task_import_draft.v1` payloads with `live_mutation: false`, inbox status, metadata, tags, and optional workspace/project hints in `scripts/spec-012b/harness-gardening-report.mjs`
+- [x] T029 [US2] Implement optional export-only GitHub issue draft fields with `export_only: true`, `live_mutation: false`, repository, title, body, and proposed metadata in `scripts/spec-012b/harness-gardening-report.mjs`
+- [x] T030 [US2] Implement recommendation dedupe so each stable finding ID emits exactly one active recommendation with merged evidence and warnings in `scripts/spec-012b/harness-gardening-report.mjs`
+- [x] T031 [US2] Implement warning records for unknown owners while preserving recommendation emission and hard-drift failure causes in `scripts/spec-012b/harness-gardening-report.mjs`
+- [x] T032 [US2] Add the single focused `spec:012b:harness-gardening` package script to `package.json` without adding new dependencies to `pnpm-lock.yaml`
+- [x] T033 [US2] Register the separate `harness-gardening` suite in `scripts/check-guardrails.mjs` without deleting, renaming, or inlining `task-pipeline`, `spec-evidence-screenshots`, or `repo-knowledge-index`
+- [x] T034 [US2] Preserve selected-suite behavior, full-suite behavior, and unknown-suite diagnostics listing `harness-gardening` plus existing suite keys in `scripts/check-guardrails.mjs`
+- [x] T035 [US2] Leave `scripts/spec-012a/verify-repo-knowledge-index.mjs` unchanged and verify compatibility through assertions in `scripts/spec-012b/__tests__/guardrails-integration.test.mjs`
+- [x] T036 [US2] Write deterministic default JSON and Markdown reports to `specs/012b-harness-gardening-guards/.process/harness-gardening-report.json` and `specs/012b-harness-gardening-guards/.process/harness-gardening-report.md`
 
 **Checkpoint**: User Story 2 is independently testable and creates no live Paddock task, GitHub issue, label, assignment, milestone, project field, or apply-mode side effect.
 
@@ -108,14 +108,14 @@
 
 ### Implementation for User Story 3
 
-- [X] T037 [US3] Implement deterministic fixture-backed low-value test warning detection only for no-assertion, snapshot-only/static fixture, and duplicate stale fixture patterns in `scripts/spec-012b/harness-gardening-check.mjs`
-- [X] T038 [US3] Implement freshness-only, optional-link, external-URL, and wiki-style source-link warning policy in `scripts/spec-012b/harness-gardening-check.mjs`
-- [X] T039 [US3] Implement `specs/**` cleanup eligibility as warning-level recommendation-only output with archive gate blockers in `scripts/spec-012b/harness-gardening-check.mjs`
-- [X] T040 [US3] Prove `specs/**` cleanup detection never deletes source folders, moves specs, mutates archive state, or invokes archive apply behavior by updating `scripts/spec-012b/__tests__/archive-cleanup-fixtures.test.mjs`
-- [X] T041 [US3] Implement static scope-control self-test fixtures for allowed paths, blocked paths, forbidden tokens, and docs/process exemptions in `scripts/spec-012b/check-scope-control.mjs` and `scripts/spec-012b/fixtures/scope-control/`
-- [X] T042 [US3] Implement static scope-control current-diff mode with changed-file allowlist, runtime/control-plane blocklist, changed-file counts, and scanned-entry counts in `scripts/spec-012b/check-scope-control.mjs`
-- [X] T043 [US3] Implement forbidden live-mutation/runtime token scanning for GitHub mutation, Paddock live task creation, scheduler, dispatch, claim/retry, sandbox, harness adapter, auto-merge, runtime feature flags, external OpenAI fetches, and archive delete/move/apply behavior in `scripts/spec-012b/check-scope-control.mjs`
-- [X] T044 [US3] Verify warning-only detectors do not increase hard-failure exit status by updating report expectations in `scripts/spec-012b/fixtures/warning/`
+- [x] T037 [US3] Implement deterministic fixture-backed low-value test warning detection only for no-assertion, snapshot-only/static fixture, and duplicate stale fixture patterns in `scripts/spec-012b/harness-gardening-check.mjs`
+- [x] T038 [US3] Implement freshness-only, optional-link, external-URL, and wiki-style source-link warning policy in `scripts/spec-012b/harness-gardening-check.mjs`
+- [x] T039 [US3] Implement `specs/**` cleanup eligibility as warning-level recommendation-only output with archive gate blockers in `scripts/spec-012b/harness-gardening-check.mjs`
+- [x] T040 [US3] Prove `specs/**` cleanup detection never deletes source folders, moves specs, mutates archive state, or invokes archive apply behavior by updating `scripts/spec-012b/__tests__/archive-cleanup-fixtures.test.mjs`
+- [x] T041 [US3] Implement static scope-control self-test fixtures for allowed paths, blocked paths, forbidden tokens, and docs/process exemptions in `scripts/spec-012b/check-scope-control.mjs` and `scripts/spec-012b/fixtures/scope-control/`
+- [x] T042 [US3] Implement static scope-control current-diff mode with changed-file allowlist, runtime/control-plane blocklist, changed-file counts, and scanned-entry counts in `scripts/spec-012b/check-scope-control.mjs`
+- [x] T043 [US3] Implement forbidden live-mutation/runtime token scanning for GitHub mutation, Paddock live task creation, scheduler, dispatch, claim/retry, sandbox, harness adapter, auto-merge, runtime feature flags, external OpenAI fetches, and archive delete/move/apply behavior in `scripts/spec-012b/check-scope-control.mjs`
+- [x] T044 [US3] Verify warning-only detectors do not increase hard-failure exit status by updating report expectations in `scripts/spec-012b/fixtures/warning/`
 
 **Checkpoint**: User Story 3 is independently testable and all advisory findings remain warning-only unless another hard-drift rule applies.
 
@@ -125,17 +125,17 @@
 
 **Purpose**: Final docs, integration, scope, compatibility, and review evidence.
 
-- [X] T045 [P] Verify or update SPEC-012B discoverability entries for the design concept, workflow ledger, spec folder, and report artifacts in `docs/ai/repo-knowledge-index.json`
-- [X] T046 [P] Verify or update concise SPEC-012B pointers without premature command-success claims in `AGENTS.md`
-- [X] T047 [P] Update Phase 5 task-result evidence in `docs/ai/specs/.process/SPEC-012B-workflow.md`
-- [X] T048 Run `node scripts/spec-012b/check-scope-control.mjs --self-test` and record self-test evidence in `specs/012b-harness-gardening-guards/.process/pr-review-packet.md`
-- [X] T049 Run `node scripts/spec-012b/check-scope-control.mjs` in current-diff mode and record zero-failure changed-file and scanned-entry counts in `specs/012b-harness-gardening-guards/.process/pr-review-packet.md`
-- [X] T050 Run `pnpm spec:012b:harness-gardening -- --fixtures scripts/spec-012b/fixtures --as-of 2026-06-06` and record hard-versus-warning fixture evidence in `specs/012b-harness-gardening-guards/.process/pr-review-packet.md`
-- [X] T051 Run `pnpm spec:012b:harness-gardening -- --fixtures scripts/spec-012b/fixtures --as-of 2026-06-06 --json` twice, compare byte-for-byte output, and record deterministic JSON evidence in `specs/012b-harness-gardening-guards/.process/pr-review-packet.md`
-- [X] T052 Run `pnpm guardrails -- --suite harness-gardening` and record focused-suite evidence in `specs/012b-harness-gardening-guards/.process/pr-review-packet.md`
-- [X] T053 Run `pnpm guardrails`, `pnpm knowledge:index:check`, and `pnpm guardrails -- --suite repo-knowledge-index`, then record compatibility evidence in `specs/012b-harness-gardening-guards/.process/pr-review-packet.md`
-- [X] T054 Run `pnpm typecheck`, `pnpm lint`, `pnpm test`, and `git diff --check`, then record verification evidence in `specs/012b-harness-gardening-guards/.process/pr-review-packet.md`
-- [X] T055 Finalize the PR review packet with what changed, why, non-goals, review order, scope budget, traceability, verification evidence, known gaps, and rollback or feature-flag notes in `specs/012b-harness-gardening-guards/.process/pr-review-packet.md`
+- [x] T045 [P] Verify or update SPEC-012B discoverability entries for the design concept, workflow ledger, spec folder, and report artifacts in `docs/ai/repo-knowledge-index.json`
+- [x] T046 [P] Verify or update concise SPEC-012B pointers without premature command-success claims in `AGENTS.md`
+- [x] T047 [P] Update Phase 5 task-result evidence in `docs/ai/specs/.process/SPEC-012B-workflow.md`
+- [x] T048 Run `node scripts/spec-012b/check-scope-control.mjs --self-test` and record self-test evidence in `specs/012b-harness-gardening-guards/.process/pr-review-packet.md`
+- [x] T049 Run `node scripts/spec-012b/check-scope-control.mjs` in current-diff mode and record zero-failure changed-file and scanned-entry counts in `specs/012b-harness-gardening-guards/.process/pr-review-packet.md`
+- [x] T050 Run `pnpm spec:012b:harness-gardening -- --fixtures scripts/spec-012b/fixtures --as-of 2026-06-06` and record hard-versus-warning fixture evidence in `specs/012b-harness-gardening-guards/.process/pr-review-packet.md`
+- [x] T051 Run `pnpm spec:012b:harness-gardening -- --fixtures scripts/spec-012b/fixtures --as-of 2026-06-06 --json` twice, compare byte-for-byte output, and record deterministic JSON evidence in `specs/012b-harness-gardening-guards/.process/pr-review-packet.md`
+- [x] T052 Run `pnpm guardrails -- --suite harness-gardening` and record focused-suite evidence in `specs/012b-harness-gardening-guards/.process/pr-review-packet.md`
+- [x] T053 Run `pnpm guardrails`, `pnpm knowledge:index:check`, and `pnpm guardrails -- --suite repo-knowledge-index`, then record compatibility evidence in `specs/012b-harness-gardening-guards/.process/pr-review-packet.md`
+- [x] T054 Run `pnpm typecheck`, `pnpm lint`, `pnpm test`, and `git diff --check`, then record verification evidence in `specs/012b-harness-gardening-guards/.process/pr-review-packet.md`
+- [x] T055 Finalize the PR review packet with what changed, why, non-goals, review order, scope budget, traceability, verification evidence, known gaps, and rollback or feature-flag notes in `specs/012b-harness-gardening-guards/.process/pr-review-packet.md`
 
 ---
 

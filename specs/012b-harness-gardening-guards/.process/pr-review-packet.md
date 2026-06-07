@@ -47,7 +47,7 @@ SPEC-012B adds offline harness-gardening drift guards for checked-in repo artifa
 - T045 discoverability: `docs/ai/repo-knowledge-index.json` already includes the SPEC-012B design concept, workflow ledger, generated spec folder, and report-artifact discoverability entries.
 - T046 AGENTS pointers: `AGENTS.md` already points to the SPEC-012B workflow and generated artifacts without claiming final command success prematurely.
 - T048 scope self-test: `node scripts/spec-012b/check-scope-control.mjs --self-test` passed with 12 changed files, 29 scanned entries, 0 failures, and all four self-test cases passed.
-- T049 scope current-diff: 4 changed files, 99 scanned entries, 0 failures.
+- T049 scope current-diff: 11 changed files, 439 scanned entries, 0 failures.
 - T050 full fixture matrix: `pnpm spec:012b:harness-gardening -- --fixtures scripts/spec-012b/fixtures --as-of 2026-06-06` exited 1 as expected for hard fixtures, with 15 findings, 15 recommendations, 28 hard failures, 19 warnings, and 22 guard errors.
 - T051 deterministic JSON: two `pnpm --silent spec:012b:harness-gardening -- --fixtures scripts/spec-012b/fixtures --as-of 2026-06-06 --json` runs matched byte-for-byte; both exited 1 as expected and produced 76,865 bytes with the same full-corpus summary.
 - T052 focused suite: `pnpm guardrails -- --suite harness-gardening` passed with 1 suite and the default no-fixture report produced 0 findings and 0 hard failures.
