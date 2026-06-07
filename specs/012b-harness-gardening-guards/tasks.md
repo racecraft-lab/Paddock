@@ -43,14 +43,14 @@
 
 **Purpose**: Build shared process-only helpers required by all user stories.
 
-- [ ] T011 Create process-only script skeletons and fixture README boundaries in `scripts/spec-012b/harness-gardening-check.mjs`, `scripts/spec-012b/harness-gardening-report.mjs`, `scripts/spec-012b/check-scope-control.mjs`, and `scripts/spec-012b/fixtures/README.md`
-- [ ] T012 Implement report schema constants, closed drift-class enums, closed error-code enums, freshness defaults, size limits, and stable JSON formatting in `scripts/spec-012b/harness-gardening-report.mjs`
-- [ ] T013 Implement `stable_finding_id` hashing, deterministic sort, duplicate grouping, sorted unique evidence/warning merge, severity aggregation, and summary-count helpers in `scripts/spec-012b/harness-gardening-report.mjs`
-- [ ] T014 Implement owner derivation from repo knowledge exact path, longest prefix, link/source path, SPEC family, roadmap/path class, and unknown fallback in `scripts/spec-012b/harness-gardening-report.mjs`
-- [ ] T015 Implement safe repo-artifact and fixture readers with repo-relative path normalization, fixture containment-before-read, byte-limit checks, parse handling, and sanitized guard errors in `scripts/spec-012b/harness-gardening-check.mjs`
-- [ ] T016 Implement report contract validation and generator assertions for recommendation equality, `recommendation_id == stable_finding_id`, summary counts, and stable sorting in `scripts/spec-012b/harness-gardening-report.mjs`
-- [ ] T017 Implement deterministic JSON and Markdown report rendering, including default writes to `specs/012b-harness-gardening-guards/.process/harness-gardening-report.json` and `specs/012b-harness-gardening-guards/.process/harness-gardening-report.md`
-- [ ] T018 Implement CLI argument parsing, `--fixtures`, `--json`, `--as-of YYYY-MM-DD`, default local report paths, detector-status output, and hard-failure exit policy in `scripts/spec-012b/harness-gardening-check.mjs`
+- [X] T011 Create process-only script skeletons and fixture README boundaries in `scripts/spec-012b/harness-gardening-check.mjs`, `scripts/spec-012b/harness-gardening-report.mjs`, `scripts/spec-012b/check-scope-control.mjs`, and `scripts/spec-012b/fixtures/README.md`
+- [X] T012 Implement report schema constants, closed drift-class enums, closed error-code enums, freshness defaults, size limits, and stable JSON formatting in `scripts/spec-012b/harness-gardening-report.mjs`
+- [X] T013 Implement `stable_finding_id` hashing, deterministic sort, duplicate grouping, sorted unique evidence/warning merge, severity aggregation, and summary-count helpers in `scripts/spec-012b/harness-gardening-report.mjs`
+- [X] T014 Implement owner derivation from repo knowledge exact path, longest prefix, link/source path, SPEC family, roadmap/path class, and unknown fallback in `scripts/spec-012b/harness-gardening-report.mjs`
+- [X] T015 Implement safe repo-artifact and fixture readers with repo-relative path normalization, fixture containment-before-read, byte-limit checks, parse handling, and sanitized guard errors in `scripts/spec-012b/harness-gardening-check.mjs`
+- [X] T016 Implement report contract validation and generator assertions for recommendation equality, `recommendation_id == stable_finding_id`, summary counts, and stable sorting in `scripts/spec-012b/harness-gardening-report.mjs`
+- [X] T017 Implement deterministic JSON and Markdown report rendering, including default writes to `specs/012b-harness-gardening-guards/.process/harness-gardening-report.json` and `specs/012b-harness-gardening-guards/.process/harness-gardening-report.md`
+- [X] T018 Implement CLI argument parsing, `--fixtures`, `--json`, `--as-of YYYY-MM-DD`, default local report paths, detector-status output, and hard-failure exit policy in `scripts/spec-012b/harness-gardening-check.mjs`
 
 **Checkpoint**: Shared report, CLI, owner, safety, and fixture helpers are available for story detectors.
 

@@ -690,11 +690,17 @@ During implementation:
 | Area | Status | Evidence |
 |------|--------|----------|
 | Fixture RED tests | Complete | T001-T010 created 10 Node test files and fixture corpus; `node --test scripts/spec-012b/__tests__/*.test.mjs` RED result: 26 tests, 11 pass, 15 fail on missing SPEC-012B implementation/package/guardrail wiring |
-| Recommendation schema and output | Pending | Pending |
-| Drift detectors | Pending | Pending |
+| Recommendation schema and output | In Progress | T011-T018 implemented report constants, stable IDs, dedupe/sort/severity helpers, owner derivation, report invariants, deterministic JSON/Markdown rendering, and CLI/default report paths; US2 payload/wiring tasks remain pending |
+| Drift detectors | In Progress | T011-T018 removed missing-module failures and established fixture/artifact loading and error boundaries; US1/US3 detector-specific tasks remain pending |
 | Package and guardrails integration | Pending | Pending |
 | Docs and discoverability | Pending | Pending |
 | Final verification | Pending | Pending |
+
+### Foundation Verification
+
+- `node --test scripts/spec-012b/__tests__/*.test.mjs`: 24 pass, 2 fail as expected for pending package script and guardrails suite wiring.
+- `node scripts/spec-012b/check-scope-control.mjs --self-test`: pass.
+- `git diff --check`: pass.
 
 ---
 
