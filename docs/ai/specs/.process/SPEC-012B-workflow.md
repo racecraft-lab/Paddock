@@ -40,7 +40,7 @@ Re-read it before each phase if you need to disambiguate a prompt. The Specify a
 | Plan | `$speckit-plan` | Complete | Generated plan, research, data model, quickstart, and report contract schema; G3 passed |
 | Checklist | `$speckit-checklist` | Complete | Completed six domains; all gaps remediated with final marker count 0 |
 | Tasks | `$speckit-tasks` | Complete | Generated 55 TDD-first tasks; G5 passed and task reviewability gate passed under ratified process/tooling exception |
-| Analyze | `$speckit-analyze` | Pending | Check drift between roadmap, Design Concept, spec, plan, tasks, and external-context gates |
+| Analyze | `$speckit-analyze` | Complete | G6 passed with 0 CRITICAL/HIGH/MEDIUM/LOW findings after remediating workflow-ledger metric/status wording |
 | Implement | `$speckit-implement` | Pending | Execute only after G1-G6 pass and scope ownership is still process/tooling only |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
@@ -267,9 +267,10 @@ Use the Phase 10B roadmap acceptance criteria plus the Success Criteria Summary 
 
 | Metric | Value |
 |--------|-------|
-| Functional Requirements | 18 |
+| Functional Requirements | 18 at initial G1; 32 current after Clarify and checklist remediation |
 | User Stories | 3 |
-| Acceptance Criteria | 9 |
+| Acceptance Scenarios | 9 |
+| Measurable Success Criteria | 12 current after Clarify and checklist remediation |
 
 ### Files Generated
 
@@ -368,6 +369,7 @@ Focus on scope boundaries:
 | Clarify Session 2 Q5 sanitized diagnostics | 1 | security | Closed `harness_gardening_error_code.v1` enum accepted; required inputs, fixture expectation mismatches, and unsafe fixture paths fail CI; optional detector inputs warn with `detector_status: "skipped_detector"` and reports omit raw contents, absolute paths, stack traces, env values, tokens, and secrets | codebase-analyst, spec-context-analyst, domain-researcher |
 | Clarify Session 3 Q1 freshness thresholds | 1 | spec, codebase | Explicit `freshness.stale_after_days` overrides defaults; absent thresholds use 2-day status pointers, 7-day active workflow evidence, 30-day execution/QA/contract/operator/rollback docs, and 45-day durable intent; `--as-of` required for deterministic tests and freshness-only staleness warns only | codebase-analyst, spec-context-analyst |
 | Checklist scope-control CHK009 static scope guard | 1 | security, codebase | Applied static changed-file allowlist/blocklist and forbidden live-mutation/runtime added-line scan requirements accepted; no further artifact edits required beyond marking Checklist complete and listing `check-scope-control.mjs` in the planned source tree | codebase-analyst, spec-context-analyst, domain-researcher |
+| Analyze clean pass confidence emit | N/A | N/A | No unresolved consensus items after analyze-executor remediation; orchestrator persisted the pre-Implement confidence block for G6.5 | analyze-executor |
 
 ### G2 Validation
 
@@ -615,10 +617,32 @@ G6 passes only with zero CRITICAL/HIGH findings after remediation.
 
 | Severity | Count | Status |
 |----------|-------|--------|
-| CRITICAL | Pending | Pending |
-| HIGH | Pending | Pending |
-| MEDIUM | Pending | Pending |
-| LOW | Pending | Pending |
+| CRITICAL | 0 | Pass |
+| HIGH | 0 | Pass |
+| MEDIUM | 0 | Pass |
+| LOW | 0 | Pass after remediating stale Specify Results metric wording |
+
+### G6 Validation
+
+- Analyze found one workflow-ledger wording drift: the Phase 1 Specify Results table still showed the initial G1 functional-requirement count without naming the current post-clarify count.
+- Remediation clarified the historical G1 count, current functional-requirement count, acceptance-scenario count, and current measurable success-criteria count in this workflow ledger.
+- `count-markers.sh findings specs/012b-harness-gardening-guards`: 0 CRITICAL, 0 HIGH, 0 MEDIUM, 0 LOW after remediation.
+- G6 passes: design concept, roadmap, repo knowledge index, spec, plan, tasks, generated artifacts, and workflow agree on repo-artifact-only guard execution with no live mutation or runtime scope.
+
+### Pre-Implement Confidence
+
+📊 Confidence: 0.95
+
+- Task understanding: 0.96
+- Approach clarity: 0.94
+- Requirements alignment: 0.96
+- Risk assessment: 0.94
+- Completeness: 0.95
+
+### G6.5 Confidence Gate
+
+- `confidence-gate.sh docs/ai/specs/.process/SPEC-012B-workflow.md --threshold 0.90 --mode advisory`: pass.
+- Composite confidence `0.95` is above threshold `0.90`; recommended action: proceed.
 
 ---
 
