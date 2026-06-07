@@ -36,7 +36,7 @@ Re-read it before each phase if you need to disambiguate a prompt. The Specify a
 |-------|---------|--------|-------|
 | Scaffold | `$speckit-scaffold-spec SPEC-012B` | Complete | Branch, worktree, reviewability preset, design concept, workflow, and roadmap setup status created |
 | Specify | `$speckit-specify` | Complete | Generated `spec.md` and requirements checklist; G1 passed with 0 clarification markers |
-| Clarify | `$speckit-clarify` | Pending | Resolve recommendation schema, hard/warning drift classes, thresholds, fixtures, and command names |
+| Clarify | `$speckit-clarify` | Complete | Five sessions resolved schema, taxonomy, thresholds, ownership, fixtures, dedupe, scope, cleanup, and guardrails boundaries; G2 passed |
 | Plan | `$speckit-plan` | Pending | Plan repo-artifact-only guard scripts, fixture corpus, package/guardrail wiring, and no-runtime boundary |
 | Checklist | `$speckit-checklist` | Pending | Suggested domains: data-integrity, docs-integrity, guardrail-integration, error-handling, testing-strategy, scope-control |
 | Tasks | `$speckit-tasks` | Pending | Generate TDD-first tasks for fixture RED tests, schemas, guard implementation, package scripts, docs, and verification |
@@ -353,11 +353,24 @@ Focus on scope boundaries:
 
 | Session | Focus Area | Questions | Key Outcomes |
 |---------|------------|-----------|--------------|
-| 1 | Recommendation schema and outputs | Pending | Pending |
-| 2 | Drift taxonomy and failure policy | Pending | Pending |
-| 3 | Evidence freshness and owner metadata | Pending | Pending |
-| 4 | Fixtures, dedupe, and historical patterns | Pending | Pending |
-| 5 | Scope control and archive cleanup boundary | Pending | Pending |
+| 1 | Recommendation schema and outputs | 5 | Accepted deterministic recommendation envelope, non-mutating Paddock cleanup-task import draft, export-only GitHub issue draft, report paths, and normalized stable finding IDs |
+| 2 | Drift taxonomy and failure policy | 5 | Accepted hard/warning severity matrix, explicit repo-owned hard signals, stale feature-flag contradiction policy, warning-only cleanup signals, and sanitized diagnostics enum |
+| 3 | Evidence freshness and owner metadata | 5 | Accepted freshness threshold override/default policy, `--as-of` determinism, status-pointer authority, owner derivation order, unknown-owner warning fallback, and closed evidence marker set |
+| 4 | Fixtures, dedupe, and historical patterns | 5 | Accepted SPEC-012B fixture layout, reduced historical drift fixture set, stable finding tuple normalization, deterministic sort/dedupe rules, and no cross-run persistence in v1 |
+| 5 | Scope control and archive cleanup boundary | 5 | Accepted process/tooling-only scope, `specs/**` cleanup as recommendation-only, archive `--apply-cleanup` gate preservation, guardrails integration without replacing SPEC-012A, and offline repo-artifact-only guard execution |
+
+### Consensus Resolution Log
+
+| Phase Item | Round | Routed Categories | Outcome | Analysts Used |
+|------------|-------|-------------------|---------|---------------|
+| Clarify Session 1 Q3 GitHub issue export fields | 1 | security, domain | Export-only create-issue draft accepted with fixed `export_only: true` and `live_mutation: false`; `repository` is an export target, optional GitHub fields are proposed metadata only, and v1 performs no GitHub/Paddock mutation | codebase-analyst, spec-context-analyst, domain-researcher |
+| Clarify Session 2 Q5 sanitized diagnostics | 1 | security | Closed `harness_gardening_error_code.v1` enum accepted; required inputs, fixture expectation mismatches, and unsafe fixture paths fail CI; optional detector inputs warn with `detector_status: "skipped_detector"` and reports omit raw contents, absolute paths, stack traces, env values, tokens, and secrets | codebase-analyst, spec-context-analyst, domain-researcher |
+| Clarify Session 3 Q1 freshness thresholds | 1 | spec, codebase | Explicit `freshness.stale_after_days` overrides defaults; absent thresholds use 2-day status pointers, 7-day active workflow evidence, 30-day execution/QA/contract/operator/rollback docs, and 45-day durable intent; `--as-of` required for deterministic tests and freshness-only staleness warns only | codebase-analyst, spec-context-analyst |
+
+### G2 Validation
+
+- `validate-gate.sh G2 specs/012b-harness-gardening-guards`: pass.
+- `count-markers.sh all specs/012b-harness-gardening-guards`: 0 gaps, 0 clarifications, 0 CRITICAL, 0 HIGH, 0 MEDIUM, 0 LOW.
 
 ---
 

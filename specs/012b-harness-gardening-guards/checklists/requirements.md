@@ -34,3 +34,8 @@
 - Validation iteration 1 passed after writing the spec from the reviewability preset.
 - External-context retrieval evidence from the pre-Specify gate is recorded in the specification.
 - The spec intentionally names repo-owned paths and guard command surfaces because they are user-facing process artifacts for this process/tooling feature, not runtime implementation details.
+- Clarify session 1 resolved recommendation schema and output contracts: deterministic report envelope, non-mutating cleanup-task import draft, export-only GitHub issue draft, deterministic report paths, and normalized stable finding IDs.
+- Clarify session 2 resolved the hard/warning drift matrix, exact hard-drift repo signals, feature-flag contradiction policy, warning-only cleanup signals, and sanitized diagnostics enum with required-vs-optional CI behavior.
+- Clarify session 3 resolved freshness-threshold defaults, status-pointer authority, owner derivation order, unknown-owner warning behavior, and the closed evidence marker set.
+- Clarify session 4 resolved fixture layout, reduced historical drift fixture patterns, stable finding tuple normalization, deterministic sort/dedupe rules, and no cross-run persistence in v1.
+- Clarify session 5 resolved process/tooling-only scope, `specs/**` cleanup recommendation-only behavior, guardrails integration without replacing SPEC-012A, no external fetching in guard execution, and static scope-control verification.
