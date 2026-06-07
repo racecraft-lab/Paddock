@@ -1,0 +1,46 @@
+{
+  "fixture_version": "harness_gardening_fixture.v1",
+  "case_id": "hard/stale-status/spec-012a-workflow",
+  "as_of": "2026-06-06",
+  "description": "Workflow claims SPEC-012A is current while durable pointer says SPEC-012B is active.",
+  "inputs": {
+    "repo_root": "repo",
+    "status_pointers": [
+      "docs/ai/specs/.process/SPEC-012A-workflow.md",
+      "docs/ai/specs/.process/autopilot-state.json"
+    ]
+  },
+  "expected": {
+    "exit_code": 1,
+    "summary": {
+      "finding_count": 1,
+      "recommendation_count": 1,
+      "error_count": 0,
+      "warning_count": 0,
+      "hard_failure_count": 1
+    },
+    "findings": [
+      {
+        "drift_class": "stale_workflow_claim",
+        "source_path": "docs/ai/specs/.process/SPEC-012A-workflow.md",
+        "anchor": "Phase 6 Closeout",
+        "owner": {
+          "name": "Docs Integrity",
+          "owner_key": "docs-integrity",
+          "owner_source": "spec_family",
+          "confidence": "medium"
+        },
+        "severity": "error",
+        "evidence": [
+          {
+            "source_path": "docs/ai/specs/.process/autopilot-state.json",
+            "anchor": "/current_spec",
+            "summary": "current_spec is 012b-harness-gardening-guards while workflow claims SPEC-012A closeout is current"
+          }
+        ],
+        "warnings": [],
+        "remediation_summary": "Update the stale workflow status pointer or add current closeout evidence."
+      }
+    ]
+  }
+}

@@ -689,7 +689,7 @@ During implementation:
 
 | Area | Status | Evidence |
 |------|--------|----------|
-| Fixture RED tests | Pending | Pending |
+| Fixture RED tests | Complete | T001-T010 created 10 Node test files and fixture corpus; `node --test scripts/spec-012b/__tests__/*.test.mjs` RED result: 26 tests, 11 pass, 15 fail on missing SPEC-012B implementation/package/guardrail wiring |
 | Recommendation schema and output | Pending | Pending |
 | Drift detectors | Pending | Pending |
 | Package and guardrails integration | Pending | Pending |

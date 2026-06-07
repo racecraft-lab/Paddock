@@ -1,0 +1,30 @@
+{
+  "fixture_version": "harness_gardening_fixture.v1",
+  "case_id": "warning/source-links/external-url",
+  "as_of": "2026-06-06",
+  "description": "External URLs are classified but not hard-failed by offline guard execution.",
+  "inputs": {
+    "repo_root": "repo",
+    "source_links": [
+      {
+        "source_path": "docs/external-context.md",
+        "anchor": "External Context",
+        "target": "https://openai.com/index/harness-engineering/",
+        "required": true,
+        "repo_owned": false,
+        "expected_classification": "external_url"
+      }
+    ]
+  },
+  "expected": {
+    "exit_code": 0,
+    "findings": [
+      {
+        "drift_class": "broken_source_of_truth_link",
+        "source_path": "docs/external-context.md",
+        "anchor": "External Context",
+        "severity": "warning"
+      }
+    ]
+  }
+}

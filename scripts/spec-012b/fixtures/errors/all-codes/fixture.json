@@ -1,0 +1,26 @@
+{
+  "fixture_version": "harness_gardening_fixture.v1",
+  "case_id": "errors/all-codes",
+  "as_of": "2026-06-06",
+  "description": "One deterministic fixture case for each closed guard error code.",
+  "inputs": {
+    "repo_root": "repo",
+    "error_cases": "closed enum coverage"
+  },
+  "expected": {
+    "exit_code": 1,
+    "errors": [
+      { "code": "repo_artifact_missing", "required": true, "redacted": false },
+      { "code": "repo_artifact_unreadable", "required": true, "redacted": true },
+      { "code": "repo_artifact_malformed_json", "required": true, "redacted": true },
+      { "code": "repo_artifact_malformed_markdown", "required": true, "redacted": true },
+      { "code": "repo_artifact_schema_invalid", "required": true, "redacted": false },
+      { "code": "fixture_missing", "required": true, "redacted": false },
+      { "code": "fixture_malformed_json", "required": true, "redacted": true },
+      { "code": "fixture_expectation_mismatch", "required": true, "redacted": false },
+      { "code": "fixture_unsafe_path", "required": true, "redacted": false },
+      { "code": "artifact_unsupported_format", "required": true, "redacted": false },
+      { "code": "artifact_too_large", "required": true, "redacted": false }
+    ]
+  }
+}

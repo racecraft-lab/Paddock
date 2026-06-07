@@ -1,0 +1,46 @@
+{
+  "fixture_version": "harness_gardening_fixture.v1",
+  "case_id": "hard/strict-scope/forbidden-runtime-surface",
+  "as_of": "2026-06-06",
+  "description": "SPEC-012B changed-file manifest includes a runtime API path outside the allowed process scope.",
+  "inputs": {
+    "repo_root": "repo",
+    "changed_files": [
+      "scripts/spec-012b/harness-gardening-check.mjs",
+      "src/app/api/tasks/route.ts"
+    ]
+  },
+  "expected": {
+    "exit_code": 1,
+    "summary": {
+      "finding_count": 1,
+      "recommendation_count": 1,
+      "error_count": 0,
+      "warning_count": 0,
+      "hard_failure_count": 1
+    },
+    "findings": [
+      {
+        "drift_class": "strict_scope_drift",
+        "source_path": "specs/012b-harness-gardening-guards/plan.md",
+        "anchor": "Scope Boundaries",
+        "owner": {
+          "name": "SpecKit",
+          "owner_key": "speckit",
+          "owner_source": "spec_family",
+          "confidence": "medium"
+        },
+        "severity": "error",
+        "evidence": [
+          {
+            "source_path": "src/app/api/tasks/route.ts",
+            "anchor": "changed-file",
+            "summary": "Blocked runtime surface src/app/api/tasks/route.ts appears in SPEC-012B changed-file set"
+          }
+        ],
+        "warnings": [],
+        "remediation_summary": "Remove the runtime/API path from the SPEC-012B change or split it into a separate runtime spec."
+      }
+    ]
+  }
+}

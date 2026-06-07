@@ -1,0 +1,31 @@
+{
+  "fixture_version": "harness_gardening_fixture.v1",
+  "case_id": "errors/redaction",
+  "as_of": "2026-06-06",
+  "description": "Sanitizer emits both redacted and safe-template errors without leaking forbidden content.",
+  "inputs": {
+    "repo_root": "repo",
+    "forbidden_examples": [
+      "TOKEN=do-not-emit",
+      "sk-test-do-not-emit",
+      "/Users/fredrickgabelmann/private/path"
+    ]
+  },
+  "expected": {
+    "exit_code": 1,
+    "errors": [
+      {
+        "code": "repo_artifact_malformed_json",
+        "source_path": "docs/secret-shaped.json",
+        "required": true,
+        "redacted": true
+      },
+      {
+        "code": "repo_artifact_missing",
+        "source_path": "docs/missing-safe.md",
+        "required": true,
+        "redacted": false
+      }
+    ]
+  }
+}

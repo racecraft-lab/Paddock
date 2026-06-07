@@ -1,0 +1,23 @@
+{
+  "fixture_version": "harness_gardening_fixture.v1",
+  "case_id": "warning/low-value/no-assertion-test",
+  "as_of": "2026-06-06",
+  "description": "Node test has no assertion and is warning-only.",
+  "inputs": {
+    "repo_root": "repo",
+    "test_files": [
+      "scripts/spec-012b/__tests__/empty-shape.test.mjs"
+    ]
+  },
+  "expected": {
+    "exit_code": 0,
+    "findings": [
+      {
+        "drift_class": "deterministic_low_value_test_pattern",
+        "source_path": "scripts/spec-012b/__tests__/empty-shape.test.mjs",
+        "anchor": "test:no-assertion",
+        "severity": "warning"
+      }
+    ]
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "fixture_version": "harness_gardening_fixture.v1",
+  "case_id": "hard/source-links/broken-required-repo-link",
+  "as_of": "2026-06-06",
+  "description": "Required repo-owned source-of-truth link points at a missing target.",
+  "inputs": {
+    "repo_root": "repo",
+    "source_links": [
+      {
+        "source_path": "docs/ai/repo-knowledge-index.json",
+        "anchor": "/entries/0/path",
+        "target": "docs/ai/specs/missing-workflow.md",
+        "required": true,
+        "repo_owned": true,
+        "expected_classification": "broken_required_repo_owned"
+      }
+    ]
+  },
+  "expected": {
+    "exit_code": 1,
+    "summary": {
+      "finding_count": 1,
+      "recommendation_count": 1,
+      "error_count": 0,
+      "warning_count": 0,
+      "hard_failure_count": 1
+    },
+    "findings": [
+      {
+        "drift_class": "broken_source_of_truth_link",
+        "source_path": "docs/ai/repo-knowledge-index.json",
+        "anchor": "/entries/0/path",
+        "owner": {
+          "name": "Repo Knowledge",
+          "owner_key": "repo-knowledge",
+          "owner_source": "repo_knowledge_exact_path",
+          "confidence": "high"
+        },
+        "severity": "error",
+        "evidence": [
+          {
+            "source_path": "docs/ai/repo-knowledge-index.json",
+            "anchor": "/entries/0/path",
+            "summary": "Required repo-owned link target docs/ai/specs/missing-workflow.md is missing"
+          }
+        ],
+        "warnings": [],
+        "remediation_summary": "Fix or remove the broken required repo-owned source link."
+      }
+    ]
+  }
+}

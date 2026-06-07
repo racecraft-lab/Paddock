@@ -1,0 +1,33 @@
+{
+  "fixture_version": "harness_gardening_fixture.v1",
+  "case_id": "warning/owner/unknown-owner",
+  "as_of": "2026-06-06",
+  "description": "Finding owner cannot be derived and should stay warning-only when no hard drift applies.",
+  "inputs": {
+    "repo_root": "repo",
+    "source_path": "docs/unknown/process-note.md"
+  },
+  "expected": {
+    "exit_code": 0,
+    "findings": [
+      {
+        "drift_class": "stale_roadmap_claim",
+        "source_path": "docs/unknown/process-note.md",
+        "anchor": "last_verified",
+        "owner": {
+          "name": "unknown",
+          "owner_key": "unknown",
+          "owner_source": "unknown",
+          "confidence": "unknown"
+        },
+        "severity": "warning",
+        "warnings": [
+          {
+            "code": "owner_unknown",
+            "message": "Owner could not be derived from repo knowledge or SPEC conventions"
+          }
+        ]
+      }
+    ]
+  }
+}

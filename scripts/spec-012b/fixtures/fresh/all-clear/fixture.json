@@ -1,0 +1,38 @@
+{
+  "fixture_version": "harness_gardening_fixture.v1",
+  "case_id": "fresh/all-clear",
+  "as_of": "2026-06-06",
+  "description": "All supported detectors have current repo-owned evidence and no active findings.",
+  "inputs": {
+    "repo_root": "repo",
+    "artifacts": [
+      "docs/ai/specs/.process/SPEC-012B-workflow.md",
+      "docs/ai/specs/.process/autopilot-state.json",
+      "docs/ai/rc-factory-technical-roadmap.md",
+      "docs/ai/repo-knowledge-index.json",
+      "specs/012b-harness-gardening-guards/spec.md",
+      "src/lib/feature-flags.ts"
+    ]
+  },
+  "expected": {
+    "exit_code": 0,
+    "detectors": [
+      "stale_claims",
+      "missing_required_evidence",
+      "stale_feature_flag_status",
+      "deterministic_low_value_test_pattern",
+      "strict_scope_drift",
+      "source_of_truth_links",
+      "archive_cleanup_eligibility"
+    ],
+    "summary": {
+      "finding_count": 0,
+      "recommendation_count": 0,
+      "error_count": 0,
+      "warning_count": 0,
+      "hard_failure_count": 0
+    },
+    "findings": [],
+    "errors": []
+  }
+}
