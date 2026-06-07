@@ -1,21 +1,23 @@
-# Visual flake quarantine pipeline
-
-Per FR-370, flaky visual specs must be quarantined within one CI run
-of detection. This runbook describes the operator workflow.
+# Visual flake quarantine triage
 
 ## Detection
 
-CI runs Playwright with `retries: 2`. A flake is recorded when the
-spec fails on first attempt and passes on retry. The
-`governance_visual_flake` activity row tracks every retry-only-pass.
+Visual regressions are reported by the Playwright and Storybook visual-review
+workflows. The current repository checks the visual manifest counts and publishes
+review reports; it does not maintain an automatic visual-flake quarantine ledger.
 
-When the rolling-7-day count for a given spec exceeds 3, it is auto-
-quarantined: the next CI run skips it with `test.fixme()` and posts
-a `governance_visual_flake_quarantined` alert.
+Relevant commands:
+
+```bash
+pnpm test:e2e:ui-visual
+pnpm test:e2e:visual-manifest
+pnpm test:visual:storybook
+pnpm test:visual:manifest
+```
 
 ## Resolution
 
-1. Reproduce locally with `retries: 0`:
+1. Reproduce the failing visual surface locally:
 
    ```bash
    pnpm test:e2e tests/e2e/<spec>.e2e.ts
@@ -25,11 +27,14 @@ a `governance_visual_flake_quarantined` alert.
    - Animation not awaited.
    - Time-sensitive snapshot (clock not pinned).
    - Visual screenshot taken mid-layout.
-3. Fix the spec. Remove the `test.fixme()` and the audit row.
-4. Watch for re-flake — the quarantine threshold reapplies.
+3. Fix the component or spec, then rerun the matching visual test and manifest
+   verification command.
+4. If the test is intentionally skipped while a fix is pending, add the skip in
+   the spec with an issue or PR reference and remove it in the follow-up fix.
 
 ## Escalation
 
-If quarantine count > 5 in a single CI run, the dispatcher pauses
-new visual snapshots until an operator clears the queue. This is
-the FR-379 runtime-budget protection working as intended.
+If repeated flakes block visual approval, treat the PR as review-blocked until
+the failing surface is stable. Link the failing report, the suspected cause, and
+the follow-up issue in the PR so reviewers can distinguish a product regression
+from test instability.

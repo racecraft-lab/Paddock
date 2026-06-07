@@ -147,7 +147,7 @@ See `.env.example` for the full list. Key variables:
 | `AUTH_PASS_B64` | No | - | Base64-encoded admin password (overrides `AUTH_PASS` if set) |
 | `API_KEY` | No | auto-generated | API key for headless access; persisted to `.data/.auto-generated` when omitted |
 | `PORT` | No | `3000` | Server port |
-| `OPENCLAW_HOME` | No | - | Legacy: parent home directory containing `.openclaw/`. Use `OPENCLAW_STATE_DIR` instead (see note below) |
+| `OPENCLAW_HOME` | No | - | Legacy exact path to the OpenClaw state directory. Use `OPENCLAW_STATE_DIR` instead (see note below) |
 | `OPENCLAW_STATE_DIR` | No | `~/.openclaw` | Exact path to the OpenClaw state directory. Preferred over `OPENCLAW_HOME` — avoids double-nesting when the path already ends in `.openclaw` |
 | `PADDOCK_DATA_DIR` | No | `.data/` | Directory for all Paddock data files (DB, tokens, etc.). Use an absolute path with the standalone server to survive rebuilds. |
 | `MC_ALLOWED_HOSTS` | No | `localhost,127.0.0.1` | Allowed hosts in production |
@@ -156,8 +156,8 @@ See `.env.example` for the full list. Key variables:
 >
 > Paddock supports two env vars for locating OpenClaw:
 >
-> - `OPENCLAW_HOME` — treated as the *parent* home directory; `.openclaw` is appended automatically.
->   Setting `OPENCLAW_HOME=/root/.openclaw` will resolve to `/root/.openclaw/.openclaw` (**double-nesting bug**).
+> - `OPENCLAW_HOME` — legacy exact state directory path. Paddock does not append
+>   `.openclaw`; if both vars are set, `OPENCLAW_STATE_DIR` wins.
 > - `OPENCLAW_STATE_DIR` — treated as the *exact* state directory path. Always prefer this.
 >
 > **Recommended `.env` for a standard install:**

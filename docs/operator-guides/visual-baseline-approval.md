@@ -87,19 +87,21 @@ gh api -X PUT repos/racecraft-lab/Paddock/pages \
 
 See `docs/runbook/visual-regression-pages-recovery.md`.
 
-## Determinism Guarantees
+## Determinism Guidance
 
 - Playwright is pinned in `package.json`.
 - CI runs use the `mcr.microsoft.com/playwright` Docker image.
 - Fonts (`Inter`, `JetBrains Mono`) are loaded from `public/fonts/`.
 - Desktop visual viewport is fixed at 1366×768 for Storybook and the
   Playwright viewport configured by the e2e tests.
-- Retries: `retries: 2` in CI / `retries: 0` locally; flake quarantine
-  follows `docs/runbook/visual-flake-quarantine.md`.
+- Visual-flake triage follows `docs/runbook/visual-flake-quarantine.md`.
+  The current repository does not maintain an automatic visual-flake
+  quarantine ledger or mutate tests after retry-only passes.
 
 ## Runtime Budget
 
-- Storybook visual run ≤ 5 minutes.
-- Playwright visual run ≤ 10 minutes.
-- Both budgets emit `governance_visual_runtime_budget_exceeded`
-  alerts on the System Health dashboard when exceeded.
+- Storybook visual and Playwright visual runs should stay small enough for
+  reviewers to inspect during normal PR review.
+- If a visual workflow repeatedly exceeds GitHub Actions expectations or
+  blocks review, treat the PR as review-blocked and open a remediation issue
+  with the workflow run URL, affected surface, and suspected slow fixture.

@@ -20,9 +20,10 @@
 
 ## 4. Mitigate
 
-- Pause governance writers (`recovery_pause`) for the rotation
-  window. Reads and decisions remain available because they only
-  hit the audit chain (read-only).
+- Schedule a maintenance window and stop the upstream writer or service
+  path that could mutate encrypted-at-rest rows during the rotation. The
+  System Health recovery endpoint does not provide a generic pause
+  action.
 
 ## 5. Recover
 

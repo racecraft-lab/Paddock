@@ -97,14 +97,8 @@ SQL
 # 4.5 — Confirm the log file is present.
 ls -la ~/.lmstudio/logs/server.log 2>&1
 
-# 4.6 — Run a fresh probe via the diagnostic helper.
-node -e "
-  (async () => {
-    const { probeLmStudio } = require('./dist/lib/observability/lm-studio-probe');
-    const caps = await probeLmStudio({ timeoutMs: 1000 });
-    console.log(JSON.stringify(caps, null, 2));
-  })();
-"
+# 4.6 — Run a fresh direct probe.
+curl --max-time 1 http://127.0.0.1:1234/v1/models
 ```
 
 ---
@@ -173,17 +167,15 @@ ls -la ~/.lmstudio/logs/server.log
 curl --max-time 1 http://127.0.0.1:1234/v1/models | jq '.data[0].id'
 # Expected: a model id string (not null, not error).
 
-# 6.2 — Fresh heartbeat must register healthy.
-node -e "
-  (async () => {
-    const Database = require('better-sqlite3');
-    const db = new Database('.data/paddock.db');
-    const { lmStudioHeartbeat } = require('./dist/lib/observability/lm-studio-probe');
-    const r = await lmStudioHeartbeat({ db });
-    console.log(JSON.stringify(r, null, 2));
-  })();
-"
-# Expected: { healthy: true, capabilities: { reachable: true, ... } }
+# 6.2 — The next heartbeat should register healthy.
+sqlite3 .data/paddock.db <<'SQL'
+SELECT state, metric_json, captured_at
+  FROM governance_health_events
+ WHERE component = 'lm_studio'
+ ORDER BY captured_at DESC
+ LIMIT 5;
+SQL
+# Expected: the newest row has state='healthy'.
 
 # 6.3 — Breaker must be closed.
 sqlite3 .data/paddock.db <<'SQL'
@@ -194,8 +186,8 @@ SQL
 
 # 6.4 — Trigger one Aegis dispatch and confirm step 3 fires.
 pnpm mc tasks queue --agent Aegis --max-capacity 1 --json
-# Inspect dispatch_decision_log; the most recent
-# `decision_class='aegis_review'` row's reasons_json should contain
+# Inspect resource_decision_audit; the most recent Aegis decision's
+# reason should equal
 # `allow:aegis_local_mode` (when the primary + reserve paths are
 # also throttled — otherwise the dispatch goes through the primary
 # path).

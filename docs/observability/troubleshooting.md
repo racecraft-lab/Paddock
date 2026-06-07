@@ -18,7 +18,7 @@ red after activation.
 4. If `last_event_at` is older than `freshness_alert_seconds`:
    - The adapter is registered but stalled. Check the adapter
      process: SSH to the runtime, `tail` the source's log.
-   - For `claude_code`, confirm `CLAUDE_CODE_ENABLE_TELEMETRY=1`
+   - For `native_otel`, confirm `CLAUDE_CODE_ENABLE_TELEMETRY=1`
      in the agent's env.
 
 ## Reconciler stalled

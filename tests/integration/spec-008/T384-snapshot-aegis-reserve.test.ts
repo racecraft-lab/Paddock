@@ -377,8 +377,8 @@ describe('SPEC-008 T384 — FR-154 / FR-164 / FR-168 / FR-170 emergency-reserve 
       resolve(REPO_ROOT, 'docs/runbook/aegis-emergency-reserve-depletion.md'),
       'utf8',
     );
-    // (a) verifying review-queue / dispatch decision log inspection
-    expect(md).toMatch(/dispatch_decision_log/);
+    // (a) verifying review-queue / resource decision audit inspection
+    expect(md).toMatch(/resource_decision_audit/);
     // (b) inspecting matched policies (reservation reaper + matched rules)
     expect(md).toMatch(/policy|reservation/i);
     // (c) granting an override or relaxing the policy / replenishing reserve

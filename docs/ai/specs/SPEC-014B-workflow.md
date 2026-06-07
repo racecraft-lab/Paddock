@@ -604,8 +604,6 @@ Closeout is complete:
 Next operator step:
 
 ```text
-$speckit-setup SPEC-014C
-
-# After reviewing the generated workflow, run autopilot on it:
-$speckit-autopilot <generated SPEC-014C workflow>
+SPEC-014C is complete. Continue with one of the current follow-up candidates
+from the roadmap: SPEC-014D, SPEC-014E, SPEC-014F, or SPEC-015A.
 ```

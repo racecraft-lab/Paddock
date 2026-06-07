@@ -11,7 +11,8 @@
 - `mc.governance.collector_uptime` drops below 99 % over a 5-minute window.
 - `mc.governance.evaluator_postcommit_dispatch_error` rate > 1/min.
 - System Health pill: **"Collector: unavailable"**.
-- Activity feed shows `governance_health_event{kind:'collector_unavailable'}`.
+- Activity feed or `governance_health_events` rows show
+  `collector_unavailable`.
 
 ## 2. Impact
 
@@ -41,8 +42,7 @@
 - After the collector returns, run the backfill window from
   `governance_health_events.captured_at` of the first
   `collector_unavailable` event to now (FR-114a).
-- Verify the
-  `governance_health_event{kind:'collector_recovered'}` is emitted.
+- Verify a `collector_recovered` health event is emitted.
 
 ## 6. Validate
 
