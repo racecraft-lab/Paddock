@@ -8,6 +8,7 @@ import {
   DEFAULT_MARKDOWN_REPORT_PATH,
   DETECTOR_NAMES,
   ERROR_CODES,
+  FRESHNESS_DEFAULTS,
   FIXTURE_FILE_LIMIT_BYTES,
   buildReport,
   renderJsonReport,
@@ -172,8 +173,8 @@ function loadFixtureCase(caseRoot) {
     rawFindings.push(...fixture.inputs.raw_findings.map((finding) => ({ ...finding, case_id: fixture.case_id })))
   } else if (isUs1Fixture(fixture)) {
     rawFindings.push(...detectUs1FixtureFindings(caseRoot, fixture))
-  } else if (Array.isArray(fixture.expected?.findings)) {
-    rawFindings.push(...fixture.expected.findings.map((finding) => ({ ...finding, case_id: fixture.case_id })))
+  } else if (isWarningFixture(fixture)) {
+    rawFindings.push(...detectWarningFixtureFindings(caseRoot, fixture))
   }
 
   if (Array.isArray(fixture.expected?.errors)) {
@@ -188,6 +189,10 @@ function isUs1Fixture(fixture) {
     || String(fixture.case_id || '').startsWith('fresh/')
 }
 
+function isWarningFixture(fixture) {
+  return String(fixture.case_id || '').startsWith('warning/')
+}
+
 function detectUs1FixtureFindings(caseRoot, fixture) {
   return [
     ...detectStaleStatusPointers(caseRoot, fixture),
@@ -196,6 +201,222 @@ function detectUs1FixtureFindings(caseRoot, fixture) {
     ...detectStrictScopeDrift(caseRoot, fixture),
     ...detectBrokenSourceLinks(caseRoot, fixture),
   ]
+}
+
+function detectWarningFixtureFindings(caseRoot, fixture) {
+  return [
+    ...detectLowValueTestPatterns(caseRoot, fixture),
+    ...detectWarningFreshness(fixture),
+    ...detectWarningSourceFreshness(caseRoot, fixture),
+    ...detectBrokenSourceLinks(caseRoot, fixture),
+    ...detectArchiveCleanupEligibility(caseRoot, fixture),
+  ]
+}
+
+function detectLowValueTestPatterns(caseRoot, fixture) {
+  const findings = []
+  const testFiles = Array.isArray(fixture.inputs?.test_files) ? fixture.inputs.test_files : []
+
+  for (const sourcePath of testFiles) {
+    const text = readRepoText(caseRoot, sourcePath)
+    if (!text) continue
+
+    if (!hasAssertion(text)) {
+      findings.push(lowValueFinding({
+        fixture,
+        sourcePath,
+        anchor: 'test:no-assertion',
+        summary: 'Test body has no assertion call and only exercises fixture shape.',
+        remediation: 'Add a behavioral assertion that proves the guard output, owner, evidence, or severity contract.',
+      }))
+      continue
+    }
+
+    if (isSnapshotOnlyStaticFixtureTest(text)) {
+      findings.push(lowValueFinding({
+        fixture,
+        sourcePath,
+        anchor: 'test:snapshot-only-static-fixture',
+        summary: 'Static snapshot-style assertion omits owner and evidence checks.',
+        remediation: 'Add explicit owner and evidence assertions or replace the static shape check with a behavior-focused test.',
+      }))
+    }
+  }
+
+  findings.push(...detectDuplicateStaleFixtures(caseRoot, fixture))
+  return findings
+}
+
+function detectDuplicateStaleFixtures(caseRoot, fixture) {
+  const fixturePaths = Array.isArray(fixture.inputs?.duplicate_stale_fixtures)
+    ? fixture.inputs.duplicate_stale_fixtures
+    : []
+  const seen = new Map()
+  const findings = []
+
+  for (const sourcePath of fixturePaths) {
+    const duplicateFixture = readRepoJson(caseRoot, sourcePath)
+    const finding = duplicateFixture?.expected?.findings?.[0]
+    if (!finding) continue
+
+    const tuple = [
+      finding.drift_class,
+      finding.source_path,
+      finding.anchor,
+      finding.severity,
+    ].join('\0')
+    const firstSource = seen.get(tuple)
+    if (!firstSource) {
+      seen.set(tuple, sourcePath)
+      continue
+    }
+
+    findings.push(lowValueFinding({
+      fixture,
+      sourcePath,
+      anchor: 'duplicate-stale-fixture',
+      summary: `${sourcePath} repeats the same stale finding tuple as ${firstSource}`,
+      remediation: 'Merge the duplicate stale fixture or vary its source, anchor, or expected drift tuple.',
+      evidence: [
+        {
+          source_path: firstSource,
+          anchor: 'duplicate-stale-fixture',
+          summary: 'First fixture with this stale finding tuple.',
+        },
+        {
+          source_path: sourcePath,
+          anchor: 'duplicate-stale-fixture',
+          summary: 'Duplicate fixture repeats the same stale finding tuple.',
+        },
+      ],
+    }))
+  }
+
+  return findings
+}
+
+function lowValueFinding({ fixture, sourcePath, anchor, summary, remediation, evidence }) {
+  return {
+    drift_class: 'deterministic_low_value_test_pattern',
+    source_path: normalizeSourcePath(sourcePath),
+    anchor,
+    severity: 'warning',
+    evidence: evidence || [{
+      source_path: normalizeSourcePath(sourcePath),
+      anchor,
+      summary,
+    }],
+    warnings: [],
+    remediation_summary: remediation,
+    case_id: fixture.case_id,
+  }
+}
+
+function detectWarningFreshness(fixture) {
+  const freshness = fixture.inputs?.freshness
+  if (!freshness?.last_verified) return []
+
+  const kind = String(freshness.kind || 'status-pointer')
+  const thresholdDays = FRESHNESS_DEFAULTS[kind] ?? 30
+  const asOf = fixture.as_of || '1970-01-01'
+  const ageDays = daysBetween(freshness.last_verified, asOf)
+  if (ageDays <= thresholdDays) return []
+
+  const sourcePath = freshness.source_path || 'docs/ai/specs/.process/SPEC-012B-workflow.md'
+  return [{
+    drift_class: 'stale_workflow_claim',
+    source_path: sourcePath,
+    anchor: 'last_verified',
+    severity: 'warning',
+    evidence: [{
+      source_path: sourcePath,
+      anchor: 'last_verified',
+      summary: `${kind} last_verified ${freshness.last_verified} is ${ageDays} days old; threshold is ${thresholdDays} days`,
+    }],
+    warnings: [],
+    remediation_summary: 'Refresh the status pointer evidence date or leave a precise reason the stale timestamp remains acceptable.',
+    case_id: fixture.case_id,
+  }]
+}
+
+function detectWarningSourceFreshness(caseRoot, fixture) {
+  const sourcePath = fixture.inputs?.source_path
+  if (!sourcePath) return []
+
+  const text = readRepoText(caseRoot, sourcePath)
+  const match = text.match(/\blast_verified\s*[:=|]\s*([0-9]{4}-[0-9]{2}-[0-9]{2})/i)
+  if (!match) return []
+
+  const asOf = fixture.as_of || '1970-01-01'
+  const ageDays = daysBetween(match[1], asOf)
+  if (ageDays <= 30) return []
+
+  return [{
+    drift_class: 'stale_roadmap_claim',
+    source_path: normalizeSourcePath(sourcePath),
+    anchor: 'last_verified',
+    severity: 'warning',
+    evidence: [{
+      source_path: normalizeSourcePath(sourcePath),
+      anchor: 'last_verified',
+      summary: `last_verified ${match[1]} is ${ageDays} days old and owner metadata cannot be derived from repo knowledge.`,
+    }],
+    warnings: [],
+    remediation_summary: 'Refresh the low-confidence source note or index it with an explicit owner.',
+    case_id: fixture.case_id,
+  }]
+}
+
+function detectArchiveCleanupEligibility(caseRoot, fixture) {
+  const candidateFolder = fixture.inputs?.candidate_spec_folder
+  if (!candidateFolder) return []
+
+  const specPath = `${normalizeSourcePath(candidateFolder)}/spec.md`
+  const archiveMemory = normalizeSourcePath(fixture.inputs?.archive_memory || '.specify/memory/changelog.md')
+  const specText = readRepoText(caseRoot, specPath)
+  if (!/\bStatus\s*:\s*Complete\b/i.test(specText) && !/\bArchived\s*:\s*yes\b/i.test(specText)) {
+    return []
+  }
+  if (!repoFileExists(caseRoot, archiveMemory)) return []
+
+  return [{
+    drift_class: 'archive_cleanup_eligibility',
+    source_path: specPath,
+    anchor: 'Status',
+    owner: {
+      name: 'Spec Archive',
+      owner_key: 'spec-archive',
+      owner_source: 'spec_family',
+      confidence: 'medium',
+    },
+    severity: 'warning',
+    evidence: [
+      {
+        source_path: specPath,
+        anchor: 'Status',
+        summary: 'Completed spec folder appears eligible for a future archive cleanup sweep.',
+      },
+      {
+        source_path: archiveMemory,
+        anchor: 'archive-provenance',
+        summary: 'Archive memory exists, so cleanup remains gated and manual rather than automatic.',
+      },
+    ],
+    warnings: [
+      {
+        code: 'archive_cleanup_gate_required',
+        message: 'Cleanup eligibility is recommendation-only and must not mutate specs or archive state.',
+      },
+    ],
+    remediation_summary: 'Queue a manual archive cleanup review only after the archive safe-base gate is explicitly opened.',
+    recommendation: {
+      deferred_side_effects: ['archive_cleanup_apply'],
+      paddock_cleanup_task: {
+        live_mutation: false,
+      },
+    },
+    case_id: fixture.case_id,
+  }]
 }
 
 function detectStaleStatusPointers(caseRoot, fixture) {
@@ -368,26 +589,104 @@ function detectStrictScopeDrift(caseRoot, fixture) {
 function detectBrokenSourceLinks(caseRoot, fixture) {
   const links = Array.isArray(fixture.inputs?.source_links) ? fixture.inputs.source_links : []
   return links.flatMap((link) => {
-    if (!link?.required || !link?.repo_owned) return []
     const target = normalizeSourcePath(link.target)
-    if (repoFileExists(caseRoot, target)) return []
+    const sourcePath = normalizeSourcePath(link.source_path)
+    const anchor = link.anchor || target
+    const sourceText = readRepoText(caseRoot, sourcePath)
+    const isExternal = isExternalUrl(link.target)
+    const isWikiStyle = isWikiStyleLink(link.target)
+
+    if (link?.repo_owned && repoFileExists(caseRoot, target)) return []
+    if (!link?.repo_owned && !isExternal && !isWikiStyle) return []
+
+    const severity = link?.required && link?.repo_owned ? 'error' : 'warning'
+    const classification = classifySourceLink(link, { targetExists: repoFileExists(caseRoot, target) })
+    if (severity === 'warning' && sourceText && !sourceText.includes(String(link.target || ''))) {
+      return []
+    }
 
     return [{
       drift_class: 'broken_source_of_truth_link',
-      source_path: normalizeSourcePath(link.source_path),
+      source_path: sourcePath,
       target_path: target,
-      anchor: link.anchor || target,
-      severity: 'error',
+      anchor,
+      severity,
       evidence: [{
-        source_path: normalizeSourcePath(link.source_path),
-        anchor: link.anchor || target,
-        summary: `Required repo-owned link target ${target} is missing`,
+        source_path: sourcePath,
+        anchor,
+        summary: sourceLinkEvidenceSummary(classification, target),
       }],
       warnings: [],
-      remediation_summary: 'Fix or remove the broken required repo-owned source link.',
+      remediation_summary: sourceLinkRemediation(classification),
       case_id: fixture.case_id,
     }]
   })
+}
+
+function hasAssertion(text) {
+  return /\bassert(?:\.[A-Za-z0-9_]+)?\s*\(/.test(text)
+    || /\bexpect\s*\(/.test(text)
+}
+
+function isSnapshotOnlyStaticFixtureTest(text) {
+  return /\b(snapshot|static)\b/i.test(text)
+    && /\bassert\.deepEqual\s*\(/.test(text)
+    && !/\b(owner|owner_key|evidence|severity|hard_failure_count)\b/i.test(text)
+}
+
+function daysBetween(startDate, endDate) {
+  const start = Date.parse(`${startDate}T00:00:00Z`)
+  const end = Date.parse(`${endDate}T00:00:00Z`)
+  if (!Number.isFinite(start) || !Number.isFinite(end)) return 0
+  return Math.max(0, Math.floor((end - start) / 86_400_000))
+}
+
+function isExternalUrl(value) {
+  return /^https?:\/\//i.test(String(value || ''))
+}
+
+function isWikiStyleLink(value) {
+  return /^\[\[[^\]]+\]\]$/.test(String(value || '').trim())
+}
+
+function classifySourceLink(link, { targetExists }) {
+  if (isExternalUrl(link?.target)) return 'external_url'
+  if (isWikiStyleLink(link?.target)) return 'wiki_style_link'
+  if (link?.repo_owned && !targetExists && !link?.required) return 'optional_missing_repo_owned'
+  if (link?.repo_owned && !targetExists && link?.required) return 'broken_required_repo_owned'
+  return 'source_link_warning'
+}
+
+function sourceLinkEvidenceSummary(classification, target) {
+  if (classification === 'broken_required_repo_owned') {
+    return `Required repo-owned link target ${target} is missing`
+  }
+  if (classification === 'optional_missing_repo_owned') {
+    return `Optional repo-owned link target ${target} is missing`
+  }
+  if (classification === 'external_url') {
+    return `External URL ${target} is recorded for offline review only`
+  }
+  if (classification === 'wiki_style_link') {
+    return `Wiki-style link ${target} is informational and not a hard repo-owned dependency`
+  }
+  return `Source link ${target} requires offline review`
+}
+
+function sourceLinkRemediation(classification) {
+  if (classification === 'broken_required_repo_owned') {
+    return 'Fix or remove the broken required repo-owned source link.'
+  }
+  if (classification === 'optional_missing_repo_owned') {
+    return 'Refresh the optional link target or leave it as a warning-only cleanup recommendation.'
+  }
+  if (classification === 'external_url') {
+    return 'Verify the external source outside default guard execution and keep the guard offline.'
+  }
+  if (classification === 'wiki_style_link') {
+    return 'Resolve or document the wiki-style link if it should become a required repo-owned source.'
+  }
+  return 'Review the source link classification and keep any cleanup recommendation narrow.'
 }
 
 function readJsonFixture(fixturePath) {

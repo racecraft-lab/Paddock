@@ -49,3 +49,13 @@ test('specs cleanup warning never deletes specs folders or mutates archive state
   assert.equal(report.findings[0].drift_class, 'archive_cleanup_eligibility');
   assert.equal(report.findings[0].recommendation.deferred_side_effects.includes('archive_cleanup_apply'), true);
 });
+
+test('specs cleanup detector has no source-folder mutation implementation path', () => {
+  const source = readFileSync(guardScript, 'utf8');
+  const archiveApplyFlag = ['--apply', 'cleanup'].join('-');
+
+  assert.doesNotMatch(source, /\brmSync\b|\bunlinkSync\b|\brmdirSync\b/);
+  assert.doesNotMatch(source, /\brenameSync\b|\bcpSync\b/);
+  assert.doesNotMatch(source, /\bspawnSync\b|\bexecFileSync\b|\bexecSync\b/);
+  assert.equal(source.includes(archiveApplyFlag), false);
+});

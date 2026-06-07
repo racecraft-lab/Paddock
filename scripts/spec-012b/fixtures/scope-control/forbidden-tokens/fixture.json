@@ -1,0 +1,68 @@
+{
+  "schema_version": "scope_control_fixture.v1",
+  "case_id": "forbidden-tokens",
+  "changed_files": [
+    "scripts/spec-012b/harness-gardening-check.mjs"
+  ],
+  "added_lines": [
+    {
+      "path": "scripts/spec-012b/harness-gardening-check.mjs",
+      "line": "await octokit.rest.issues.create({ owner, repo, title })"
+    },
+    {
+      "path": "scripts/spec-012b/harness-gardening-check.mjs",
+      "line": "gh issue create --title cleanup"
+    },
+    {
+      "path": "scripts/spec-012b/harness-gardening-check.mjs",
+      "line": "createTask({ title: cleanup.title })"
+    },
+    {
+      "path": "scripts/spec-012b/harness-gardening-check.mjs",
+      "line": "db.prepare('INSERT INTO tasks (title) VALUES (?)').run(title)"
+    },
+    {
+      "path": "scripts/spec-012b/harness-gardening-check.mjs",
+      "line": "advanceTaskChain(taskId); dispatchTask(taskId)"
+    },
+    {
+      "path": "scripts/spec-012b/harness-gardening-check.mjs",
+      "line": "claimTask(taskId); retryTask(taskId)"
+    },
+    {
+      "path": "scripts/spec-012b/harness-gardening-check.mjs",
+      "line": "createSandbox({ taskId })"
+    },
+    {
+      "path": "scripts/spec-012b/harness-gardening-check.mjs",
+      "line": "launchHarness({ adapter: harnessAdapter })"
+    },
+    {
+      "path": "scripts/spec-012b/harness-gardening-check.mjs",
+      "line": "enablePullRequestAutoMerge({ pullRequestId })"
+    },
+    {
+      "path": "scripts/spec-012b/harness-gardening-check.mjs",
+      "line": "process.env.FEATURE_SPEC_012B_GARDENING === '1'"
+    },
+    {
+      "path": "scripts/spec-012b/harness-gardening-check.mjs",
+      "line": "await fetch('https://openai.com/index/harness-engineering/')"
+    },
+    {
+      "path": "scripts/spec-012b/harness-gardening-check.mjs",
+      "line": "rmSync('specs/001-old-complete', { recursive: true })"
+    },
+    {
+      "path": "scripts/spec-012b/harness-gardening-check.mjs",
+      "line": "renameSync('specs/001-old-complete', '.specify/memory/specs/001-old-complete')"
+    },
+    {
+      "path": "scripts/spec-012b/harness-gardening-check.mjs",
+      "line": "archiveCleanup --apply-cleanup"
+    }
+  ],
+  "expected": {
+    "failure_count": 14
+  }
+}

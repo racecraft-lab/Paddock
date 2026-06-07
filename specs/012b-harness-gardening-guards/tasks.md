@@ -108,14 +108,14 @@
 
 ### Implementation for User Story 3
 
-- [ ] T037 [US3] Implement deterministic fixture-backed low-value test warning detection only for no-assertion, snapshot-only/static fixture, and duplicate stale fixture patterns in `scripts/spec-012b/harness-gardening-check.mjs`
-- [ ] T038 [US3] Implement freshness-only, optional-link, external-URL, and wiki-style source-link warning policy in `scripts/spec-012b/harness-gardening-check.mjs`
-- [ ] T039 [US3] Implement `specs/**` cleanup eligibility as warning-level recommendation-only output with archive gate blockers in `scripts/spec-012b/harness-gardening-check.mjs`
-- [ ] T040 [US3] Prove `specs/**` cleanup detection never deletes source folders, moves specs, mutates archive state, or invokes archive apply behavior by updating `scripts/spec-012b/__tests__/archive-cleanup-fixtures.test.mjs`
-- [ ] T041 [US3] Implement static scope-control self-test fixtures for allowed paths, blocked paths, forbidden tokens, and docs/process exemptions in `scripts/spec-012b/check-scope-control.mjs` and `scripts/spec-012b/fixtures/scope-control/`
-- [ ] T042 [US3] Implement static scope-control current-diff mode with changed-file allowlist, runtime/control-plane blocklist, changed-file counts, and scanned-entry counts in `scripts/spec-012b/check-scope-control.mjs`
-- [ ] T043 [US3] Implement forbidden live-mutation/runtime token scanning for GitHub mutation, Paddock live task creation, scheduler, dispatch, claim/retry, sandbox, harness adapter, auto-merge, runtime feature flags, external OpenAI fetches, and archive delete/move/apply behavior in `scripts/spec-012b/check-scope-control.mjs`
-- [ ] T044 [US3] Verify warning-only detectors do not increase hard-failure exit status by updating report expectations in `scripts/spec-012b/fixtures/warning/`
+- [X] T037 [US3] Implement deterministic fixture-backed low-value test warning detection only for no-assertion, snapshot-only/static fixture, and duplicate stale fixture patterns in `scripts/spec-012b/harness-gardening-check.mjs`
+- [X] T038 [US3] Implement freshness-only, optional-link, external-URL, and wiki-style source-link warning policy in `scripts/spec-012b/harness-gardening-check.mjs`
+- [X] T039 [US3] Implement `specs/**` cleanup eligibility as warning-level recommendation-only output with archive gate blockers in `scripts/spec-012b/harness-gardening-check.mjs`
+- [X] T040 [US3] Prove `specs/**` cleanup detection never deletes source folders, moves specs, mutates archive state, or invokes archive apply behavior by updating `scripts/spec-012b/__tests__/archive-cleanup-fixtures.test.mjs`
+- [X] T041 [US3] Implement static scope-control self-test fixtures for allowed paths, blocked paths, forbidden tokens, and docs/process exemptions in `scripts/spec-012b/check-scope-control.mjs` and `scripts/spec-012b/fixtures/scope-control/`
+- [X] T042 [US3] Implement static scope-control current-diff mode with changed-file allowlist, runtime/control-plane blocklist, changed-file counts, and scanned-entry counts in `scripts/spec-012b/check-scope-control.mjs`
+- [X] T043 [US3] Implement forbidden live-mutation/runtime token scanning for GitHub mutation, Paddock live task creation, scheduler, dispatch, claim/retry, sandbox, harness adapter, auto-merge, runtime feature flags, external OpenAI fetches, and archive delete/move/apply behavior in `scripts/spec-012b/check-scope-control.mjs`
+- [X] T044 [US3] Verify warning-only detectors do not increase hard-failure exit status by updating report expectations in `scripts/spec-012b/fixtures/warning/`
 
 **Checkpoint**: User Story 3 is independently testable and all advisory findings remain warning-only unless another hard-drift rule applies.
 

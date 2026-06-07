@@ -1,0 +1,20 @@
+{
+  "schema_version": "scope_control_fixture.v1",
+  "case_id": "allowed-paths",
+  "changed_files": [
+    "scripts/spec-012b/harness-gardening-check.mjs",
+    "scripts/spec-012b/__tests__/warning-fixtures.test.mjs",
+    "specs/012b-harness-gardening-guards/.process/pr-review-packet.md",
+    "docs/ai/specs/.process/SPEC-012B-workflow.md",
+    "AGENTS.md"
+  ],
+  "added_lines": [
+    {
+      "path": "scripts/spec-012b/harness-gardening-check.mjs",
+      "line": "export const LOCAL_REPORT_ONLY = true"
+    }
+  ],
+  "expected": {
+    "failure_count": 0
+  }
+}

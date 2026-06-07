@@ -41,7 +41,7 @@ Re-read it before each phase if you need to disambiguate a prompt. The Specify a
 | Checklist | `$speckit-checklist` | Complete | Completed six domains; all gaps remediated with final marker count 0 |
 | Tasks | `$speckit-tasks` | Complete | Generated 55 TDD-first tasks; G5 passed and task reviewability gate passed under ratified process/tooling exception |
 | Analyze | `$speckit-analyze` | Complete | G6 passed with 0 CRITICAL/HIGH/MEDIUM/LOW findings after remediating workflow-ledger metric/status wording |
-| Implement | `$speckit-implement` | Pending | Execute only after G1-G6 pass and scope ownership is still process/tooling only |
+| Implement | `$speckit-implement` | In Progress | US3 warning-only detectors and static scope guard complete; polish verification remains |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
 
@@ -691,7 +691,7 @@ During implementation:
 |------|--------|----------|
 | Fixture RED tests | Complete | T001-T010 created 10 Node test files and fixture corpus; `node --test scripts/spec-012b/__tests__/*.test.mjs` RED result: 26 tests, 11 pass, 15 fail on missing SPEC-012B implementation/package/guardrail wiring |
 | Recommendation schema and output | Complete | T027-T036 implemented non-mutating recommendation payloads, Paddock cleanup-task import drafts, export-only GitHub issue drafts, dedupe/unknown-owner behavior, package command, guardrails suite, and deterministic default reports |
-| Drift detectors | In Progress | T019-T026 implemented US1 hard-drift detectors for stale workflow/status pointers, missing evidence, stale feature-flag contradictions, strict-scope drift, and broken required repo-owned links; US3 warning-only detectors remain pending |
+| Drift detectors | Complete | T019-T044 implemented US1 hard-drift detectors plus US3 warning-only low-value, freshness, source-link, archive-cleanup eligibility, and static scope-control detectors |
 | Package and guardrails integration | Complete | `spec:012b:harness-gardening` package script added; `pnpm guardrails -- --suite harness-gardening` passed; existing `task-pipeline`, `spec-evidence-screenshots`, and `repo-knowledge-index` suite keys preserved |
 | Docs and discoverability | Pending | Pending |
 | Final verification | Pending | Pending |
@@ -715,6 +715,14 @@ During implementation:
 - `pnpm guardrails -- --suite harness-gardening`: pass.
 - `pnpm spec:012b:harness-gardening -- --fixtures scripts/spec-012b/fixtures/fresh --as-of 2026-06-06 --json`: pass with 0 findings and 0 hard failures.
 - `pnpm spec:012b:harness-gardening -- --fixtures scripts/spec-012b/fixtures/warning --as-of 2026-06-06 --json`: pass with warning-only findings and 0 hard failures.
+- `git diff --check`: pass.
+
+### US3 Verification
+
+- `node --test scripts/spec-012b/__tests__/*.test.mjs`: pass, 37 tests.
+- `node scripts/spec-012b/check-scope-control.mjs --self-test`: pass with 12 changed files, 29 scanned entries, 0 failures, and all four self-test cases passed.
+- `node scripts/spec-012b/check-scope-control.mjs`: pass with 17 changed files, 1069 scanned entries, and 0 failures.
+- `pnpm spec:012b:harness-gardening -- --fixtures scripts/spec-012b/fixtures/warning --as-of 2026-06-06 --json`: pass with 9 warning findings, 9 recommendations, and 0 hard failures.
 - `git diff --check`: pass.
 
 ---
