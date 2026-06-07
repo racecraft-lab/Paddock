@@ -3,4 +3,5 @@
 ## Phase 6 Closeout
 
 Status: Current
-last_verified: 2026-05-20
+Spec: SPEC-012A
+Closeout evidence: current

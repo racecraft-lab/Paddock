@@ -165,19 +165,19 @@ export function deriveOwner({ source_path, target_path, owner, repoKnowledgeEntr
     }
   }
 
-  if (sourcePath.startsWith('specs/') || sourcePath.includes('/specs/')) {
+  if (sourcePath.startsWith('docs/ai/specs/')) {
     return {
-      name: 'SpecKit',
-      owner_key: 'speckit',
+      name: 'Docs Integrity',
+      owner_key: 'docs-integrity',
       owner_source: 'spec_family',
       confidence: 'medium',
     }
   }
 
-  if (sourcePath.startsWith('docs/ai/specs/')) {
+  if (sourcePath.startsWith('specs/') || sourcePath.includes('/specs/')) {
     return {
-      name: 'Docs Integrity',
-      owner_key: 'docs-integrity',
+      name: 'SpecKit',
+      owner_key: 'speckit',
       owner_source: 'spec_family',
       confidence: 'medium',
     }

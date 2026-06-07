@@ -5,6 +5,9 @@
   "description": "Complete workflow row lacks the required UAT run id closeout marker.",
   "inputs": {
     "repo_root": "repo",
+    "evidence_sources": [
+      "docs/ai/specs/.process/SPEC-010B-workflow.md"
+    ],
     "required_markers": [
       "uat_run_id",
       "merge_commit"

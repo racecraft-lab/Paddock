@@ -168,6 +168,8 @@ function loadFixtureCase(caseRoot) {
 
   if (Array.isArray(fixture.inputs?.raw_findings)) {
     rawFindings.push(...fixture.inputs.raw_findings.map((finding) => ({ ...finding, case_id: fixture.case_id })))
+  } else if (isUs1Fixture(fixture)) {
+    rawFindings.push(...detectUs1FixtureFindings(caseRoot, fixture))
   } else if (Array.isArray(fixture.expected?.findings)) {
     rawFindings.push(...fixture.expected.findings.map((finding) => ({ ...finding, case_id: fixture.case_id })))
   }
@@ -177,6 +179,213 @@ function loadFixtureCase(caseRoot) {
   }
 
   return { errors, detectorStatuses, rawFindings, repoKnowledgeEntries }
+}
+
+function isUs1Fixture(fixture) {
+  return String(fixture.case_id || '').startsWith('hard/')
+    || String(fixture.case_id || '').startsWith('fresh/')
+}
+
+function detectUs1FixtureFindings(caseRoot, fixture) {
+  return [
+    ...detectStaleStatusPointers(caseRoot, fixture),
+    ...detectMissingRequiredEvidence(caseRoot, fixture),
+    ...detectStaleFeatureFlags(caseRoot, fixture),
+    ...detectStrictScopeDrift(caseRoot, fixture),
+    ...detectBrokenSourceLinks(caseRoot, fixture),
+  ]
+}
+
+function detectStaleStatusPointers(caseRoot, fixture) {
+  const pointers = Array.isArray(fixture.inputs?.status_pointers) ? fixture.inputs.status_pointers : []
+  if (pointers.length === 0) return []
+
+  const autopilotPath = pointers.find((pointer) => pointer.endsWith('autopilot-state.json'))
+  const autopilot = autopilotPath ? readRepoJson(caseRoot, autopilotPath) : null
+  const currentSpec = specIdFromValue(autopilot?.current_spec)
+  if (!currentSpec) return []
+
+  return pointers
+    .filter((pointer) => pointer !== autopilotPath)
+    .flatMap((pointer) => {
+      const text = readRepoText(caseRoot, pointer)
+      if (!text) return []
+
+      const claimedSpec = specIdFromValue(text.match(/SPEC-[0-9]{3,4}[A-Z]?/i)?.[0])
+      const claimsCurrent = /\bcurrent\b/i.test(text)
+      if (!claimedSpec || !claimsCurrent || claimedSpec === currentSpec) return []
+
+      return [{
+        drift_class: driftClassForStatusPointer(pointer),
+        source_path: pointer,
+        anchor: firstMarkdownHeading(text, /closeout|status|current/i) || 'status-pointer',
+        severity: 'error',
+        evidence: [{
+          source_path: autopilotPath,
+          anchor: '/current_spec',
+          summary: `current_spec is ${autopilot.current_spec} while workflow claims ${claimedSpec} closeout is current`,
+        }],
+        warnings: [],
+        remediation_summary: 'Update the stale workflow status pointer or add current closeout evidence.',
+        case_id: fixture.case_id,
+      }]
+    })
+}
+
+function detectMissingRequiredEvidence(caseRoot, fixture) {
+  const requiredMarkers = Array.isArray(fixture.inputs?.required_markers) ? fixture.inputs.required_markers : []
+  const evidenceSources = Array.isArray(fixture.inputs?.evidence_sources) ? fixture.inputs.evidence_sources : []
+  if (requiredMarkers.length === 0 || evidenceSources.length === 0) return []
+
+  const findings = []
+  for (const sourcePath of evidenceSources) {
+    const text = readRepoText(caseRoot, sourcePath)
+    if (!text || !/\b(complete|uat pending)\b/i.test(text)) continue
+
+    const anchor = firstMarkdownHeading(text, /closeout|evidence|verification/i) || 'Closeout Evidence'
+    for (const marker of requiredMarkers) {
+      if (markerHasValue(text, marker)) continue
+      const markerName = humanizeMarker(marker)
+      findings.push({
+        drift_class: 'missing_required_evidence',
+        source_path: sourcePath,
+        anchor,
+        severity: 'error',
+        evidence: [{
+          source_path: sourcePath,
+          anchor,
+          summary: `Complete status is missing ${markerName}`,
+        }],
+        warnings: [],
+        remediation_summary: `Add the exact ${markerName} closeout marker or downgrade the status claim.`,
+        case_id: fixture.case_id,
+      })
+    }
+  }
+
+  return findings
+}
+
+function detectStaleFeatureFlags(caseRoot, fixture) {
+  const requiredFlags = Array.isArray(fixture.inputs?.required_feature_flags) ? fixture.inputs.required_feature_flags : []
+  if (requiredFlags.length === 0) return []
+
+  const registryPath = 'src/lib/feature-flags.ts'
+  const registryText = readRepoText(caseRoot, registryPath) || ''
+  const sourcePath = repoFileExists(caseRoot, 'docs/feature-flags.md')
+    ? 'docs/feature-flags.md'
+    : registryPath
+
+  return requiredFlags.flatMap((flag) => {
+    const flagName = String(flag)
+    if (!registryText.includes(flagName)) {
+      return [featureFlagFinding({
+        fixture,
+        flagName,
+        sourcePath,
+        registryPath,
+        summary: `Required flag ${flagName} is absent from registry`,
+        remediation: 'Add the missing disabled-by-default registry entry or remove the documented requirement.',
+      })]
+    }
+
+    const flagBlock = registryBlockForFlag(registryText, flagName)
+    if (/\bdefaultEnabled\s*:\s*true\b/.test(flagBlock)) {
+      return [featureFlagFinding({
+        fixture,
+        flagName,
+        sourcePath,
+        registryPath,
+        summary: `Required flag ${flagName} has unsafe defaultEnabled true`,
+        remediation: 'Change the registry entry to a disabled-by-default safety posture or update the documented requirement.',
+      })]
+    }
+
+    return []
+  })
+}
+
+function featureFlagFinding({ fixture, flagName, sourcePath, registryPath, summary, remediation }) {
+  return {
+    drift_class: 'stale_feature_flag_status',
+    source_path: sourcePath,
+    anchor: flagName,
+    severity: 'error',
+    evidence: [{
+      source_path: registryPath,
+      anchor: 'FEATURE_FLAG_REGISTRY',
+      summary,
+    }],
+    warnings: [],
+    remediation_summary: remediation,
+    case_id: fixture.case_id,
+  }
+}
+
+function detectStrictScopeDrift(caseRoot, fixture) {
+  const changedFiles = Array.isArray(fixture.inputs?.changed_files) ? fixture.inputs.changed_files : []
+  if (changedFiles.length === 0) return []
+
+  const planPath = 'specs/012b-harness-gardening-guards/plan.md'
+  const blockedPaths = changedFiles.filter((changedPath) => isBlockedRuntimePath(changedPath))
+  const missingScopeEvidence = repoFileExists(caseRoot, planPath)
+    && !/scope|allowed paths|process tooling/i.test(readRepoText(caseRoot, planPath) || '')
+
+  return [
+    ...blockedPaths.map((blockedPath) => ({
+      drift_class: 'strict_scope_drift',
+      source_path: planPath,
+      anchor: 'Scope Boundaries',
+      severity: 'error',
+      evidence: [{
+        source_path: blockedPath,
+        anchor: 'changed-file',
+        summary: `Blocked runtime surface ${blockedPath} appears in SPEC-012B changed-file set`,
+      }],
+      warnings: [],
+      remediation_summary: 'Remove the runtime/API path from the SPEC-012B change or split it into a separate runtime spec.',
+      case_id: fixture.case_id,
+    })),
+    ...(missingScopeEvidence ? [{
+      drift_class: 'strict_scope_drift',
+      source_path: planPath,
+      anchor: 'Scope Boundaries',
+      severity: 'error',
+      evidence: [{
+        source_path: planPath,
+        anchor: 'Scope Boundaries',
+        summary: 'SPEC-012B plan is missing strict-scope evidence for the changed-file set',
+      }],
+      warnings: [],
+      remediation_summary: 'Add strict-scope evidence that proves the SPEC-012B change remains process/tooling-only.',
+      case_id: fixture.case_id,
+    }] : []),
+  ]
+}
+
+function detectBrokenSourceLinks(caseRoot, fixture) {
+  const links = Array.isArray(fixture.inputs?.source_links) ? fixture.inputs.source_links : []
+  return links.flatMap((link) => {
+    if (!link?.required || !link?.repo_owned) return []
+    const target = normalizeSourcePath(link.target)
+    if (repoFileExists(caseRoot, target)) return []
+
+    return [{
+      drift_class: 'broken_source_of_truth_link',
+      source_path: normalizeSourcePath(link.source_path),
+      target_path: target,
+      anchor: link.anchor || target,
+      severity: 'error',
+      evidence: [{
+        source_path: normalizeSourcePath(link.source_path),
+        anchor: link.anchor || target,
+        summary: `Required repo-owned link target ${target} is missing`,
+      }],
+      warnings: [],
+      remediation_summary: 'Fix or remove the broken required repo-owned source link.',
+      case_id: fixture.case_id,
+    }]
+  })
 }
 
 function readJsonFixture(fixturePath) {
@@ -221,6 +430,96 @@ function readJsonFixture(fixturePath) {
       }),
     }
   }
+}
+
+function readRepoJson(caseRoot, repoPath) {
+  const text = readRepoText(caseRoot, repoPath)
+  if (!text) return null
+  try {
+    return JSON.parse(text)
+  } catch {
+    return null
+  }
+}
+
+function readRepoText(caseRoot, repoPath) {
+  const result = resolveFixtureRelativePath(caseRoot, repoPath, { mustStayInRepo: true })
+  if (!result.safe || !existsSync(result.absolute)) return ''
+  if (!realPathStaysInside(result.absolute, join(caseRoot, 'repo'))) return ''
+
+  const stats = statSync(result.absolute)
+  if (stats.size > FIXTURE_FILE_LIMIT_BYTES) return ''
+  return readFileSync(result.absolute, 'utf8')
+}
+
+function repoFileExists(caseRoot, repoPath) {
+  const result = resolveFixtureRelativePath(caseRoot, repoPath, { mustStayInRepo: true })
+  return result.safe && existsSync(result.absolute) && realPathStaysInside(result.absolute, join(caseRoot, 'repo'))
+}
+
+function specIdFromValue(value) {
+  const text = String(value || '')
+  const direct = text.match(/SPEC-([0-9]{3,4})([A-Z]?)/i)
+  if (direct) return `SPEC-${direct[1]}${direct[2].toUpperCase()}`
+
+  const slug = text.match(/\b([0-9]{3,4})([a-z]?)-/i)
+  if (!slug) return ''
+  return `SPEC-${slug[1]}${slug[2].toUpperCase()}`
+}
+
+function driftClassForStatusPointer(sourcePath) {
+  if (/roadmap/i.test(sourcePath)) return 'stale_roadmap_claim'
+  if (/prd|requirements/i.test(sourcePath)) return 'stale_prd_claim'
+  return 'stale_workflow_claim'
+}
+
+function firstMarkdownHeading(text, pattern) {
+  for (const line of String(text || '').split(/\r?\n/)) {
+    const match = line.match(/^#{1,6}\s+(.+?)\s*#*$/)
+    if (!match) continue
+    const heading = match[1].trim()
+    if (pattern.test(heading)) return heading
+  }
+  return ''
+}
+
+function markerHasValue(text, marker) {
+  const escaped = escapeRegex(marker)
+  const linePattern = new RegExp(`^\\s*(?:[-*]\\s*)?${escaped}\\s*[:=|]\\s*(\\S.+?)\\s*$`, 'im')
+  const match = String(text || '').match(linePattern)
+  return Boolean(match?.[1]?.trim())
+}
+
+function humanizeMarker(marker) {
+  return String(marker || 'evidence')
+    .split(/[_\s-]+/)
+    .filter(Boolean)
+    .map((part, index) => {
+      const lower = part.toLowerCase()
+      if (lower === 'uat') return 'UAT'
+      if (lower === 'pr') return 'PR'
+      return index === 0 ? lower : lower
+    })
+    .join(' ')
+}
+
+function registryBlockForFlag(registryText, flagName) {
+  const index = registryText.indexOf(flagName)
+  if (index === -1) return ''
+  const end = registryText.indexOf('\n};', index)
+  return registryText.slice(index, end === -1 ? undefined : end)
+}
+
+function isBlockedRuntimePath(sourcePath) {
+  const normalized = normalizeSourcePath(sourcePath)
+  return normalized.startsWith('src/')
+    || normalized.startsWith('migrations/')
+    || normalized.startsWith('docs/migrations/')
+    || /(^|\/)(api|scheduler|dispatch|claim|retry|sandbox|harness-adapter)(\/|\.|-)/i.test(normalized)
+}
+
+function escapeRegex(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
 function evaluateFixtureBoundaries(caseRoot, fixture) {

@@ -64,14 +64,14 @@
 
 ### Implementation for User Story 1
 
-- [ ] T019 [US1] Implement stale PRD, roadmap, workflow, and autopilot status-pointer detection in `scripts/spec-012b/harness-gardening-check.mjs`
-- [ ] T020 [US1] Implement missing required evidence-marker detection for closeout fields, UAT run IDs, verification rows, and workflow evidence in `scripts/spec-012b/harness-gardening-check.mjs`
-- [ ] T021 [US1] Implement stale feature-flag contradiction detection for absent flags, unsafe defaults, enablement contradictions, and completed-evidence contradictions in `scripts/spec-012b/harness-gardening-check.mjs`
-- [ ] T022 [US1] Implement strict-scope drift detection for forbidden owned surfaces and missing strict-scope evidence in `scripts/spec-012b/harness-gardening-check.mjs`
-- [ ] T023 [US1] Implement source-of-truth link classification and broken required repo-owned link detection in `scripts/spec-012b/harness-gardening-check.mjs`
-- [ ] T024 [US1] Emit error-severity findings, hard-failure counts, detector statuses, and narrow remediation summaries for all hard-drift detectors in `scripts/spec-012b/harness-gardening-report.mjs`
-- [ ] T025 [US1] Verify fresh hard-drift fixture cases produce zero active findings by updating expectations in `scripts/spec-012b/fixtures/fresh/`
-- [ ] T026 [US1] Record US1 hard-drift fixture evidence in `specs/012b-harness-gardening-guards/.process/harness-gardening-report.md`
+- [X] T019 [US1] Implement stale PRD, roadmap, workflow, and autopilot status-pointer detection in `scripts/spec-012b/harness-gardening-check.mjs`
+- [X] T020 [US1] Implement missing required evidence-marker detection for closeout fields, UAT run IDs, verification rows, and workflow evidence in `scripts/spec-012b/harness-gardening-check.mjs`
+- [X] T021 [US1] Implement stale feature-flag contradiction detection for absent flags, unsafe defaults, enablement contradictions, and completed-evidence contradictions in `scripts/spec-012b/harness-gardening-check.mjs`
+- [X] T022 [US1] Implement strict-scope drift detection for forbidden owned surfaces and missing strict-scope evidence in `scripts/spec-012b/harness-gardening-check.mjs`
+- [X] T023 [US1] Implement source-of-truth link classification and broken required repo-owned link detection in `scripts/spec-012b/harness-gardening-check.mjs`
+- [X] T024 [US1] Emit error-severity findings, hard-failure counts, detector statuses, and narrow remediation summaries for all hard-drift detectors in `scripts/spec-012b/harness-gardening-report.mjs`
+- [X] T025 [US1] Verify fresh hard-drift fixture cases produce zero active findings by updating expectations in `scripts/spec-012b/fixtures/fresh/`
+- [X] T026 [US1] Record US1 hard-drift fixture evidence in `specs/012b-harness-gardening-guards/.process/harness-gardening-report.md`
 
 **Checkpoint**: User Story 1 is independently testable and does not require live HAL, GitHub, Paddock, database, service, scheduler, or runtime state.
 
