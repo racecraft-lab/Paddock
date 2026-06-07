@@ -1,0 +1,539 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://racecraft.local/specs/012b/harness-gardening-report.schema.json",
+  "title": "Harness Gardening Report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "as_of",
+    "detector_statuses",
+    "summary",
+    "findings",
+    "errors"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "harness_gardening_report.v1"
+    },
+    "as_of": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "detector_statuses": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/detector_status"
+      }
+    },
+    "summary": {
+      "$ref": "#/$defs/summary"
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/finding"
+      }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/guard_error"
+      }
+    }
+  },
+  "$defs": {
+    "detector_status": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "detector",
+        "status"
+      ],
+      "properties": {
+        "detector": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "status": {
+          "enum": [
+            "passed",
+            "failed",
+            "warning",
+            "skipped_detector"
+          ]
+        },
+        "code": {
+          "$ref": "#/$defs/error_code"
+        },
+        "message": {
+          "$ref": "#/$defs/bounded_message"
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "finding_count",
+        "recommendation_count",
+        "error_count",
+        "warning_count",
+        "hard_failure_count"
+      ],
+      "properties": {
+        "finding_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "recommendation_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "error_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "warning_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "hard_failure_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stable_finding_id",
+        "drift_class",
+        "source_path",
+        "anchor",
+        "owner",
+        "severity",
+        "evidence",
+        "warnings",
+        "recommendation"
+      ],
+      "properties": {
+        "stable_finding_id": {
+          "$ref": "#/$defs/stable_id"
+        },
+        "drift_class": {
+          "$ref": "#/$defs/drift_class"
+        },
+        "source_path": {
+          "$ref": "#/$defs/repo_relative_path"
+        },
+        "anchor": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "owner": {
+          "$ref": "#/$defs/owner"
+        },
+        "severity": {
+          "$ref": "#/$defs/severity"
+        },
+        "evidence": {
+          "$ref": "#/$defs/evidence_list"
+        },
+        "warnings": {
+          "$ref": "#/$defs/warning_list"
+        },
+        "recommendation": {
+          "$ref": "#/$defs/recommendation"
+        }
+      }
+    },
+    "recommendation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "stable_finding_id",
+        "recommendation_id",
+        "drift_class",
+        "source_path",
+        "anchor",
+        "owner",
+        "severity",
+        "evidence",
+        "remediation_summary",
+        "paddock_cleanup_task",
+        "deferred_side_effects",
+        "warnings"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "harness_gardening_recommendation.v1"
+        },
+        "stable_finding_id": {
+          "$ref": "#/$defs/stable_id"
+        },
+        "recommendation_id": {
+          "$ref": "#/$defs/stable_id"
+        },
+        "drift_class": {
+          "$ref": "#/$defs/drift_class"
+        },
+        "source_path": {
+          "$ref": "#/$defs/repo_relative_path"
+        },
+        "anchor": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "owner": {
+          "$ref": "#/$defs/owner"
+        },
+        "severity": {
+          "$ref": "#/$defs/severity"
+        },
+        "evidence": {
+          "$ref": "#/$defs/evidence_list"
+        },
+        "remediation_summary": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "paddock_cleanup_task": {
+          "$ref": "#/$defs/paddock_cleanup_task"
+        },
+        "github_issue_export": {
+          "$ref": "#/$defs/github_issue_export"
+        },
+        "deferred_side_effects": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "paddock_task_create",
+              "github_issue_create",
+              "archive_cleanup_apply",
+              "live_state_mutation"
+            ]
+          },
+          "uniqueItems": true
+        },
+        "warnings": {
+          "$ref": "#/$defs/warning_list"
+        }
+      }
+    },
+    "paddock_cleanup_task": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "operation",
+        "live_mutation",
+        "title",
+        "description",
+        "status",
+        "priority",
+        "tags",
+        "metadata"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "paddock_cleanup_task_import_draft.v1"
+        },
+        "operation": {
+          "const": "create_task"
+        },
+        "live_mutation": {
+          "const": false
+        },
+        "title": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "description": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "status": {
+          "const": "inbox"
+        },
+        "priority": {
+          "enum": [
+            "P1",
+            "P2",
+            "P3"
+          ]
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "uniqueItems": true
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "stable_finding_id",
+            "drift_class",
+            "source_path",
+            "anchor",
+            "owner",
+            "evidence"
+          ],
+          "properties": {
+            "stable_finding_id": {
+              "$ref": "#/$defs/stable_id"
+            },
+            "drift_class": {
+              "$ref": "#/$defs/drift_class"
+            },
+            "source_path": {
+              "$ref": "#/$defs/repo_relative_path"
+            },
+            "anchor": {
+              "$ref": "#/$defs/non_empty_string"
+            },
+            "owner": {
+              "$ref": "#/$defs/owner"
+            },
+            "evidence": {
+              "$ref": "#/$defs/evidence_list"
+            }
+          }
+        }
+      }
+    },
+    "github_issue_export": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "export_only",
+        "live_mutation",
+        "repository",
+        "title",
+        "body"
+      ],
+      "properties": {
+        "export_only": {
+          "const": true
+        },
+        "live_mutation": {
+          "const": false
+        },
+        "repository": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "title": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "body": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "labels": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "uniqueItems": true
+        },
+        "assignees": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "uniqueItems": true
+        },
+        "milestone": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "type": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "issue_field_values": {
+          "type": "object",
+          "additionalProperties": {
+            "type": [
+              "string",
+              "number",
+              "boolean",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "owner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "owner_key",
+        "owner_source",
+        "confidence"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "owner_key": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "owner_source": {
+          "enum": [
+            "repo_knowledge_exact_path",
+            "repo_knowledge_directory_prefix",
+            "link_target_or_source_path",
+            "spec_family",
+            "roadmap_path_class",
+            "unknown"
+          ]
+        },
+        "confidence": {
+          "enum": [
+            "high",
+            "medium",
+            "low",
+            "unknown"
+          ]
+        }
+      }
+    },
+    "guard_error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_path",
+        "detector",
+        "code",
+        "message",
+        "required",
+        "redacted"
+      ],
+      "properties": {
+        "source_path": {
+          "$ref": "#/$defs/repo_relative_path"
+        },
+        "detector": {
+          "$ref": "#/$defs/non_empty_string"
+        },
+        "code": {
+          "$ref": "#/$defs/error_code"
+        },
+        "message": {
+          "$ref": "#/$defs/bounded_message"
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "redacted": {
+          "type": "boolean"
+        }
+      }
+    },
+    "evidence_list": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "source_path",
+          "anchor",
+          "summary"
+        ],
+        "properties": {
+          "source_path": {
+            "$ref": "#/$defs/repo_relative_path"
+          },
+          "anchor": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "summary": {
+            "$ref": "#/$defs/bounded_message"
+          }
+        }
+      }
+    },
+    "warning_list": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "$ref": "#/$defs/non_empty_string"
+          },
+          "message": {
+            "$ref": "#/$defs/bounded_message"
+          }
+        }
+      }
+    },
+    "drift_class": {
+      "enum": [
+        "stale_prd_claim",
+        "stale_roadmap_claim",
+        "stale_workflow_claim",
+        "missing_required_evidence",
+        "stale_feature_flag_status",
+        "deterministic_low_value_test_pattern",
+        "strict_scope_drift",
+        "broken_source_of_truth_link",
+        "archive_cleanup_eligibility"
+      ]
+    },
+    "error_code": {
+      "enum": [
+        "repo_artifact_missing",
+        "repo_artifact_unreadable",
+        "repo_artifact_malformed_json",
+        "repo_artifact_malformed_markdown",
+        "repo_artifact_schema_invalid",
+        "fixture_missing",
+        "fixture_malformed_json",
+        "fixture_expectation_mismatch",
+        "fixture_unsafe_path",
+        "artifact_unsupported_format",
+        "artifact_too_large"
+      ]
+    },
+    "severity": {
+      "enum": [
+        "error",
+        "warning"
+      ]
+    },
+    "stable_id": {
+      "type": "string",
+      "pattern": "^hg_[a-f0-9]{20}$"
+    },
+    "repo_relative_path": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "not": {
+        "anyOf": [
+          {
+            "pattern": "^/"
+          },
+          {
+            "pattern": "(^|/)\\.\\.(/|$)"
+          },
+          {
+            "pattern": "\\\\"
+          }
+        ]
+      }
+    },
+    "non_empty_string": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    },
+    "bounded_message": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    }
+  }
+}

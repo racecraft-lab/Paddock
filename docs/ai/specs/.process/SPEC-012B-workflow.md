@@ -37,7 +37,7 @@ Re-read it before each phase if you need to disambiguate a prompt. The Specify a
 | Scaffold | `$speckit-scaffold-spec SPEC-012B` | Complete | Branch, worktree, reviewability preset, design concept, workflow, and roadmap setup status created |
 | Specify | `$speckit-specify` | Complete | Generated `spec.md` and requirements checklist; G1 passed with 0 clarification markers |
 | Clarify | `$speckit-clarify` | Complete | Five sessions resolved schema, taxonomy, thresholds, ownership, fixtures, dedupe, scope, cleanup, and guardrails boundaries; G2 passed |
-| Plan | `$speckit-plan` | Pending | Plan repo-artifact-only guard scripts, fixture corpus, package/guardrail wiring, and no-runtime boundary |
+| Plan | `$speckit-plan` | Complete | Generated plan, research, data model, quickstart, and report contract schema; G3 passed |
 | Checklist | `$speckit-checklist` | Pending | Suggested domains: data-integrity, docs-integrity, guardrail-integration, error-handling, testing-strategy, scope-control |
 | Tasks | `$speckit-tasks` | Pending | Generate TDD-first tasks for fixture RED tests, schemas, guard implementation, package scripts, docs, and verification |
 | Analyze | `$speckit-analyze` | Pending | Check drift between roadmap, Design Concept, spec, plan, tasks, and external-context gates |
@@ -417,11 +417,18 @@ Focus on scope boundaries:
 
 | Artifact | Status | Notes |
 |----------|--------|-------|
-| `plan.md` | Pending | Technical context, constitution gates, strict scope, and guard architecture |
-| `research.md` | Pending | External-context retrieval evidence plus decisions for schema, fixtures, thresholds, and command integration |
-| `data-model.md` | Pending | Finding, recommendation, owner, severity, and report entities |
-| `contracts/` | Pending | JSON recommendation/report schema and CLI output contract |
-| `quickstart.md` | Pending | Local guard run, fixture run, CI/guardrails run, and report review flow |
+| `plan.md` | Complete | Technical context, constitution gates, strict scope, and guard architecture |
+| `research.md` | Complete | External-context retrieval evidence plus decisions for schema, fixtures, thresholds, and command integration |
+| `data-model.md` | Complete | Finding, recommendation, owner, severity, and report entities |
+| `contracts/` | Complete | `harness-gardening-report.schema.json` defines JSON report and recommendation contract |
+| `quickstart.md` | Complete | Local guard run, fixture run, CI/guardrails run, and report review flow |
+
+### G3 Validation
+
+- `validate-gate.sh G3 specs/012b-harness-gardening-guards`: pass.
+- `count-markers.sh all specs/012b-harness-gardening-guards`: 0 gaps, 0 clarifications, 0 CRITICAL, 0 HIGH, 0 MEDIUM, 0 LOW.
+- `node -e "JSON.parse(...harness-gardening-report.schema.json...)"`: pass.
+- Static scope review confirmed plan matches are explicit non-goals, not runtime/migration/UI/API/scheduler/dispatch/harness/live-mutation additions.
 
 ---
 
