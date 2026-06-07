@@ -35,6 +35,26 @@ test('guardrails registers harness-gardening without replacing existing suites',
   assert.match(guardrailsSource, /spec:012b:harness-gardening|harness-gardening-check\.mjs/);
 });
 
+test('focused package command accepts pnpm argument separator and emits JSON', () => {
+  const result = spawnSync(
+    'pnpm',
+    [
+      'spec:012b:harness-gardening',
+      '--',
+      '--fixtures',
+      'scripts/spec-012b/fixtures/fresh',
+      '--as-of',
+      '2026-06-06',
+      '--json',
+    ],
+    { cwd: repoRoot, encoding: 'utf8' },
+  );
+
+  assert.equal(result.status, 0);
+  assert.doesNotMatch(`${result.stdout}\n${result.stderr}`, /Unknown argument: --/);
+  assert.match(result.stdout, /"finding_count": 0/);
+});
+
 test('unknown-suite diagnostics include harness-gardening and preserve SPEC-012A suite names', () => {
   const result = spawnSync(
     'pnpm',

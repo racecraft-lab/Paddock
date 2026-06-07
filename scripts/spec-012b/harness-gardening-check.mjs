@@ -31,7 +31,9 @@ export function parseArgs(argv) {
 
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index]
-    if (arg === '--fixtures') {
+    if (arg === '--') {
+      continue
+    } else if (arg === '--fixtures') {
       const value = argv[index + 1]
       if (!value) throw new Error('--fixtures requires a path')
       args.fixtures = value

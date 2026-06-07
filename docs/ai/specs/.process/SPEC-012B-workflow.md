@@ -690,9 +690,9 @@ During implementation:
 | Area | Status | Evidence |
 |------|--------|----------|
 | Fixture RED tests | Complete | T001-T010 created 10 Node test files and fixture corpus; `node --test scripts/spec-012b/__tests__/*.test.mjs` RED result: 26 tests, 11 pass, 15 fail on missing SPEC-012B implementation/package/guardrail wiring |
-| Recommendation schema and output | In Progress | T011-T018 implemented report constants, stable IDs, dedupe/sort/severity helpers, owner derivation, report invariants, deterministic JSON/Markdown rendering, and CLI/default report paths; US2 payload/wiring tasks remain pending |
+| Recommendation schema and output | Complete | T027-T036 implemented non-mutating recommendation payloads, Paddock cleanup-task import drafts, export-only GitHub issue drafts, dedupe/unknown-owner behavior, package command, guardrails suite, and deterministic default reports |
 | Drift detectors | In Progress | T019-T026 implemented US1 hard-drift detectors for stale workflow/status pointers, missing evidence, stale feature-flag contradictions, strict-scope drift, and broken required repo-owned links; US3 warning-only detectors remain pending |
-| Package and guardrails integration | Pending | Pending |
+| Package and guardrails integration | Complete | `spec:012b:harness-gardening` package script added; `pnpm guardrails -- --suite harness-gardening` passed; existing `task-pipeline`, `spec-evidence-screenshots`, and `repo-knowledge-index` suite keys preserved |
 | Docs and discoverability | Pending | Pending |
 | Final verification | Pending | Pending |
 
@@ -708,6 +708,14 @@ During implementation:
 - Full SPEC-012B Node sweep: `node --test scripts/spec-012b/__tests__/*.test.mjs`: 29 pass, 2 fail as expected for pending US2 package script and guardrails suite wiring.
 - US1 generated report: `specs/012b-harness-gardening-guards/.process/harness-gardening-report.md` records 5 hard findings and 5 recommendations from hard fixtures.
 - No-oracle hard-detector tests delete `expected.findings` before execution and still pass for stale status, missing evidence, stale feature flag, strict scope, and required source-link drift.
+
+### US2 Verification
+
+- `node --test scripts/spec-012b/__tests__/*.test.mjs`: pass, 33 tests.
+- `pnpm guardrails -- --suite harness-gardening`: pass.
+- `pnpm spec:012b:harness-gardening -- --fixtures scripts/spec-012b/fixtures/fresh --as-of 2026-06-06 --json`: pass with 0 findings and 0 hard failures.
+- `pnpm spec:012b:harness-gardening -- --fixtures scripts/spec-012b/fixtures/warning --as-of 2026-06-06 --json`: pass with warning-only findings and 0 hard failures.
+- `git diff --check`: pass.
 
 ---
 

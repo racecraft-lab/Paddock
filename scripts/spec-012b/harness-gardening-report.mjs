@@ -570,6 +570,8 @@ function severityMax(left, right) {
 }
 
 function buildRecommendation(finding, remediationSummary, overrides = {}) {
+  const paddockOverrides = plainObject(overrides.paddock_cleanup_task)
+  const githubOverrides = plainObject(overrides.github_issue_export)
   const deferredSideEffects = sortStrings([
     'paddock_task_create',
     'github_issue_create',
@@ -589,36 +591,43 @@ function buildRecommendation(finding, remediationSummary, overrides = {}) {
     severity: finding.severity,
     evidence: finding.evidence,
     remediation_summary: boundedMessage(remediationSummary),
-    paddock_cleanup_task: buildPaddockCleanupTask(finding, remediationSummary),
-    github_issue_export: buildGithubIssueExport(finding, remediationSummary),
+    paddock_cleanup_task: buildPaddockCleanupTask(finding, remediationSummary, paddockOverrides),
+    github_issue_export: buildGithubIssueExport(finding, remediationSummary, githubOverrides),
     deferred_side_effects: deferredSideEffects,
     warnings: finding.warnings,
   }
 }
 
-function buildPaddockCleanupTask(finding, remediationSummary) {
+function buildPaddockCleanupTask(finding, remediationSummary, overrides = {}) {
   const title = `[SPEC-012B] ${finding.drift_class}: ${finding.source_path}`
+  const metadata = {
+    stable_finding_id: finding.stable_finding_id,
+    drift_class: finding.drift_class,
+    source_path: finding.source_path,
+    anchor: finding.anchor,
+    owner: finding.owner,
+    severity: finding.severity,
+    evidence: finding.evidence,
+    warnings: finding.warnings,
+    remediation_summary: boundedMessage(remediationSummary),
+  }
+  if (overrides.workspace_hint) metadata.workspace_hint = boundedMessage(overrides.workspace_hint)
+  if (overrides.project_hint) metadata.project_hint = boundedMessage(overrides.project_hint)
+
   return {
     schema_version: PADDOCK_CLEANUP_TASK_SCHEMA_VERSION,
     operation: 'create_task',
     live_mutation: false,
-    title: boundedMessage(title),
-    description: boundedMessage(`${remediationSummary} Source: ${finding.source_path} (${finding.anchor}).`),
+    title: boundedMessage(overrides.title || title),
+    description: boundedMessage(overrides.description || `${remediationSummary} Source: ${finding.source_path} (${finding.anchor}).`),
     status: 'inbox',
     priority: finding.severity === 'error' ? 'P1' : 'P3',
-    tags: sortStrings(['harness-gardening', 'spec-012b', finding.drift_class]),
-    metadata: {
-      stable_finding_id: finding.stable_finding_id,
-      drift_class: finding.drift_class,
-      source_path: finding.source_path,
-      anchor: finding.anchor,
-      owner: finding.owner,
-      evidence: finding.evidence,
-    },
+    tags: sortStrings(['harness-gardening', 'spec-012b', finding.drift_class, ...arrayOfStrings(overrides.tags)]),
+    metadata,
   }
 }
 
-function buildGithubIssueExport(finding, remediationSummary) {
+function buildGithubIssueExport(finding, remediationSummary, overrides = {}) {
   const body = [
     `Stable finding: ${finding.stable_finding_id}`,
     `Source: ${finding.source_path}`,
@@ -631,11 +640,35 @@ function buildGithubIssueExport(finding, remediationSummary) {
   return {
     export_only: true,
     live_mutation: false,
-    repository: 'racecraft-lab/Paddock',
-    title: boundedMessage(`[SPEC-012B] ${finding.drift_class} in ${finding.source_path}`),
-    body,
-    labels: sortStrings(['harness-gardening', 'spec-012b']),
+    repository: boundedMessage(overrides.repository || 'racecraft-lab/Paddock'),
+    title: boundedMessage(overrides.title || `[SPEC-012B] ${finding.drift_class} in ${finding.source_path}`),
+    body: boundedMessage(overrides.body || body),
+    labels: sortStrings(['harness-gardening', 'spec-012b', ...arrayOfStrings(overrides.labels)]),
+    ...optionalArrayField('assignees', overrides.assignees),
+    ...optionalStringField('milestone', overrides.milestone),
+    ...optionalStringField('type', overrides.type),
+    issue_field_values: buildGithubIssueFieldValues(finding, overrides.issue_field_values),
   }
+}
+
+function buildGithubIssueFieldValues(finding, proposedValues) {
+  const values = plainObject(proposedValues)
+  const normalized = {
+    drift_class: finding.drift_class,
+    owner_key: finding.owner.owner_key,
+    severity: finding.severity,
+    source_path: finding.source_path,
+    stable_finding_id: finding.stable_finding_id,
+  }
+
+  for (const key of Object.keys(values).sort((left, right) => left.localeCompare(right))) {
+    const value = values[key]
+    if (['string', 'number', 'boolean'].includes(typeof value) || value === null) {
+      normalized[key] = value
+    }
+  }
+
+  return normalized
 }
 
 function defaultEvidenceSummary(driftClass, sourcePath, anchor, caseId) {
@@ -670,4 +703,21 @@ function sortErrors(errors) {
     || left.code.localeCompare(right.code)
     || Number(right.required) - Number(left.required),
   )
+}
+
+function plainObject(value) {
+  return value && typeof value === 'object' && !Array.isArray(value) ? value : {}
+}
+
+function arrayOfStrings(value) {
+  return Array.isArray(value) ? value.map((entry) => String(entry)).filter(Boolean) : []
+}
+
+function optionalArrayField(key, value) {
+  const entries = sortStrings(arrayOfStrings(value))
+  return entries.length > 0 ? { [key]: entries } : {}
+}
+
+function optionalStringField(key, value) {
+  return value ? { [key]: boundedMessage(value) } : {}
 }

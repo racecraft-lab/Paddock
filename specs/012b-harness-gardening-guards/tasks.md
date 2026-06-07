@@ -85,16 +85,16 @@
 
 ### Implementation for User Story 2
 
-- [ ] T027 [US2] Implement the `harness_gardening_recommendation.v1` builder with copied parent fields and `recommendation_id == stable_finding_id` in `scripts/spec-012b/harness-gardening-report.mjs`
-- [ ] T028 [US2] Implement non-mutating `paddock_cleanup_task_import_draft.v1` payloads with `live_mutation: false`, inbox status, metadata, tags, and optional workspace/project hints in `scripts/spec-012b/harness-gardening-report.mjs`
-- [ ] T029 [US2] Implement optional export-only GitHub issue draft fields with `export_only: true`, `live_mutation: false`, repository, title, body, and proposed metadata in `scripts/spec-012b/harness-gardening-report.mjs`
-- [ ] T030 [US2] Implement recommendation dedupe so each stable finding ID emits exactly one active recommendation with merged evidence and warnings in `scripts/spec-012b/harness-gardening-report.mjs`
-- [ ] T031 [US2] Implement warning records for unknown owners while preserving recommendation emission and hard-drift failure causes in `scripts/spec-012b/harness-gardening-report.mjs`
-- [ ] T032 [US2] Add the single focused `spec:012b:harness-gardening` package script to `package.json` without adding new dependencies to `pnpm-lock.yaml`
-- [ ] T033 [US2] Register the separate `harness-gardening` suite in `scripts/check-guardrails.mjs` without deleting, renaming, or inlining `task-pipeline`, `spec-evidence-screenshots`, or `repo-knowledge-index`
-- [ ] T034 [US2] Preserve selected-suite behavior, full-suite behavior, and unknown-suite diagnostics listing `harness-gardening` plus existing suite keys in `scripts/check-guardrails.mjs`
-- [ ] T035 [US2] Leave `scripts/spec-012a/verify-repo-knowledge-index.mjs` unchanged and verify compatibility through assertions in `scripts/spec-012b/__tests__/guardrails-integration.test.mjs`
-- [ ] T036 [US2] Write deterministic default JSON and Markdown reports to `specs/012b-harness-gardening-guards/.process/harness-gardening-report.json` and `specs/012b-harness-gardening-guards/.process/harness-gardening-report.md`
+- [X] T027 [US2] Implement the `harness_gardening_recommendation.v1` builder with copied parent fields and `recommendation_id == stable_finding_id` in `scripts/spec-012b/harness-gardening-report.mjs`
+- [X] T028 [US2] Implement non-mutating `paddock_cleanup_task_import_draft.v1` payloads with `live_mutation: false`, inbox status, metadata, tags, and optional workspace/project hints in `scripts/spec-012b/harness-gardening-report.mjs`
+- [X] T029 [US2] Implement optional export-only GitHub issue draft fields with `export_only: true`, `live_mutation: false`, repository, title, body, and proposed metadata in `scripts/spec-012b/harness-gardening-report.mjs`
+- [X] T030 [US2] Implement recommendation dedupe so each stable finding ID emits exactly one active recommendation with merged evidence and warnings in `scripts/spec-012b/harness-gardening-report.mjs`
+- [X] T031 [US2] Implement warning records for unknown owners while preserving recommendation emission and hard-drift failure causes in `scripts/spec-012b/harness-gardening-report.mjs`
+- [X] T032 [US2] Add the single focused `spec:012b:harness-gardening` package script to `package.json` without adding new dependencies to `pnpm-lock.yaml`
+- [X] T033 [US2] Register the separate `harness-gardening` suite in `scripts/check-guardrails.mjs` without deleting, renaming, or inlining `task-pipeline`, `spec-evidence-screenshots`, or `repo-knowledge-index`
+- [X] T034 [US2] Preserve selected-suite behavior, full-suite behavior, and unknown-suite diagnostics listing `harness-gardening` plus existing suite keys in `scripts/check-guardrails.mjs`
+- [X] T035 [US2] Leave `scripts/spec-012a/verify-repo-knowledge-index.mjs` unchanged and verify compatibility through assertions in `scripts/spec-012b/__tests__/guardrails-integration.test.mjs`
+- [X] T036 [US2] Write deterministic default JSON and Markdown reports to `specs/012b-harness-gardening-guards/.process/harness-gardening-report.json` and `specs/012b-harness-gardening-guards/.process/harness-gardening-report.md`
 
 **Checkpoint**: User Story 2 is independently testable and creates no live Paddock task, GitHub issue, label, assignment, milestone, project field, or apply-mode side effect.
 
