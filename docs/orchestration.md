@@ -205,14 +205,11 @@ Schedule tasks to be created automatically on a recurring basis using natural la
 
 ```bash
 pnpm mc cron create --body '{
+  "action": "add",
   "name": "daily-standup-report",
   "schedule": "0 9 * * 1-5",
-  "task_template": {
-    "title": "Generate daily standup report",
-    "description": "Summarize all completed tasks from the past 24 hours.",
-    "priority": "medium",
-    "assigned_to": "iris"
-  }
+  "command": "Summarize all completed tasks from the past 24 hours.",
+  "model": "gpt-5.5"
 }'
 ```
 
