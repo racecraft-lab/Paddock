@@ -2,8 +2,9 @@
 
 **Spec**: 008-resource-governance
 **Branch**: `008-resource-governance`
-**Status**: implementation complete; verification pending operator-led
-soak / chaos / e2e runs (T367-T369).
+**Status**: Complete. Implementation, local verification, e2e coverage,
+visual evidence, and remaining operator-led deferrals are recorded in
+`SPEC-008-verification-evidence.md`.
 
 ## What shipped
 
@@ -67,10 +68,8 @@ CI guards:
   Paddock instance + bench harness; deferred to operator.
 - T368 chaos runs across every runbook's `## Verification` step —
   same: requires running infra; documented as runbook procedure.
-- T363 full Playwright e2e — specs are present (T284-T297, 14 files)
-  but skip-guarded on the `/api/admin/spec-008/seed-fixture` endpoint
-  that the Phase-9 UI fixtures depend on; those endpoints are the
-  one remaining seam between code + a running instance.
+- T363 full Playwright e2e was later verified and is recorded in
+  `SPEC-008-verification-evidence.md`.
 - Phase 0 spike-evidence JSON (T001-T004) — pre-existing baseline.
   Spike scripts are in place; running them is operator-gated because
   each requires a real CLI subprocess + a running collector.
@@ -97,9 +96,10 @@ Last-known status (commit hash recorded in `SPEC-008-verification-evidence.md`):
 - `pnpm typecheck`: PASS.
 - `pnpm lint`: 0 SPEC-008-authored errors; 16 pre-existing warnings
   unchanged.
-- `pnpm vitest run`: 2584 passed / 5 failed / 1 skipped / 86 todo.
-  The 5 failures are the documented baseline (4 spike-evidence files
-  + 1 SPEC-007 cross-spec test).
+- `pnpm test`: PASS after socket-bind approval for
+  `mc-provisioner-daemon`; 252 files, 2708 tests passed, 1 skipped,
+  84 todo.
+- `pnpm test:e2e`: PASS, 645 tests.
 - `pnpm vitest run tests/integration/strict-scope-guard.test.ts`:
   331 / 331 PASS.
 - Feature-flag matrix: 47 / 47 PASS.
