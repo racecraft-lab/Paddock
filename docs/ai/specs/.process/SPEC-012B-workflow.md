@@ -206,14 +206,14 @@ Forbidden:
 
 ### Success Criteria Summary
 
-- [ ] A guard can detect every supported drift class from checked-in fixture inputs.
-- [ ] Every finding has a stable deterministic ID and deterministic sort order.
-- [ ] Every finding emits one narrow cleanup recommendation with owner metadata and a canonical Paddock cleanup-task payload.
-- [ ] Optional GitHub issue export fields are present without live GitHub mutation.
-- [ ] Hard repo-owned drift fails CI; lower-confidence signals produce warnings and recommendations.
-- [ ] Guard output can be produced as JSON for automation and as a local/CI report for review.
-- [ ] `pnpm guardrails` includes the focused SPEC-012B suite without replacing `pnpm knowledge:index:check`.
-- [ ] `specs/**` cleanup is recommendation-only and preserves the archive extension `--apply-cleanup` safe-base gate.
+- [x] A guard can detect every supported drift class from checked-in fixture inputs.
+- [x] Every finding has a stable deterministic ID and deterministic sort order.
+- [x] Every finding emits one narrow cleanup recommendation with owner metadata and a canonical Paddock cleanup-task payload.
+- [x] Optional GitHub issue export fields are present without live GitHub mutation.
+- [x] Hard repo-owned drift fails CI; lower-confidence signals produce warnings and recommendations.
+- [x] Guard output can be produced as JSON for automation and as a local/CI report for review.
+- [x] `pnpm guardrails` includes the focused SPEC-012B suite without replacing `pnpm knowledge:index:check`.
+- [x] `specs/**` cleanup is recommendation-only and preserves the archive extension `--apply-cleanup` safe-base gate.
 
 ---
 
@@ -754,9 +754,20 @@ During implementation:
 | Self-Review | Complete | PR review packet, verify report, review report, cleanup report, and retrospective agree on process/tooling-only scope and no live mutation |
 | UAT Runbook Generation | Complete | `specs/012b-harness-gardening-guards/uat-runbook.md` generated for local fixture/guardrail UAT |
 | PR Body Generation | Complete | `specs/012b-harness-gardening-guards/.process/pr-body.md` generated |
-| PR Creation | Complete | PR #84 opened at https://github.com/racecraft-lab/Paddock/pull/84; initial checks pending |
+| PR Creation | Complete | PR #84 opened at https://github.com/racecraft-lab/Paddock/pull/84 and later merged to `main` |
 | Review Remediation | Complete | GitHub Code Quality and Copilot comments were addressed in branch updates; focused SPEC-012B tests, guardrails, knowledge-index check, typecheck, lint, diff whitespace, and unsandboxed full test suite passed after remediation |
 | Retrospective | Complete | `specs/012b-harness-gardening-guards/retrospective.md` records 100% task completion, 100% spec adherence, and 0 critical findings |
+
+### Post-Merge Status Hygiene
+
+Generated: 2026-06-08T09:15:15-05:00 from `origin/main` after PR #84 merge.
+
+| Surface | Status | Evidence |
+|---------|--------|----------|
+| PR merge | Complete | PR #84 merged on 2026-06-07T16:18:07Z as `77c6ce44bb10ac89b43ffcaab2b9ea35e7ea2f39` |
+| Roadmap status | Complete | `docs/ai/rc-factory-technical-roadmap.md` records SPEC-012B as complete and names SPEC-014D/E/F plus SPEC-015A as pending follow-ons |
+| Autopilot pointer | Complete | `docs/ai/specs/autopilot-state.json` and `.process/autopilot-state.json` record SPEC-012B closeout and no current blocker |
+| Source cleanup | Not applied | No explicit safe-base `--apply-cleanup` request was supplied; retained `specs/**` source folders remain available as evidence |
 
 ---
 

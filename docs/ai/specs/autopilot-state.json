@@ -1,6 +1,6 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-010B-workflow.md",
-  "updated_at": "2026-06-06T16:54:43Z",
+  "updated_at": "2026-06-08T09:15:15-05:00",
   "spec_id": "SPEC-010B",
   "branch": "010b-product-line-b-smoke",
   "feature_dir": "specs/010b-product-line-b-smoke",
@@ -65,7 +65,11 @@
     "merged_at": "2026-06-06T11:13:31Z",
     "hal_uat_run_id": "SPEC-010B-HAL-20260606040404",
     "source_cleanup": "not_applied_no_apply_cleanup_request",
-    "next_unblocked_spec": "SPEC-012B"
+    "next_unblocked_spec": "SPEC-014D/SPEC-014E/SPEC-014F/SPEC-015A",
+    "latest_completed_spec": "SPEC-012B",
+    "latest_completed_pr": "https://github.com/racecraft-lab/Paddock/pull/84",
+    "latest_completed_merge_commit": "77c6ce44bb10ac89b43ffcaab2b9ea35e7ea2f39",
+    "latest_completed_merged_at": "2026-06-07T16:18:07Z"
   },
   "plan": [
     {"step": "Archive Sweep: previously merged specs dry-run/apply eligibility", "status": "completed"},
