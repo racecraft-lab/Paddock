@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-06-09T20:42:57.160Z",
+  "updatedAt": "2026-06-09T20:48:42.827Z",
   "prs": [
     {
       "prNumber": "85",
@@ -9,8 +9,15 @@
       "indexHref": "https://racecraft-lab.github.io/Paddock/pr/85/",
       "headRef": "codex/docs-hygiene-2026-06-08-77c6",
       "baseRef": "main",
-      "updatedAt": "2026-06-09T20:42:57.160Z",
+      "updatedAt": "2026-06-09T20:48:42.827Z",
       "latest": {
+        "playwright": {
+          "runId": "27234425245",
+          "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/27234425245",
+          "latestHref": "https://racecraft-lab.github.io/Paddock/pr/85/playwright/latest/?v=27234425245-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/Paddock/pr/85/runs/27234425245-attempt-1/playwright/",
+          "updatedAt": "2026-06-09T20:48:42.827Z"
+        },
         "storybook": {
           "runId": "27234424957",
           "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/27234424957",
