@@ -177,7 +177,9 @@ Returns up to 5 pending tasks sorted by priority (critical → low), then due da
 
 **Priority values:** `critical`, `high`, `medium`, `low`
 
-**Status values:** `inbox`, `assigned`, `in_progress`, `review`, `done`, `failed`, `blocked`, `cancelled`
+**Status values:** `backlog`, `inbox`, `assigned`, `awaiting_owner`,
+`in_progress`, `review`, `quality_review`, `ready_for_owner`, `done`,
+`failed`
 
 Note: Moving a task to `done` via PUT requires an Aegis quality review approval.
 

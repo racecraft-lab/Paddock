@@ -6,9 +6,9 @@
 
 ## 1. Symptom
 
-- Quarantine table accepts `reason='schema_broken'` rows.
-- Activity feed: `governance_source_schema_broken`.
-- Affected source's freshness pill turns red on the dashboard.
+- `raw_usage_events.reconcile_status='schema_broken'` rows appear through
+  `GET /api/governance/quarantine`.
+- Affected source freshness can degrade if accepted rows stop arriving.
 
 ## 2. Impact
 
@@ -17,7 +17,8 @@
 
 ## 3. Diagnose
 
-1. Inspect `quarantined_raw_events` rows for the source_id.
+1. Inspect `raw_usage_events` rows for the `source_id` through
+   `GET /api/governance/quarantine`.
 2. Pull a recent payload sample and compare to the expected schema.
 3. For Copilot sources, check the `#copilot-unknown-versions` anchor
    below.
@@ -35,7 +36,8 @@
 
 ## 6. Validate
 
-- No new `schema_broken` quarantine rows for 30 minutes.
+- No new `schema_broken` `raw_usage_events.reconcile_status` rows for
+  30 minutes.
 - Source freshness pill returns green.
 
 ## 7. Postmortem

@@ -7,8 +7,8 @@
 ## 1. Symptom
 
 - Copilot emitter sends a payload our parser rejects.
-- `quarantined_raw_events.reason='schema_broken'` rows for the
-  Copilot source.
+- Copilot rows persist with `raw_usage_events.reconcile_status='schema_broken'`
+  and appear through `GET /api/governance/quarantine`.
 
 ## 2. Impact
 
@@ -26,7 +26,8 @@
 ## 5. Recover
 
 - Add forward-compat handler in the parser.
-- Re-process quarantined rows.
+- Re-process or discard the affected `raw_usage_events` rows after the parser
+  is fixed.
 
 ## 6. Validate
 

@@ -1,8 +1,7 @@
 ---
 description: Perform a non-destructive post-implementation verification gate validating the implementation against spec.md, plan.md, tasks.md, and constitution.md.
 scripts:
-  sh: ../../scripts/bash/check-prerequisites.sh --json --paths-only
-  ps: ../../scripts/powershell/check-prerequisites.ps1 -Json -PathsOnly
+  sh: .specify/scripts/bash/check-prerequisites.sh --json --paths-only
 ---
 
 ## User Input
@@ -213,5 +212,3 @@ Ask the user: "Would you like me to suggest concrete remediation edits for the t
 - **Prioritize constitution violations** (these are always CRITICAL)
 - **Use examples over exhaustive rules** (cite specific instances, not generic patterns)
 - **Report zero issues gracefully** (emit success report with coverage statistics)
-
-

@@ -6,8 +6,10 @@
 
 ## 1. Symptom
 
-- `quarantined_raw_events.reason='schema_malicious'` rows fire.
-- `malicious_rule_id` populated.
+- `raw_usage_events.reconcile_status='schema_malicious'` rows appear through
+  `GET /api/governance/quarantine`.
+- The matched rule detail is recorded in the row payload, not a dedicated
+  `malicious_rule_id` column.
 
 ## 2. Impact
 
@@ -16,7 +18,7 @@
 
 ## 3. Diagnose
 
-- Pull the matched rule id from `malicious_rule_id`.
+- Pull the matched rule detail from `raw_attributes_json`.
 - Inspect the raw payload (sealed under FR-219m).
 
 ## 4. Mitigate
@@ -25,8 +27,8 @@
 
 ## 5. Recover
 
-- After investigation, mark the quarantined rows
-  `disposition='discard'` and resume the source.
+- After investigation, discard or promote the affected quarantine rows through
+  the governance quarantine API and resume the source.
 
 ## 6. Validate
 
