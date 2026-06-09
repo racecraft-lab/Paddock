@@ -10,9 +10,11 @@ This guide walks operators through:
 ## Prerequisites
 
 - Paddock >= the SPEC-008 merge SHA.
-- `governance.json` present at `<PADDOCK_DATA_DIR>/governance.json`.
-  The default is auto-seeded from
-  `src/lib/observability/governance.json.template`.
+- Default governance values are represented by
+  `src/lib/observability/governance.json.template`. If your deployment process
+  needs an operator-owned copy at `<PADDOCK_DATA_DIR>/governance.json`, create it
+  explicitly from that template; current Paddock code does not auto-seed the
+  data-dir file.
 - Migrations M65a..m + M66 complete. Paddock runs
   `src/lib/migrations.ts` during database initialization; verify the
   `schema_migrations` table if you need to confirm a running database.

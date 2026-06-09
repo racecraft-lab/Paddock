@@ -15,11 +15,11 @@ Every task in Paddock follows this status flow:
 ```
 inbox ──► assigned ──► in_progress ──► review ──► done
   │          │             │              │
-  │          │             │              └──► rejected ──► assigned (retry)
+  │          │             │              └──► assigned (rejected verdict retry)
   │          │             │
   │          │             └──► failed (max retries or timeout)
   │          │
-  │          └──► cancelled
+  │          └──► failed
   │
   └──► assigned (triaged by human or auto-dispatch)
 ```
