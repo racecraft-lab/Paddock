@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "prNumber": "85",
+  "prTitle": "docs: fix docs hygiene drift",
+  "prUrl": "https://github.com/racecraft-lab/Paddock/pull/85",
+  "headRef": "codex/docs-hygiene-2026-06-08-77c6",
+  "baseRef": "main",
+  "reports": [
+    {
+      "surface": "storybook",
+      "runId": "27234424957",
+      "runAttempt": "1",
+      "runKey": "27234424957-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/27234424957",
+      "reportHref": "https://racecraft-lab.github.io/Paddock/pr/85/runs/27234424957-attempt-1/storybook/",
+      "latestHref": "https://racecraft-lab.github.io/Paddock/pr/85/storybook/latest/?v=27234424957-attempt-1",
+      "headSha": "e673562eb0379538ac031a22d27f8e92071b5226",
+      "headRef": "codex/docs-hygiene-2026-06-08-77c6",
+      "baseRef": "main",
+      "workflowName": "Visual Storybook Snapshots",
+      "workflowFile": "visual-storybook.yml",
+      "surfaceLabel": "Storybook Components",
+      "createdAt": "2026-06-09T20:42:57.160Z"
+    }
+  ],
+  "updatedAt": "2026-06-09T20:42:57.160Z"
+}
