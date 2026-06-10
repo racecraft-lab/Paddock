@@ -15,7 +15,7 @@ The core manual queue and review path follows this status flow:
 ```
 inbox ──► assigned ──► in_progress ──► review ──► done
   │          │             │              │
-  │          │             │              └──► assigned (rejected verdict retry)
+  │          │             │              └──► in_progress (rejected verdict retry)
   │          │             │
   │          │             └──► failed (max retries or timeout)
   │          │
@@ -29,7 +29,7 @@ Key transitions:
 - **assigned → in_progress**: Agent claims via queue poll or auto-dispatch sends it
 - **in_progress → review**: Agent completes work, awaits quality check
 - **review → done**: Aegis approves the work
-- **review → assigned**: Aegis rejects, task is requeued with feedback
+- **review → in_progress**: Aegis rejects, task is returned with feedback
 
 Other task states are used by specialized flows: `backlog` for pre-triage work,
 `awaiting_owner` and `ready_for_owner` for owner-gated work, `quality_review`
