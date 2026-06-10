@@ -252,8 +252,7 @@ function getAgentTaskLoad(agent: Agent): number {
   return (
     (stats.assigned || 0) +
     (stats.in_progress || 0) +
-    (stats.quality_review || 0) +
-    (stats.ready_for_owner || 0)
+    (stats.quality_review || 0)
   )
 }
 
@@ -272,9 +271,6 @@ function getAgentWorkCue(agent: Agent, action?: OfficeAction): WorkCue {
   }
   if (agent.status === 'error') {
     return { label: 'blocked', detail: 'needs help', toneClass: 'text-rose-100 border-rose-300/40 bg-rose-500/20', glowColor: 'rgba(244,63,94,0.65)' }
-  }
-  if ((stats?.ready_for_owner || 0) > 0) {
-    return { label: 'handoff', detail: `${stats?.ready_for_owner || 0} ready`, toneClass: 'text-emerald-100 border-emerald-300/35 bg-emerald-400/15', glowColor: 'rgba(52,211,153,0.65)' }
   }
   if ((stats?.quality_review || 0) > 0) {
     return { label: 'review', detail: `${stats?.quality_review || 0} in QA`, toneClass: 'text-violet-100 border-violet-300/35 bg-violet-400/15', glowColor: 'rgba(167,139,250,0.65)' }
@@ -1123,17 +1119,13 @@ export function OfficePanel() {
 
     return candidates.map((worker, index) => {
       const stats = worker.agent.taskStats
-      const target = (stats?.ready_for_owner || 0) > 0
-        ? DELIVERY_TERMINALS[2]
-        : (stats?.quality_review || 0) > 0
+      const target = (stats?.quality_review || 0) > 0
           ? DELIVERY_TERMINALS[1]
           : DELIVERY_TERMINALS[index % 2]
       const partner = renderedWorkers[(renderedWorkers.findIndex((item) => item.agent.id === worker.agent.id) + 1) % renderedWorkers.length]
       const toX = agentActionOverrides.get(worker.agent.id) === 'pair' && partner ? partner.x : target.x
       const toY = agentActionOverrides.get(worker.agent.id) === 'pair' && partner ? partner.y - 5 : target.y
-      const color = (stats?.ready_for_owner || 0) > 0
-        ? DELIVERY_TERMINALS[2].color
-        : (stats?.quality_review || 0) > 0
+      const color = (stats?.quality_review || 0) > 0
           ? DELIVERY_TERMINALS[1].color
           : worker.agent.status === 'busy'
             ? 'rgba(251,191,36,0.95)'
