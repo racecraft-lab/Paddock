@@ -1,8 +1,7 @@
 ---
 description: Post-implementation quality gate that reviews changes, fixes small issues (scout rule), creates tasks for medium issues, and generates analysis for large issues.
 scripts:
-  sh: scripts/bash/check-prerequisites.sh --json --require-tasks --include-tasks
-  ps: scripts/powershell/check-prerequisites.ps1 -Json -RequireTasks -IncludeTasks
+  sh: .specify/scripts/bash/check-prerequisites.sh --json --require-tasks --include-tasks
 handoffs:
   - label: Re-implement follow-up tasks
     agent: speckit.implement

@@ -74,10 +74,9 @@ Set `OPENCLAW_CONFIG_PATH` to point to your `openclaw.json`.
 **Local agent discovery** — Scans standard directories for agent definitions:
 
 ```bash
-curl -X POST http://localhost:3000/api/agents/sync \
+curl -X POST "http://localhost:3000/api/agents/sync?source=local" \
   -H "Authorization: Bearer $MC_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"source": "local"}'
+  -H "Content-Type: application/json"
 ```
 
 Scanned directories:

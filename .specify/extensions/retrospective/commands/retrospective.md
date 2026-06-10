@@ -14,8 +14,7 @@ handoffs:
     prompt: Create checklist based on retrospective findings
     send: true
 scripts:
-  sh: ../../scripts/bash/check-prerequisites.sh --json --require-tasks --include-tasks
-  ps: ../../scripts/powershell/check-prerequisites.ps1 -Json -RequireTasks -IncludeTasks
+  sh: .specify/scripts/bash/check-prerequisites.sh --json --require-tasks --include-tasks
 ---
 
 ## User Input

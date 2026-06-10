@@ -7,7 +7,8 @@
 ## 1. Symptom
 
 - 413 payload_too_large from the OTLP receiver.
-- `quarantined_raw_events.reason='oversized'` rows.
+- The OTLP receiver rejects the payload before ingesting it; no quarantine row
+  is expected for the rejected body.
 
 ## 2. Impact
 
@@ -29,7 +30,7 @@
 
 ## 6. Validate
 
-- No new oversized quarantine rows for 30 minutes.
+- No new `payload_too_large` responses for 30 minutes.
 
 ## 7. Postmortem
 

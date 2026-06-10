@@ -15,11 +15,11 @@ Every task in Paddock follows this status flow:
 ```
 inbox ──► assigned ──► in_progress ──► review ──► done
   │          │             │              │
-  │          │             │              └──► rejected ──► assigned (retry)
+  │          │             │              └──► assigned (rejected verdict retry)
   │          │             │
   │          │             └──► failed (max retries or timeout)
   │          │
-  │          └──► cancelled
+  │          └──► failed
   │
   └──► assigned (triaged by human or auto-dispatch)
 ```
@@ -205,14 +205,11 @@ Schedule tasks to be created automatically on a recurring basis using natural la
 
 ```bash
 pnpm mc cron create --body '{
+  "action": "add",
   "name": "daily-standup-report",
   "schedule": "0 9 * * 1-5",
-  "task_template": {
-    "title": "Generate daily standup report",
-    "description": "Summarize all completed tasks from the past 24 hours.",
-    "priority": "medium",
-    "assigned_to": "iris"
-  }
+  "command": "Summarize all completed tasks from the past 24 hours.",
+  "model": "gpt-5.5"
 }'
 ```
 
@@ -223,17 +220,15 @@ curl -X POST "$MC_URL/api/cron" \
   -H "Authorization: Bearer $MC_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
+    "action": "add",
     "name": "weekly-security-scan",
     "schedule": "0 2 * * 0",
-    "task_template": {
-      "title": "Weekly security audit",
-      "priority": "high",
-      "assigned_to": "aegis"
-    }
+    "command": "Run the weekly security audit.",
+    "model": "gpt-5.5"
   }'
 ```
 
-The scheduler spawns dated child tasks from the template on each trigger. Manage cron jobs with `pause`, `resume`, and `remove` actions.
+The scheduler stores an OpenClaw cron job whose payload sends the configured command on each trigger. Manage cron jobs with `toggle`, `trigger`, `clone`, and `remove` actions.
 
 **When to use**: Reports, health checks, periodic audits, maintenance tasks.
 

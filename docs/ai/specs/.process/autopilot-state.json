@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
   "workflow_file": "docs/ai/specs/.process/SPEC-012B-workflow.md",
-  "updated_at": "2026-06-07T00:57:00-05:00",
-  "active_step": "Complete: PR #84 review remediated; checks pending after branch update",
+  "updated_at": "2026-06-08T09:15:15-05:00",
+  "active_step": "Complete: PR #84 merged to main; status hygiene recorded",
   "spec_id": "SPEC-012B",
   "feature_dir": "specs/012b-harness-gardening-guards",
   "branch": "012b-harness-gardening-guards",
@@ -61,6 +61,14 @@
       "current branch is not a safe cleanup base",
       "current target excluded"
     ]
+  },
+  "closeout": {
+    "status": "completed",
+    "pr": "https://github.com/racecraft-lab/Paddock/pull/84",
+    "merge_commit": "77c6ce44bb10ac89b43ffcaab2b9ea35e7ea2f39",
+    "merged_at": "2026-06-07T16:18:07Z",
+    "source_cleanup": "not_applied_no_apply_cleanup_request",
+    "next_follow_ups": ["SPEC-014D", "SPEC-014E", "SPEC-014F", "SPEC-015A"]
   },
   "plan": [
     {"step": "Archive Sweep: previously merged specs dry-run/apply eligibility", "status": "completed"},

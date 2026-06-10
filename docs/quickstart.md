@@ -235,7 +235,7 @@ pnpm mc agents list --json
 pnpm mc agents create --name scout --role researcher --json
 
 # Create a task
-pnpm mc tasks create --title "Research competitors" --body '{"assigned_to":"scout","priority":"medium"}' --json
+pnpm mc tasks create --body '{"title":"Research competitors","assigned_to":"scout","priority":"medium"}' --json
 
 # Poll the queue
 pnpm mc tasks queue --agent scout --json

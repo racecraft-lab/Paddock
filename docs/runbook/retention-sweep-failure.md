@@ -6,8 +6,8 @@
 
 ## 1. Symptom
 
-- Nightly retention sweep emits
-  `governance_retention_sweep_failed`.
+- Nightly retention sweep returns a result with entries in
+  `RetentionSweepResult.errors`.
 - Disk-usage alert escalates because partitions accumulate.
 
 ## 2. Impact
@@ -17,7 +17,8 @@
 
 ## 3. Diagnose
 
-1. Inspect `recovery_action` rows of kind `retention_sweep_failed`.
+1. Inspect the scheduler/job log or caller output for
+   `RetentionSweepResult.errors`.
 2. Check FK guard violations per FR-384 (rows referenced by live
    policies cannot be archived).
 
@@ -33,8 +34,8 @@
 
 ## 6. Validate
 
-- Next nightly sweep emits
-  `governance_retention_sweep_complete`.
+- Next nightly sweep returns `errors: []` and archives eligible partitions, or
+  reports no eligible partitions.
 - Disk usage drops as expected.
 
 ## 7. Postmortem
