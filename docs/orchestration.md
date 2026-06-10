@@ -10,7 +10,7 @@ and never send both.
 
 ## Task Lifecycle
 
-Every task in Paddock follows this status flow:
+The core manual queue and review path follows this status flow:
 
 ```
 inbox ──► assigned ──► in_progress ──► review ──► done
@@ -30,6 +30,10 @@ Key transitions:
 - **in_progress → review**: Agent completes work, awaits quality check
 - **review → done**: Aegis approves the work
 - **review → assigned**: Aegis rejects, task is requeued with feedback
+
+Other task states are used by specialized flows: `backlog` for pre-triage work,
+`awaiting_owner` and `ready_for_owner` for owner-gated work, `quality_review`
+for explicit review stages, and `failed` for terminal failure.
 
 Feature-flagged task chains add work after a task reaches terminal success. When `FEATURE_TASK_PIPELINES` is off, or when a completed task is not bound to a workflow template with advancement-driving chain metadata, the lifecycle above is unchanged. When it is on, a non-`done` to `done` transition can validate structured output, choose a successor template, and create exactly one follow-up task.
 
