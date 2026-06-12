@@ -10,12 +10,12 @@ and never send both.
 
 ## Task Lifecycle
 
-Every task in Paddock follows this status flow:
+The core manual queue and review path follows this status flow:
 
 ```
 inbox ──► assigned ──► in_progress ──► review ──► done
   │          │             │              │
-  │          │             │              └──► assigned (rejected verdict retry)
+  │          │             │              └──► in_progress (rejected verdict retry)
   │          │             │
   │          │             └──► failed (max retries or timeout)
   │          │
@@ -29,7 +29,11 @@ Key transitions:
 - **assigned → in_progress**: Agent claims via queue poll or auto-dispatch sends it
 - **in_progress → review**: Agent completes work, awaits quality check
 - **review → done**: Aegis approves the work
-- **review → assigned**: Aegis rejects, task is requeued with feedback
+- **review → in_progress**: Aegis rejects, task is returned with feedback
+
+Other task states are used by specialized flows: `backlog` for pre-triage work,
+`awaiting_owner` and `ready_for_owner` for owner-gated work, `quality_review`
+for explicit review stages, and `failed` for terminal failure.
 
 Feature-flagged task chains add work after a task reaches terminal success. When `FEATURE_TASK_PIPELINES` is off, or when a completed task is not bound to a workflow template with advancement-driving chain metadata, the lifecycle above is unchanged. When it is on, a non-`done` to `done` transition can validate structured output, choose a successor template, and create exactly one follow-up task.
 
@@ -168,8 +172,8 @@ in_progress ──► review ──► Aegis reviews ──► APPROVED ──�
    API key is configured
 4. Parses the verdict:
    - `VERDICT: APPROVED` → task moves to `done`
-   - `VERDICT: REJECTED` → feedback is attached as a comment, task reverts to `assigned`
-5. Rejected tasks are re-dispatched with the feedback included in the prompt
+   - `VERDICT: REJECTED` → feedback is attached as a comment, task returns to `assigned`
+5. Rejected scheduler reviews are re-dispatched with the feedback on the next work pass. Direct `/api/quality-review` rejections move explicit review-stage tasks back to `in_progress`.
 
 ### Retry Limits
 

@@ -1,8 +1,8 @@
 ---
 description: Comprehensive code review using specialized agents — orchestrates code, comments, tests, errors, types, and simplify agents sequentially.
 scripts:
-  sh: scripts/bash/detect-changed-files.sh
-  ps: scripts/powershell/detect-changed-files.ps1
+  sh: .specify/extensions/review/scripts/bash/detect-changed-files.sh
+  ps: .specify/extensions/review/scripts/powershell/detect-changed-files.ps1
 ---
 
 # Comprehensive PR Review

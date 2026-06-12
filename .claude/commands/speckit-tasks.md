@@ -10,8 +10,7 @@ handoffs:
     prompt: Start the implementation in phases
     send: true
 scripts:
-  sh: scripts/bash/check-prerequisites.sh --json
-  ps: scripts/powershell/check-prerequisites.ps1 -Json
+  sh: .specify/scripts/bash/setup-tasks.sh --json
 ---
 
 ## User Input
