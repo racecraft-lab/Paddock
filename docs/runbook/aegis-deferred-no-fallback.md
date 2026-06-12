@@ -76,8 +76,8 @@ chain executed all four steps and could not satisfy the request:
 ## 4. Investigation Steps
 
 ```bash
-# 4.1 — Confirm the alert is current and identify affected workspace.
-pnpm mc events watch --types governance --since "10m" \
+# 4.1 — Watch live governance events and identify the affected workspace.
+pnpm mc events watch --types governance \
   | grep deferred_no_fallback
 
 # 4.2 — Inspect recent decisions for the workspace (replace 42 with the

@@ -160,7 +160,7 @@ Aegis is Paddock's built-in quality gate. When a task reaches `review` status, t
 
 ```
 in_progress ──► review ──► Aegis reviews ──► APPROVED ──► done
-                                          └─► REJECTED ──► in_progress (with feedback)
+                                          └─► REJECTED ──► assigned (with feedback)
 ```
 
 ### How Aegis Reviews
@@ -172,8 +172,8 @@ in_progress ──► review ──► Aegis reviews ──► APPROVED ──�
    API key is configured
 4. Parses the verdict:
    - `VERDICT: APPROVED` → task moves to `done`
-   - `VERDICT: REJECTED` → feedback is attached as a comment, task returns to `in_progress`
-5. Rejected tasks continue with the feedback stored on the task for the next work pass
+   - `VERDICT: REJECTED` → feedback is attached as a comment, task returns to `assigned`
+5. Rejected scheduler reviews are re-dispatched with the feedback on the next work pass. Direct `/api/quality-review` rejections move explicit review-stage tasks back to `in_progress`.
 
 ### Retry Limits
 
