@@ -441,6 +441,16 @@ Focus on SPEC-011:
 - No scheduler/task-dispatch/task-chain state mutation.
 ```
 
+### Checklist Results
+
+| Domain | Status | Items | Gaps | Consensus | Evidence |
+|---|---|---:|---:|---|---|
+| Security | Complete | 24/24 checked | 0 | Not required | `specs/011-crabtrap-honeypot/checklists/security.md` validates signature, freshness, replay, payload-size, unsafe-field rejection, no-raw-persistence, flag/config no-op behavior, and activity write isolation |
+
+### Addressing Gaps
+
+- Security: no unresolved `[Gap]` markers were produced, and the checklist executor reported no items requiring consensus.
+
 ## Phase 5: Tasks
 
 **When to run:** After checklists pass. Output: `specs/011-crabtrap-honeypot/tasks.md`.
