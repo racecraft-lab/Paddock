@@ -375,6 +375,17 @@ $speckit-plan
 - `specs/011-crabtrap-honeypot/data-model.md` for normalized event/config/activity data shape
 - `specs/011-crabtrap-honeypot/quickstart.md` with fixture UAT commands
 
+### Plan Results
+
+| Artifact | Status | Evidence |
+|---|---|---|
+| `plan.md` | Complete | Generated helper-only implementation plan preserving no route, no migration, no OpenAPI, no UI, no notification fanout, and no scheduler/task-dispatch dependency |
+| `research.md` | Complete | Recorded helper-only, built-in crypto, strict fixture contract, existing activities storage, adapter-derived replay identity, closed failure codes, and fixture-first UAT decisions |
+| `data-model.md` | Complete | Defined denial summary, adapter config/context, replay identity, activity evidence, and intake result states |
+| Contract schema | Complete | `contracts/crabtrap-denial-summary.v1.schema.json` parses as JSON and defines only the helper fixture shape |
+| `quickstart.md` | Complete | Captures focused test, fixture UAT, scope-control, and optional live deploy evidence paths |
+| G3 gate | Pass | `validate-gate.sh G3 specs/011-crabtrap-honeypot` returned `pass=true`, 0 markers |
+
 ## Phase 4: Domain Checklists
 
 **When to run:** After Plan.

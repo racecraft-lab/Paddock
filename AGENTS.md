@@ -197,6 +197,8 @@ OpenAPI spec: `openapi.json`. Interactive docs at `/docs` when running.
 - SQLite through `better-sqlite3`; no schema migration planned because `workspaces.disabled_at` exists in `src/lib/migrations.ts` M74 (010b-product-line-b-smoke)
 - TypeScript 5.7 strict on Node >=22 + Next.js 16 App Router, React 19, `better-sqlite3`, existing feature-flag/auth/workspace/task-stage helpers, Node `child_process`/stream/timer/crypto/fs APIs, Vitest, Playwright; no new runtime dependency (014c-first-real-harness-adapter)
 - SQLite through existing runs, task-stage attempts, task-stage claims, sandbox lifecycles, task artifacts, activities, and feature-flag rows; no migration (014c-first-real-harness-adapter)
+- TypeScript 5.7 strict on Node.js >=22. + Existing Next.js 16 App Router / React 19 baseline, `better-sqlite3`, existing feature-flag helper, existing activity persistence patterns, Node built-in `crypto`; no new runtime dependency planned. (011-crabtrap-honeypot)
+- Existing SQLite `activities` table through `better-sqlite3`; no schema migration, no new table, no raw audit persistence. (011-crabtrap-honeypot)
 
 ## Recent Changes
 - SPEC-012B merge closeout (2026-06-07 CDT): PR #84 merged to `main` as `77c6ce44bb10ac89b43ffcaab2b9ea35e7ea2f39`. Harness-gardening drift guards are now process/tooling-only repo-artifact checks with deterministic findings, non-mutating cleanup recommendations, guardrail integration, fixture coverage, and static scope-control evidence. Verification recorded focused SPEC-012B tests, guardrails, knowledge-index, typecheck, lint, full unit suite, review/verify/cleanup/retrospective artifacts, and no runtime product behavior, migration, UI/API, live GitHub/Paddock mutation, auto-merge, or automatic `specs/**` cleanup. Source cleanup was not applied because no explicit safe-base `--apply-cleanup` request was supplied. SPEC-014D/E/F and SPEC-015A remain pending follow-ups.
@@ -225,5 +227,5 @@ OpenAPI spec: `openapi.json`. Interactive docs at `/docs` when running.
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read
-`specs/012b-harness-gardening-guards/plan.md`.
+`specs/011-crabtrap-honeypot/plan.md`.
 <!-- SPECKIT END -->
