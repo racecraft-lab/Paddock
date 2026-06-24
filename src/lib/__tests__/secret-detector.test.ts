@@ -104,6 +104,14 @@ describe('T402: every rule passes safe-regex (FR-035)', () => {
 // per-rule fixture obligation (FR-031) satisfied without storing match-able
 // secret-shape literals on disk.
 const RUNTIME_FIXTURES: Partial<Record<string, { positive: string; negative: string }>> = {
+  'google-api-key': {
+    positive: [
+      'key: ' + ['AI', 'za', 'SyB1234567890abcdefghijklmnopqrstuv'].join(''),
+      'GOOGLE_API_KEY = ' + ['AI', 'za', 'SyAaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPp_'].join(''),
+      'maps key ' + ['AI', 'za', 'Sy_aBcDeFgHiJkLmNoPqRsTuVwXyZ0-3-A'].join(''),
+    ].join('\n'),
+    negative: 'AIza-too-short\nmaps key AI-z-not-a-prefix\nnot_a_key AIzaSy',
+  },
   'stripe-keys': {
     positive: [
       'STRIPE_SECRET=sk_' + 'live' + '_' + 'a'.repeat(30),
@@ -176,7 +184,7 @@ describe('T403: redaction substitution (FR-030, FR-034)', () => {
   it('redacts every match across multiple rules in one pass', () => {
     // Google API key = AIza + exactly 35 chars; npm token = npm_ + exactly
     // 36 chars (FR-031 #6 and #17).
-    const googleKey = 'AIzaSyB1234567890abcdefghijklmnopqrstuv'
+    const googleKey = ['AI', 'za', 'SyB1234567890abcdefghijklmnopqrstuv'].join('')
     const npmTok = 'npm_aBcDeFgHiJkLmNoPqRsTuVwXyZ0123456789'
     const content = [
       'aws_access_key_id = AKIAIOSFODNN7EXAMPLE',
