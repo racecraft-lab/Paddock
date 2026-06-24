@@ -33,8 +33,8 @@ Re-read the design concept before each phase. If a generated artifact contradict
 | Plan | `$speckit-plan` | Complete | Generated helper-only implementation blueprint, research, data model, contract schema, and quickstart |
 | Checklist | `$speckit-checklist` | Complete | Security, data-integrity, error-handling, and state-management checklists complete with zero gaps |
 | Tasks | `$speckit-tasks` | Complete | Generated 32 TDD-first tasks across 7 groups; G5 passed; marker plan recorded for reviewability sizing |
-| Analyze | `$speckit-analyze` | In Progress | Cross-check generated artifacts against roadmap and design concept |
-| Implement | `$speckit-implement` | Pending | Implement only after G1-G6 gates pass |
+| Analyze | `$speckit-analyze` | Complete | Resolved 3 findings; G6 passed; security-routed consensus completed 3/3 high-confidence |
+| Implement | `$speckit-implement` | In Progress | Implementing marker plan starting with foundation tasks |
 
 ## Phase Gates
 
@@ -42,7 +42,7 @@ Re-read the design concept before each phase. If a generated artifact contradict
 |---|---|---|
 | G0 | After scaffold | Branch is `011-crabtrap-honeypot`; design concept, workflow, SPEC-MOC, UAT runbook, and reviewability preset are committed; roadmap marks SPEC-011 In Progress on this branch only |
 | G1 | After Specify | Requirements cover flag-off no-op, missing-config no-op, denial-summary normalization, signature/replay/size validation, malformed/unsafe rejection, and activity evidence |
-| G2 | After Clarify | Runtime intake boundary, signature scheme, payload fields, activity scope, alert/non-alert stance, and UAT requirements are closed |
+| G2 | After Clarify | Helper fixture intake boundary, signature scheme, payload fields, activity scope, alert/non-alert stance, and UAT requirements are closed |
 | G3 | After Plan | Architecture remains an optional adapter, uses `resolveFlag`, adds no migration, avoids OpenAPI unless explicitly ratified, and does not touch scheduler/task-dispatch |
 | G4 | After Checklist | Security, data-integrity, error-handling, and state-management checklists have zero unresolved `[Gap]` items |
 | G5 | After Tasks | Tasks are dependency ordered, TDD-first, and bounded to `src/lib/crabtrap-adapter.ts`, focused tests, guardrails/docs, and optional fixture/runbook files |
@@ -113,19 +113,21 @@ Setup finding: official CrabTrap is an outbound HTTP/HTTPS agent proxy with audi
 Roadmap scope:
 
 - Add an operator-specific optional CrabTrap adapter.
-- Validate honeypot or CrabTrap-derived payloads.
+- Validate Paddock-owned signed denial-summary fixtures.
 - Write bounded `activities.type='security_intrusion_detected'` evidence for Paddock API and sandbox probes.
 - Keep the feature disabled by default behind `FEATURE_CRABTRAP_HONEYPOT`.
-- Missing binary/config/webhook secret must be absent-safe.
+- Missing CrabTrap binary/service and missing or invalid adapter signing config
+  must be absent-safe.
 - No schema migration, no OpenAPI contract change, and no scheduler/task-dispatch dependency.
 
 Human-reviewed setup decisions:
 
 - Use a library-first adapter boundary because official CrabTrap docs do not publish a generic webhook contract.
-- Normalize denied-request or alert summaries, not raw audit rows.
+- Normalize Paddock-owned signed denial-summary fixtures, not raw audit rows,
+  webhook payloads, admin API rows, transcripts, or provider payloads.
 - Fail closed unless flag and config are valid.
 - Surface accepted evidence through existing `activities` only.
-- Require signature/replay/size validation for any future runtime intake.
+- Require signature/replay/size validation for helper fixture intake.
 - Use signed fixture UAT as the required validation target; live CrabTrap Docker is optional evidence.
 
 ## Phase 1: Specify
@@ -162,9 +164,9 @@ Functional requirements must cover:
 - A new `src/lib/crabtrap-adapter.ts` adapter module.
 - Feature flag gating through `resolveFlag('FEATURE_CRABTRAP_HONEYPOT', ctx)`.
 - Explicit config validation and absent-safe no-op behavior.
-- Denial-summary normalization with bounded fields: source, event id, timestamp, actor, decision, method, URL host/path, reason, safe request hash, counts, and workspace/project scope where Clarify approves it.
+- Denial-summary normalization with bounded fields: source, event id, signed/occurred timestamps, actor kind and optional keyed actor hash, decision, method, URL host/path, reason code, safe request hash, counts, signature, and workspace/project scope where Clarify approves it.
 - Unsafe-field rejection for raw headers, bodies, cookies, Authorization, API keys, query secrets, provider payloads, and full CrabTrap audit rows.
-- Signature, timestamp, replay, and max-size validation expectations for any runtime intake.
+- Signature, timestamp, replay, and max-size validation expectations for helper fixture intake.
 - Activity write behavior using existing `activities` schema and existing DB helper patterns.
 - Focused tests for flag off, config missing, valid fixture, malformed fixture, signature failure, replay/stale event, oversized payload, unsafe-field rejection, and activity write failure isolation.
 - Human validation via signed fixture replay and inspection of activities.
@@ -173,7 +175,7 @@ Constraints:
 - TypeScript 5 strict, Next.js 16 App Router, React 19, better-sqlite3, Vitest, pnpm.
 - No new runtime dependency unless Plan proves built-in Node `crypto` is insufficient.
 - No schema migration.
-- No OpenAPI contract change unless Clarify records a ratified strict-scope exception for a private route.
+- No OpenAPI contract change; any private route, route headers, or live intake behavior belongs to a future ratified spec.
 - No scheduler, task-dispatch, task-chain, runner, sandbox, GitHub sync, or harness-adapter dependency.
 
 Out of scope:
@@ -210,8 +212,8 @@ Out of scope:
 $speckit-clarify
 
 Focus on the SPEC-011 intake boundary.
-Resolve whether implementation stays helper-only or adds a private runtime route excluded from OpenAPI.
-Use the setup decision: "Use a library-first adapter boundary. Validate normalized CrabTrap alert/audit payload fixtures in `src/lib/crabtrap-adapter.ts`; leave any Paddock webhook route as a Clarify decision because official docs do not publish a generic webhook contract."
+Confirm implementation stays helper-only and record private runtime route or OpenAPI behavior as future-spec work.
+Use the setup decision: "Use a library-first adapter boundary. Validate Paddock-owned signed denial-summary fixtures in `src/lib/crabtrap-adapter.ts`; leave any Paddock route, custom sender, or admin-polling integration to a future ratified spec because official docs do not publish a generic webhook contract."
 ```
 
 #### Clarify Session 1 Results
@@ -232,8 +234,8 @@ Consensus: not required. The clarify executor reported no unresolved items.
 $speckit-clarify
 
 Focus on security validation.
-Define the signature scheme, header names if a route exists, timestamp tolerance, replay key, max payload size, malformed JSON behavior, and exact failure reason codes.
-Use the setup decision: "Require signature plus bounds for any runtime intake: shared-secret/HMAC-style signature, timestamp/replay/size checks, and unsafe-field rejection."
+Define the helper fixture signature scheme, timestamp tolerance, replay key, max payload size, malformed JSON behavior, and exact failure reason codes without adding route headers in SPEC-011.
+Use the setup decision: "Require signature plus bounds for helper fixture intake: HMAC-SHA256 signature, timestamp/replay/size checks, and unsafe-field rejection."
 ```
 
 #### Clarify Session 2 Results
@@ -353,14 +355,14 @@ $speckit-plan
 - Reuse existing `tableExists`/DB safety patterns where appropriate.
 - Update `src/lib/feature-flags.ts` only as needed to register `FEATURE_CRABTRAP_HONEYPOT`.
 - Update `scripts/check-guardrails.mjs` only to allow SPEC-011-owned CrabTrap markers in the new module/tests/docs as needed.
-- Keep `src/lib/task-dispatch.ts`, scheduler, OpenAPI, migrations, UI panels, and harness runtime files out of scope unless Clarify explicitly ratifies a split.
+- Keep `src/lib/task-dispatch.ts`, scheduler, OpenAPI, migrations, UI panels, and harness runtime files out of scope. Any future split must be ratified in a later spec.
 
 ## Design Concept Decisions To Preserve
 - "Use a library-first adapter boundary."
-- "Normalize denied-request or alert summaries, not raw audit rows."
+- "Normalize Paddock-owned signed denial-summary fixtures, not raw audit rows."
 - "Fail closed unless flag and config are valid."
 - "Surface accepted evidence through existing `activities` only."
-- "Require signature/replay/size validation for any future runtime intake."
+- "Require signature/replay/size validation for helper fixture intake."
 - "Use signed fixture UAT as the required validation target; live CrabTrap Docker is optional evidence."
 
 ## Data Safety
@@ -436,7 +438,7 @@ $speckit-checklist state-management
 
 Focus on SPEC-011:
 - Feature-flag context and workspace flags.
-- Replay/idempotency state if runtime intake exists.
+- Replay/idempotency state for helper fixture intake.
 - Activity scope and no-op state transitions.
 - No scheduler/task-dispatch/task-chain state mutation.
 ```
@@ -553,6 +555,30 @@ Focus on:
 5. Tests cover flag-off, missing-config, valid, malformed, replay, signature, oversized, unsafe-field, and DB-write-failure cases.
 6. Human UAT matches the fixture-first runbook and does not overclaim live CrabTrap integration.
 ```
+
+### Analysis Results
+
+| ID | Severity | Issue | Resolution | Status |
+|---|---|---|---|---|
+| A001 | HIGH | US2 acceptance wording implied accepted fixtures may contain URL query/fragment data | Updated `specs/011-crabtrap-honeypot/spec.md` to require normalized `url_host`/`url_path` only and reject or omit raw/full URL, query, and fragment content | Resolved |
+| A002 | HIGH | Design concept retained setup-era raw actor/email-style payload example and old field names | Updated `docs/ai/specs/.process/SPEC-011-design-concept.md` to the ratified signed `crabtrap_denial_summary.v1` fixture shape | Resolved |
+| A003 | MEDIUM | Roadmap/workflow wording implied webhook-secret/runtime-intake scope despite helper-only Clarify outcome | Updated `docs/ai/rc-factory-technical-roadmap.md`, `docs/ai/specs/.process/SPEC-011-workflow.md`, and `docs/ai/specs/.process/SPEC-011-design-concept.md` to say helper adapter, signed fixtures, adapter signing config, and future-spec route/custom-sender/admin-polling ownership | Resolved |
+
+### Consensus Resolution Log
+
+| # | Type | Question/Gap/Finding | Categories | Round | Outcome | Resolution | Analysts Used |
+|---|---|---|---|---|---|---|---|
+| 1 | Finding | Prior wording used webhook-secret/runtime-intake language after helper-only clarification | `[security]` | 2 | 3/3 high-confidence | Applied wording-only cleanup to remove private-route/header/runtime ambiguity from workflow and design concept; no code/task scope change required | codebase-analyst, spec-context-analyst, domain-researcher |
+
+### Pre-Implement Confidence
+
+📊 Confidence: 0.94
+
+- Task understanding: 0.95
+- Approach clarity: 0.94
+- Requirements alignment: 0.95
+- Risk assessment: 0.92
+- Completeness: 0.95
 
 ## Phase 7: Implement
 

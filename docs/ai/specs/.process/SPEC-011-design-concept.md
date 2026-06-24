@@ -24,9 +24,9 @@ Because the official contract is not a webhook API, this setup keeps the first
 Paddock slice library-first and strict-scope. The implementation should create
 the adapter boundary, normalize safe denial-summary fixtures, and write bounded
 activity evidence only when the feature flag and config are valid. Any runtime
-HTTP intake route, polling path, or CrabTrap custom sender integration must be
-settled during Clarify before implementation expands beyond the roadmap's
-strict scope.
+HTTP intake route, polling path, or CrabTrap custom sender integration belongs
+to a future ratified spec before implementation expands beyond this roadmap
+slice's strict scope.
 
 ## External Context Retrieved
 
@@ -55,7 +55,7 @@ Key source-backed findings:
 
 - Add an optional CrabTrap adapter boundary in `src/lib/crabtrap-adapter.ts`.
 - Keep `FEATURE_CRABTRAP_HONEYPOT=false` behavior as a complete no-op.
-- Normalize bounded denied-request or alert summaries into safe activity data.
+- Normalize Paddock-owned signed denial-summary fixtures into safe activity data.
 - Write `activities.type='security_intrusion_detected'` only after feature flag,
   config, payload shape, signature, replay, size, and unsafe-field checks pass.
 - Reject malformed, unsigned, stale, replayed, oversized, or unsafe payloads
@@ -71,8 +71,9 @@ Key source-backed findings:
 - No OpenAPI contract change.
 - No scheduler, task-dispatch, task-chain, runner, sandbox, or harness launch
   dependency.
-- No public or generic inbound CrabTrap webhook contract unless Clarify proves
-  the operator owns that contract and it remains out of OpenAPI.
+- No public, generic, or private CrabTrap webhook contract in SPEC-011. Any
+  private route, custom sender, or admin-polling integration belongs to a
+  future ratified spec.
 - No live GitHub mutation, task terminal mutation, notification fanout, or
   auto-remediation.
 - No raw CrabTrap audit row, header, body, cookie, token, query-secret, or
@@ -84,38 +85,43 @@ Key source-backed findings:
 
 | Question | Decision |
 |---|---|
-| Q1 Intake surface | Use a library-first adapter boundary. Validate normalized CrabTrap alert/audit payload fixtures in `src/lib/crabtrap-adapter.ts`; leave any Paddock webhook route as a Clarify decision because official docs do not publish a generic webhook contract. |
-| Q2 Payload shape | Normalize denial-summary payloads first: actor, method, URL host/path, decision, reason, timestamp, source id, and safe hashes/counts. Do not store raw request/response headers or bodies. |
+| Q1 Intake surface | Use a library-first adapter boundary. Validate Paddock-owned signed denial-summary fixtures in `src/lib/crabtrap-adapter.ts`; defer any Paddock route, custom sender, or admin-polling integration because official docs do not publish a generic webhook contract. |
+| Q2 Payload shape | Normalize through the ratified flat `crabtrap_denial_summary.v1` shape: source, event id, signed/occurred timestamps, bounded actor kind/hash fields, decision, method, URL host/path, reason code, safe request hash, counts, approved scope, and signature. Do not store raw request/response headers, bodies, actor identifiers, raw URLs, or raw vendor reason text. |
 | Q3 Config policy | Fail closed. `FEATURE_CRABTRAP_HONEYPOT=true` and valid adapter config are required before any event can produce activity evidence. Flag off or missing config records no activity. |
 | Q4 Evidence surface | Activities only. Write bounded `security_intrusion_detected` rows and rely on existing activity inspection surfaces. Do not add schema, OpenAPI, or a new UI panel. |
-| Q5 Validation and UAT | Require signature plus bounds for any runtime intake: shared-secret/HMAC-style signature, timestamp/replay/size checks, and unsafe-field rejection. Human validation uses valid/malformed signed fixture replay, flag-off proof, and missing-config no-op proof. Live CrabTrap Docker is optional evidence. |
+| Q5 Validation and UAT | Require signature plus bounds for helper fixture intake: HMAC-SHA256 signature, timestamp/replay/size checks, and unsafe-field rejection. Human validation uses valid/malformed signed fixture replay, flag-off proof, and missing-config no-op proof. Live CrabTrap Docker is optional evidence. |
 
-## Suggested Payload Contract
+## Clarified Payload Contract
 
-The adapter should operate on a Paddock-owned normalized event shape, not a raw
-CrabTrap database or admin API row:
+Clarify ratified a Paddock-owned signed denial-summary fixture, not a raw
+CrabTrap database row, admin API row, webhook payload, transcript, or provider
+payload:
 
 ```json
 {
+  "schema_version": "crabtrap_denial_summary.v1",
   "source": "crabtrap",
   "event_id": "ct-denial-123",
+  "signed_at": "2026-06-24T00:00:00Z",
   "occurred_at": "2026-06-24T00:00:00Z",
-  "actor": "agent@example.com",
   "decision": "deny",
   "method": "POST",
   "url_host": "api.github.com",
   "url_path": "/repos/example/project",
-  "reason": "policy_denied",
-  "request_hash": "sha256:...",
-  "denial_count": 1
+  "reason_code": "policy_denied",
+  "safe_request_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "denial_count": 1,
+  "actor_kind": "agent",
+  "actor_ref_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "signature": "sha256=cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
 }
 ```
 
-The final shape belongs to Clarify. The important setup boundary is that
-payloads are summaries and safe references only. If implementation needs to
-consume official admin API audit entries or custom sender bodies, Clarify must
-document the mapping and confirm that unsafe fields are rejected or reduced to
-hashes before persistence.
+The important boundary is that payloads are summaries and safe references only.
+If future implementation needs to consume official admin API audit entries,
+custom sender bodies, or a runtime intake route, a later spec must document the
+mapping and confirm that unsafe fields are rejected or reduced to hashes before
+persistence.
 
 ## Implementation Boundaries
 
@@ -125,15 +131,15 @@ hashes before persistence.
 - Keep tests focused near existing `src/lib/__tests__/` patterns.
 - Keep static guardrails aligned with `scripts/check-guardrails.mjs`, which
   currently treats CrabTrap as SPEC-011-owned.
-- Do not update OpenAPI unless Clarify explicitly chooses a route and records
-  an approved split from strict scope.
+- Do not update OpenAPI. Private routes, route headers, live intake behavior,
+  polling, or custom sender work belong to a future ratified spec.
 
 ## Clarify Targets
 
-- Whether implementation should remain helper-only or add a private route that
-  is intentionally excluded from OpenAPI.
-- Exact signature scheme, header names, timestamp tolerance, replay key, and
-  max payload size for future runtime intake.
+- Confirm implementation remains helper-only and record private route or
+  OpenAPI behavior as future-spec work.
+- Exact helper fixture signature scheme, timestamp tolerance, replay key, and
+  max payload size.
 - Exact normalized payload fields and which raw CrabTrap fields are forbidden.
 - Whether `activities` rows should be workspace scoped, project scoped, or
   global/facility scoped when no task/project is implicated.

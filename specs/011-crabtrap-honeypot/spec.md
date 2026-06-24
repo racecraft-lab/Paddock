@@ -66,7 +66,7 @@ As an operator, I want a valid signed CrabTrap denial-summary fixture to create 
 **Acceptance Scenarios**:
 
 1. **Given** the feature resolves on, required config is valid, and the fixture is signed, fresh, unique, within size limits, and safe, **When** the fixture is processed, **Then** Paddock writes exactly one `security_intrusion_detected` activity row.
-2. **Given** an accepted denial summary contains a URL with query parameters or fragments, **When** activity evidence is written, **Then** only the URL host and path are retained and query or fragment content is excluded.
+2. **Given** a valid signed denial-summary fixture was normalized from source traffic whose original URL may have included query parameters or fragments, **When** activity evidence is written, **Then** only the approved `url_host` and parsed `url_path` fields are retained and raw/full URL, query, or fragment content is rejected or absent from persistence.
 3. **Given** an accepted denial summary includes workspace or project scope approved by the adapter context, **When** activity evidence is written, **Then** the activity carries that bounded scope without mutating tasks, projects, scheduler state, or successor selection.
 
 ---

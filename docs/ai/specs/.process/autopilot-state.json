@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
   "workflow_file": "docs/ai/specs/.process/SPEC-011-workflow.md",
-  "updated_at": "2026-06-24T17:05:16-05:00",
-  "active_step": "Phase 6: Analyze",
+  "updated_at": "2026-06-24T17:20:42-05:00",
+  "active_step": "Phase 7: foundation (T001,T002,T003,T004,T005,T006,T007)",
   "spec_id": "SPEC-011",
   "feature_dir": "specs/011-crabtrap-honeypot",
   "branch": "011-crabtrap-honeypot",
@@ -153,19 +153,19 @@
     },
     {
       "step": "Phase 6: Analyze",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 6: Analyze - Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 6.5: Confidence Gate",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 7: foundation (T001,T002,T003,T004,T005,T006,T007)",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Phase 7: us1 (T008,T009,T010,T011)",
@@ -272,6 +272,31 @@
     "route": "one-navigable-PR",
     "reason": "Atomicity route is one-navigable-PR; split-PR layer planner not required."
   },
+  "analysis": {
+    "status": "completed",
+    "findings_total": 3,
+    "critical": 0,
+    "high": 2,
+    "medium": 1,
+    "low": 0,
+    "remaining_total": 0,
+    "consensus": "security-routed 3/3 high-confidence; wording cleanup applied"
+  },
+  "confidence_gate": {
+    "status": "completed",
+    "mode": "advisory",
+    "threshold": 0.9,
+    "composite": 0.94,
+    "pass": true,
+    "criteria": {
+      "task_understanding": 0.95,
+      "approach_clarity": 0.94,
+      "requirements_alignment": 0.95,
+      "risk_assessment": 0.92,
+      "completeness": 0.95
+    },
+    "recommended_action": "proceed"
+  },
   "pr_marker_plan_path": "specs/011-crabtrap-honeypot/.process/marker-plan/pr-marker-plan.json",
   "pr_marker_plan": {
     "schema_version": "pr-marker-plan.v1",
@@ -279,7 +304,7 @@
     "feature_id": "011-crabtrap-honeypot",
     "status": "planned",
     "source_fingerprint": {
-      "feature_spec_sha": "dbba014ccb05e702a2c8bc66e222245885e3470155fc39a44e71f1ba3f902295",
+      "feature_spec_sha": "c96faf93d5cf509f3babeecaa67dee8adb53fd2b414b8ba068c63a435585e2e6",
       "plan_declared_scope_sha": "70f38eb8b7ca6cc0f09be50ef8edb27a5621289c90d7abc65a0c02a2c3ee6ffc",
       "tasks_sha": "98bf9c75f0f1b3d7bd7ae7aa2d5bfc9b57c1334986c02c2087c1c63aaf377696",
       "reviewability_sha": "e7962a8207de25d2de85c0e816bf5f23c318597d153e1efbe78fa2ef2d3a1dc4",
@@ -594,14 +619,14 @@
     ]
   },
   "current_source_fingerprint": {
-    "feature_spec_sha": "dbba014ccb05e702a2c8bc66e222245885e3470155fc39a44e71f1ba3f902295",
+    "feature_spec_sha": "c96faf93d5cf509f3babeecaa67dee8adb53fd2b414b8ba068c63a435585e2e6",
     "plan_declared_scope_sha": "70f38eb8b7ca6cc0f09be50ef8edb27a5621289c90d7abc65a0c02a2c3ee6ffc",
     "tasks_sha": "98bf9c75f0f1b3d7bd7ae7aa2d5bfc9b57c1334986c02c2087c1c63aaf377696",
     "reviewability_sha": "e7962a8207de25d2de85c0e816bf5f23c318597d153e1efbe78fa2ef2d3a1dc4",
     "hazard_route_sha": "1971e9aff27a7010222da332f1ac103e1f057f251d24a8d49ad11470c23521fc"
   },
   "pr_marker_plan_current_source_fingerprint": {
-    "feature_spec_sha": "dbba014ccb05e702a2c8bc66e222245885e3470155fc39a44e71f1ba3f902295",
+    "feature_spec_sha": "c96faf93d5cf509f3babeecaa67dee8adb53fd2b414b8ba068c63a435585e2e6",
     "plan_declared_scope_sha": "70f38eb8b7ca6cc0f09be50ef8edb27a5621289c90d7abc65a0c02a2c3ee6ffc",
     "tasks_sha": "98bf9c75f0f1b3d7bd7ae7aa2d5bfc9b57c1334986c02c2087c1c63aaf377696",
     "reviewability_sha": "e7962a8207de25d2de85c0e816bf5f23c318597d153e1efbe78fa2ef2d3a1dc4",
