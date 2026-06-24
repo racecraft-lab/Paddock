@@ -125,8 +125,8 @@ Results:
 
 - The PR remains above nominal reviewability thresholds; marker planning and
   review order are the mitigation for this branch.
-- No checkpoint commit SHA is recorded here. The parent orchestrator will add it
-  after review, verification, and commit.
+- US4/polish checkpoint commit:
+  `ef92a3d40b6a377a3fa4f21428cc82b1334a1cc3`.
 
 ## Rollback And Flag Notes
 
