@@ -79,11 +79,11 @@
 
 ### Implementation for User Story 3
 
-- [ ] T017 [US3] Implement pre-parse 16 KiB payload-size rejection, malformed JSON rejection, and strict unknown-field/schema validation in `src/lib/crabtrap-adapter.ts`
-- [ ] T018 [US3] Implement missing signature, missing/invalid/stale timestamp, invalid signature, and first-match failure ordering in `src/lib/crabtrap-adapter.ts`
-- [ ] T019 [US3] Implement unsafe-field and secret-like value rejection for raw URLs, headers, bodies, cookies, auth material, query secrets, provider payloads, raw actors, emails, raw secret hashes, and full audit rows in `src/lib/crabtrap-adapter.ts`
-- [ ] T020 [US3] Implement unsupported decision/method rejection, replay-detected rejection, and activity-write-failed isolation without scheduler, dispatch, task, GitHub, notification, route, UI, or OpenAPI mutation in `src/lib/crabtrap-adapter.ts`
-- [ ] T021 [US3] Run US3 negative fixture assertions in `src/lib/__tests__/crabtrap-adapter.test.ts` and confirm all rejection paths write zero activity rows
+- [X] T017 [US3] Implement pre-parse 16 KiB payload-size rejection, malformed JSON rejection, and strict unknown-field/schema validation in `src/lib/crabtrap-adapter.ts`
+- [X] T018 [US3] Implement missing signature, missing/invalid/stale timestamp, invalid signature, and first-match failure ordering in `src/lib/crabtrap-adapter.ts`
+- [X] T019 [US3] Implement unsafe-field and secret-like value rejection for raw URLs, headers, bodies, cookies, auth material, query secrets, provider payloads, raw actors, emails, raw secret hashes, and full audit rows in `src/lib/crabtrap-adapter.ts`
+- [X] T020 [US3] Implement unsupported decision/method rejection, replay-detected rejection, and activity-write-failed isolation without scheduler, dispatch, task, GitHub, notification, route, UI, or OpenAPI mutation in `src/lib/crabtrap-adapter.ts`
+- [X] T021 [US3] Run US3 negative fixture assertions in `src/lib/__tests__/crabtrap-adapter.test.ts` and confirm all rejection paths write zero activity rows
 
 **Checkpoint**: User Story 3 is independently testable with the negative fixture matrix and bounded diagnostics only.
 
