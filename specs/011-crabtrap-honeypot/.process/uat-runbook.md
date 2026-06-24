@@ -112,6 +112,57 @@ Additional validation:
 - `direnv exec . pnpm exec eslint src/lib/crabtrap-adapter.ts src/lib/__tests__/crabtrap-adapter.test.ts src/lib/__tests__/fixtures/crabtrap/crabtrap-fixtures.ts`
   passed.
 
+## US2 Marker Checkpoint
+
+Date: 2026-06-24
+
+Marker: `us2` (`review_order=3`)
+
+Scope completed in this checkpoint:
+
+- Added deterministic canonical JSON hashing, SHA-256 helpers, HMAC-SHA256
+  fixture verification, and constant-time digest comparison.
+- Added strict `crabtrap_denial_summary.v1` normalization for the US2 accepted
+  path: allowlisted fields, lowercased host, pathname-only URL path, bounded
+  hashes/counts, supported decision/method/reason taxonomy, and approved
+  workspace/project context checks.
+- Added adapter-derived `data.replay_key_hash`, same-scope replay lookup, and
+  one existing-schema `security_intrusion_detected` activity insert with fixed
+  `actor='crabtrap-adapter'`.
+- Confirmed the existing valid signed fixture and bounded activity assertions
+  align with the implementation; no fixture or test edits were needed.
+
+TDD evidence:
+
+- RED command:
+  `direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts -t "valid signed fixture|replayed event"`
+- RED result: 1 test file failed; 2 US2 tests failed with real assertion
+  errors against the US1 adapter returning `payload_schema_invalid`.
+- GREEN command:
+  `direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts -t "valid signed fixture|replayed event"`
+- GREEN result: 1 test file passed; 2 US2 tests passed and 13 non-matching
+  tests were skipped by the filter.
+- REFACTOR result: reran the same focused command after cleanup; 1 test file
+  passed, 2 US2 tests passed, and 13 tests were skipped.
+
+Focused file result:
+
+- Command:
+  `direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts`
+- Result: 1 test file failed as expected for later markers; 13 tests passed and
+  2 expected US3 hardening failures remained:
+  - stale timestamp fixture currently accepts instead of returning
+    `timestamp_stale`;
+  - unsafe path fixture currently accepts instead of returning
+    `unsafe_field_present`.
+
+Additional validation:
+
+- `direnv exec . pnpm exec tsc -p tsconfig.spec-strict.json --pretty false`
+  passed.
+- `direnv exec . pnpm exec eslint src/lib/crabtrap-adapter.ts src/lib/__tests__/crabtrap-adapter.test.ts src/lib/__tests__/fixtures/crabtrap/crabtrap-fixtures.ts`
+  passed.
+
 ## Required Validation
 
 1. Verify `FEATURE_CRABTRAP_HONEYPOT=false` records no CrabTrap activity and
