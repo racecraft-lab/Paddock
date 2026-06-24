@@ -1,0 +1,20 @@
+{
+  "history": [
+    {
+      "timestamp": "2026-06-24T01:39:56Z",
+      "mode": "upgrade",
+      "actions": [
+        {
+          "id": "claude-ask-questions",
+          "action": "installed",
+          "kind": "preset",
+          "ref_kind": "release",
+          "ref_tag": "v1.0.0",
+          "from_version": "",
+          "repo": "0xrafasec/spec-kit-preset-claude-ask-questions",
+          "zip_url": "https://github.com/0xrafasec/spec-kit-preset-claude-ask-questions/archive/refs/tags/v1.0.0.zip"
+        }
+      ]
+    }
+  ]
+}
