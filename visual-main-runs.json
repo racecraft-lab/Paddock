@@ -2,6 +2,33 @@
   "version": 1,
   "reports": [
     {
+      "surface": "storybook",
+      "runId": "28127768986",
+      "runAttempt": "1",
+      "runKey": "28127768986-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/28127768986",
+      "reportKey": "8fa30619890d2c0f125ec2b0d020c18786d63fae",
+      "reportHref": "https://racecraft-lab.github.io/Paddock/storybook/8fa30619890d2c0f125ec2b0d020c18786d63fae/",
+      "latestHref": "https://racecraft-lab.github.io/Paddock/storybook/latest/?v=28127768986-attempt-1",
+      "headSha": "8fa30619890d2c0f125ec2b0d020c18786d63fae",
+      "headRef": "main",
+      "baseRef": "main",
+      "workflowName": "Visual Storybook Snapshots",
+      "workflowFile": "visual-storybook.yml",
+      "surfaceLabel": "Storybook Components",
+      "sourcePullRequest": {
+        "baseRef": "main",
+        "headRef": "codex/security-alert-remediation",
+        "headSha": "97f511ce2ddbb5a04c8c04fa7afb1cf7eb55a7ab",
+        "indexHref": "https://racecraft-lab.github.io/Paddock/pr/90/",
+        "mergeCommitSha": "",
+        "number": "90",
+        "title": "fix(security): resolve GitHub security alerts",
+        "url": "https://github.com/racecraft-lab/Paddock/pull/90"
+      },
+      "createdAt": "2026-06-24T20:35:20.488Z"
+    },
+    {
       "surface": "playwright",
       "runId": "28122540953",
       "runAttempt": "1",
@@ -1497,5 +1524,5 @@
       "createdAt": "2026-05-05T00:17:55.366Z"
     }
   ],
-  "updatedAt": "2026-06-24T19:10:50.135Z"
+  "updatedAt": "2026-06-24T20:35:20.488Z"
 }

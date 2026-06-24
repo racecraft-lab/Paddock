@@ -1,0 +1,1189 @@
+{
+  "schema": "visual-review-pages.visual-review-report.v1",
+  "version": 1,
+  "repository": "racecraft-lab/Paddock",
+  "reportMode": "main",
+  "reportScope": "run",
+  "surface": "storybook",
+  "surfaceLabel": "Storybook Components",
+  "workflowName": "Visual Storybook Snapshots",
+  "workflowFile": "visual-storybook.yml",
+  "prNumber": "90",
+  "prUrl": "https://github.com/racecraft-lab/Paddock/pull/90",
+  "runId": "28127768986",
+  "runAttempt": "1",
+  "runKey": "28127768986-attempt-1",
+  "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/28127768986",
+  "headRef": "main",
+  "baseRef": "main",
+  "headSha": "8fa30619890d2c0f125ec2b0d020c18786d63fae",
+  "reportHref": "https://racecraft-lab.github.io/Paddock/storybook/8fa30619890d2c0f125ec2b0d020c18786d63fae/",
+  "latestHref": "https://racecraft-lab.github.io/Paddock/storybook/latest/?v=28127768986-attempt-1",
+  "createdAt": "2026-06-24T20:35:20.488Z",
+  "itemCounts": {
+    "baselineApproved": 0,
+    "changed": 0,
+    "deleted": 0,
+    "new": 162,
+    "open": 162,
+    "passed": 0,
+    "total": 162
+  },
+  "reviewScope": null,
+  "sourcePullRequest": {
+    "baseRef": "main",
+    "headRef": "codex/security-alert-remediation",
+    "headSha": "97f511ce2ddbb5a04c8c04fa7afb1cf7eb55a7ab",
+    "indexHref": "https://racecraft-lab.github.io/Paddock/pr/90/",
+    "mergeCommitSha": "",
+    "number": "90",
+    "title": "fix(security): resolve GitHub security alerts",
+    "url": "https://github.com/racecraft-lab/Paddock/pull/90"
+  },
+  "initialReviewState": null,
+  "canonicalReviewState": {
+    "schema": "visual-review-pages.visual-review-state.v1",
+    "repository": "racecraft-lab/Paddock",
+    "prNumber": "90",
+    "surface": "storybook",
+    "surfaceLabel": "Storybook Components",
+    "headSha": "8fa30619890d2c0f125ec2b0d020c18786d63fae",
+    "runKey": "28127768986-attempt-1",
+    "items": [
+      {
+        "group": "spec-008",
+        "id": "new-governance-aegisemergencyreservebadge--cooling-down.png",
+        "itemId": "governance-aegisemergencyreservebadge--cooling-down.png",
+        "snapshot": "governance-aegisemergencyreservebadge--cooling-down.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-aegisemergencyreservebadge--disabled-by-flag.png",
+        "itemId": "governance-aegisemergencyreservebadge--disabled-by-flag.png",
+        "snapshot": "governance-aegisemergencyreservebadge--disabled-by-flag.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-aegisemergencyreservebadge--engaged.png",
+        "itemId": "governance-aegisemergencyreservebadge--engaged.png",
+        "snapshot": "governance-aegisemergencyreservebadge--engaged.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-aegisemergencyreservebadge--inactive.png",
+        "itemId": "governance-aegisemergencyreservebadge--inactive.png",
+        "snapshot": "governance-aegisemergencyreservebadge--inactive.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-breakeropenbanner--closed.png",
+        "itemId": "governance-breakeropenbanner--closed.png",
+        "snapshot": "governance-breakeropenbanner--closed.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-breakeropenbanner--disabled-by-flag.png",
+        "itemId": "governance-breakeropenbanner--disabled-by-flag.png",
+        "snapshot": "governance-breakeropenbanner--disabled-by-flag.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-breakeropenbanner--half-open.png",
+        "itemId": "governance-breakeropenbanner--half-open.png",
+        "snapshot": "governance-breakeropenbanner--half-open.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-breakeropenbanner--open.png",
+        "itemId": "governance-breakeropenbanner--open.png",
+        "snapshot": "governance-breakeropenbanner--open.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-breakeropenbanner--persistent-open.png",
+        "itemId": "governance-breakeropenbanner--persistent-open.png",
+        "snapshot": "governance-breakeropenbanner--persistent-open.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-budgetssubview--default.png",
+        "itemId": "governance-budgetssubview--default.png",
+        "snapshot": "governance-budgetssubview--default.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-budgetssubview--dense.png",
+        "itemId": "governance-budgetssubview--dense.png",
+        "snapshot": "governance-budgetssubview--dense.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-budgetssubview--disabled-by-flag.png",
+        "itemId": "governance-budgetssubview--disabled-by-flag.png",
+        "snapshot": "governance-budgetssubview--disabled-by-flag.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-budgetssubview--empty.png",
+        "itemId": "governance-budgetssubview--empty.png",
+        "snapshot": "governance-budgetssubview--empty.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-budgetssubview--error.png",
+        "itemId": "governance-budgetssubview--error.png",
+        "snapshot": "governance-budgetssubview--error.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-budgetssubview--loading.png",
+        "itemId": "governance-budgetssubview--loading.png",
+        "snapshot": "governance-budgetssubview--loading.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-budgetutilizationchart--approaching.png",
+        "itemId": "governance-budgetutilizationchart--approaching.png",
+        "snapshot": "governance-budgetutilizationchart--approaching.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-budgetutilizationchart--disabled-by-flag.png",
+        "itemId": "governance-budgetutilizationchart--disabled-by-flag.png",
+        "snapshot": "governance-budgetutilizationchart--disabled-by-flag.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-budgetutilizationchart--fifty.png",
+        "itemId": "governance-budgetutilizationchart--fifty.png",
+        "snapshot": "governance-budgetutilizationchart--fifty.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-budgetutilizationchart--hard.png",
+        "itemId": "governance-budgetutilizationchart--hard.png",
+        "snapshot": "governance-budgetutilizationchart--hard.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-budgetutilizationchart--soft-threshold.png",
+        "itemId": "governance-budgetutilizationchart--soft-threshold.png",
+        "snapshot": "governance-budgetutilizationchart--soft-threshold.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-budgetutilizationchart--zero-percent.png",
+        "itemId": "governance-budgetutilizationchart--zero-percent.png",
+        "snapshot": "governance-budgetutilizationchart--zero-percent.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-bulkpromotemodal--default.png",
+        "itemId": "governance-bulkpromotemodal--default.png",
+        "snapshot": "governance-bulkpromotemodal--default.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-bulkpromotemodal--disabled-by-flag.png",
+        "itemId": "governance-bulkpromotemodal--disabled-by-flag.png",
+        "snapshot": "governance-bulkpromotemodal--disabled-by-flag.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-bulkpromotemodal--error-409.png",
+        "itemId": "governance-bulkpromotemodal--error-409.png",
+        "snapshot": "governance-bulkpromotemodal--error-409.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-bulkpromotemodal--error-422-cross-workspace.png",
+        "itemId": "governance-bulkpromotemodal--error-422-cross-workspace.png",
+        "snapshot": "governance-bulkpromotemodal--error-422-cross-workspace.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-bulkpromotemodal--submitting.png",
+        "itemId": "governance-bulkpromotemodal--submitting.png",
+        "snapshot": "governance-bulkpromotemodal--submitting.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-bulkpromotemodal--typed-correct.png",
+        "itemId": "governance-bulkpromotemodal--typed-correct.png",
+        "snapshot": "governance-bulkpromotemodal--typed-correct.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-bulkpromotemodal--typed-wrong.png",
+        "itemId": "governance-bulkpromotemodal--typed-wrong.png",
+        "snapshot": "governance-bulkpromotemodal--typed-wrong.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-calibrationprogress--all-complete.png",
+        "itemId": "governance-calibrationprogress--all-complete.png",
+        "snapshot": "governance-calibrationprogress--all-complete.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-calibrationprogress--default.png",
+        "itemId": "governance-calibrationprogress--default.png",
+        "snapshot": "governance-calibrationprogress--default.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-calibrationprogress--disabled-by-flag.png",
+        "itemId": "governance-calibrationprogress--disabled-by-flag.png",
+        "snapshot": "governance-calibrationprogress--disabled-by-flag.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-calibrationprogress--failed.png",
+        "itemId": "governance-calibrationprogress--failed.png",
+        "snapshot": "governance-calibrationprogress--failed.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-diagnosticfeed--disabled-by-flag.png",
+        "itemId": "governance-diagnosticfeed--disabled-by-flag.png",
+        "snapshot": "governance-diagnosticfeed--disabled-by-flag.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-diagnosticfeed--empty.png",
+        "itemId": "governance-diagnosticfeed--empty.png",
+        "snapshot": "governance-diagnosticfeed--empty.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-diagnosticfeed--filter-active.png",
+        "itemId": "governance-diagnosticfeed--filter-active.png",
+        "snapshot": "governance-diagnosticfeed--filter-active.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-diagnosticfeed--filter-empty.png",
+        "itemId": "governance-diagnosticfeed--filter-empty.png",
+        "snapshot": "governance-diagnosticfeed--filter-empty.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-diagnosticfeed--live-appending.png",
+        "itemId": "governance-diagnosticfeed--live-appending.png",
+        "snapshot": "governance-diagnosticfeed--live-appending.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-diagnosticfeed--multi-page.png",
+        "itemId": "governance-diagnosticfeed--multi-page.png",
+        "snapshot": "governance-diagnosticfeed--multi-page.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-diagnosticfeed--one-page.png",
+        "itemId": "governance-diagnosticfeed--one-page.png",
+        "snapshot": "governance-diagnosticfeed--one-page.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-diagnosticfeedrow--allow.png",
+        "itemId": "governance-diagnosticfeedrow--allow.png",
+        "snapshot": "governance-diagnosticfeedrow--allow.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-diagnosticfeedrow--block.png",
+        "itemId": "governance-diagnosticfeedrow--block.png",
+        "snapshot": "governance-diagnosticfeedrow--block.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-diagnosticfeedrow--defer.png",
+        "itemId": "governance-diagnosticfeedrow--defer.png",
+        "snapshot": "governance-diagnosticfeedrow--defer.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-diagnosticfeedrow--dense.png",
+        "itemId": "governance-diagnosticfeedrow--dense.png",
+        "snapshot": "governance-diagnosticfeedrow--dense.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-diagnosticfeedrow--expanded.png",
+        "itemId": "governance-diagnosticfeedrow--expanded.png",
+        "snapshot": "governance-diagnosticfeedrow--expanded.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-diagnosticssubview--default.png",
+        "itemId": "governance-diagnosticssubview--default.png",
+        "snapshot": "governance-diagnosticssubview--default.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-diagnosticssubview--disabled-by-flag.png",
+        "itemId": "governance-diagnosticssubview--disabled-by-flag.png",
+        "snapshot": "governance-diagnosticssubview--disabled-by-flag.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-diagnosticssubview--empty.png",
+        "itemId": "governance-diagnosticssubview--empty.png",
+        "snapshot": "governance-diagnosticssubview--empty.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-diagnosticssubview--error.png",
+        "itemId": "governance-diagnosticssubview--error.png",
+        "snapshot": "governance-diagnosticssubview--error.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-diagnosticssubview--filter-active.png",
+        "itemId": "governance-diagnosticssubview--filter-active.png",
+        "snapshot": "governance-diagnosticssubview--filter-active.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-diagnosticssubview--loading.png",
+        "itemId": "governance-diagnosticssubview--loading.png",
+        "snapshot": "governance-diagnosticssubview--loading.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-etagconflicttoast--default.png",
+        "itemId": "governance-etagconflicttoast--default.png",
+        "snapshot": "governance-etagconflicttoast--default.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-etagconflicttoast--with-diff.png",
+        "itemId": "governance-etagconflicttoast--with-diff.png",
+        "snapshot": "governance-etagconflicttoast--with-diff.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-featureflagdisabledshim--default.png",
+        "itemId": "governance-featureflagdisabledshim--default.png",
+        "snapshot": "governance-featureflagdisabledshim--default.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-featureflagdisabledshim--dense.png",
+        "itemId": "governance-featureflagdisabledshim--dense.png",
+        "snapshot": "governance-featureflagdisabledshim--dense.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-featureflagdisabledshim--with-help-text.png",
+        "itemId": "governance-featureflagdisabledshim--with-help-text.png",
+        "snapshot": "governance-featureflagdisabledshim--with-help-text.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-featureflagdisabledshim--with-manage-link.png",
+        "itemId": "governance-featureflagdisabledshim--with-manage-link.png",
+        "snapshot": "governance-featureflagdisabledshim--with-manage-link.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-governancetab--default.png",
+        "itemId": "governance-governancetab--default.png",
+        "snapshot": "governance-governancetab--default.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-governancetab--dense.png",
+        "itemId": "governance-governancetab--dense.png",
+        "snapshot": "governance-governancetab--dense.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-governancetab--disabled-by-flag.png",
+        "itemId": "governance-governancetab--disabled-by-flag.png",
+        "snapshot": "governance-governancetab--disabled-by-flag.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-governancetab--empty.png",
+        "itemId": "governance-governancetab--empty.png",
+        "snapshot": "governance-governancetab--empty.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-governancetab--start-on-diagnostics.png",
+        "itemId": "governance-governancetab--start-on-diagnostics.png",
+        "snapshot": "governance-governancetab--start-on-diagnostics.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-governancetab--system-health-first.png",
+        "itemId": "governance-governancetab--system-health-first.png",
+        "snapshot": "governance-governancetab--system-health-first.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-incidentrecoverymodal--default.png",
+        "itemId": "governance-incidentrecoverymodal--default.png",
+        "snapshot": "governance-incidentrecoverymodal--default.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-incidentrecoverymodal--disabled-by-flag.png",
+        "itemId": "governance-incidentrecoverymodal--disabled-by-flag.png",
+        "snapshot": "governance-incidentrecoverymodal--disabled-by-flag.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-incidentrecoverymodal--error-409.png",
+        "itemId": "governance-incidentrecoverymodal--error-409.png",
+        "snapshot": "governance-incidentrecoverymodal--error-409.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-incidentrecoverymodal--error-423.png",
+        "itemId": "governance-incidentrecoverymodal--error-423.png",
+        "snapshot": "governance-incidentrecoverymodal--error-423.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-incidentrecoverymodal--submitting.png",
+        "itemId": "governance-incidentrecoverymodal--submitting.png",
+        "snapshot": "governance-incidentrecoverymodal--submitting.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-incidentrecoverymodal--typed.png",
+        "itemId": "governance-incidentrecoverymodal--typed.png",
+        "snapshot": "governance-incidentrecoverymodal--typed.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-modalerrorsummary--hidden.png",
+        "itemId": "governance-modalerrorsummary--hidden.png",
+        "snapshot": "governance-modalerrorsummary--hidden.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-modalerrorsummary--network-error.png",
+        "itemId": "governance-modalerrorsummary--network-error.png",
+        "snapshot": "governance-modalerrorsummary--network-error.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-modalerrorsummary--phrase-mismatch.png",
+        "itemId": "governance-modalerrorsummary--phrase-mismatch.png",
+        "snapshot": "governance-modalerrorsummary--phrase-mismatch.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-modalerrorsummary--server-rejected.png",
+        "itemId": "governance-modalerrorsummary--server-rejected.png",
+        "snapshot": "governance-modalerrorsummary--server-rejected.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-overridegrantform--default.png",
+        "itemId": "governance-overridegrantform--default.png",
+        "snapshot": "governance-overridegrantform--default.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-overridegrantform--disabled-by-flag.png",
+        "itemId": "governance-overridegrantform--disabled-by-flag.png",
+        "snapshot": "governance-overridegrantform--disabled-by-flag.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-overridegrantform--error-409.png",
+        "itemId": "governance-overridegrantform--error-409.png",
+        "snapshot": "governance-overridegrantform--error-409.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-overridegrantform--error-412.png",
+        "itemId": "governance-overridegrantform--error-412.png",
+        "snapshot": "governance-overridegrantform--error-412.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-overridegrantform--error-422.png",
+        "itemId": "governance-overridegrantform--error-422.png",
+        "snapshot": "governance-overridegrantform--error-422.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-overridegrantform--error-423.png",
+        "itemId": "governance-overridegrantform--error-423.png",
+        "snapshot": "governance-overridegrantform--error-423.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-overridegrantform--submitting.png",
+        "itemId": "governance-overridegrantform--submitting.png",
+        "snapshot": "governance-overridegrantform--submitting.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-overridessubview--default.png",
+        "itemId": "governance-overridessubview--default.png",
+        "snapshot": "governance-overridessubview--default.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-overridessubview--dense.png",
+        "itemId": "governance-overridessubview--dense.png",
+        "snapshot": "governance-overridessubview--dense.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-overridessubview--disabled-by-flag.png",
+        "itemId": "governance-overridessubview--disabled-by-flag.png",
+        "snapshot": "governance-overridessubview--disabled-by-flag.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-overridessubview--empty.png",
+        "itemId": "governance-overridessubview--empty.png",
+        "snapshot": "governance-overridessubview--empty.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-overridessubview--error.png",
+        "itemId": "governance-overridessubview--error.png",
+        "snapshot": "governance-overridessubview--error.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-overridessubview--loading.png",
+        "itemId": "governance-overridessubview--loading.png",
+        "snapshot": "governance-overridessubview--loading.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-policiessubview--default.png",
+        "itemId": "governance-policiessubview--default.png",
+        "snapshot": "governance-policiessubview--default.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-policiessubview--dense.png",
+        "itemId": "governance-policiessubview--dense.png",
+        "snapshot": "governance-policiessubview--dense.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-policiessubview--disabled-by-flag.png",
+        "itemId": "governance-policiessubview--disabled-by-flag.png",
+        "snapshot": "governance-policiessubview--disabled-by-flag.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-policiessubview--empty.png",
+        "itemId": "governance-policiessubview--empty.png",
+        "snapshot": "governance-policiessubview--empty.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-policiessubview--error.png",
+        "itemId": "governance-policiessubview--error.png",
+        "snapshot": "governance-policiessubview--error.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-policiessubview--loading.png",
+        "itemId": "governance-policiessubview--loading.png",
+        "snapshot": "governance-policiessubview--loading.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-policyeditor--default.png",
+        "itemId": "governance-policyeditor--default.png",
+        "snapshot": "governance-policyeditor--default.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-policyeditor--disabled-by-flag.png",
+        "itemId": "governance-policyeditor--disabled-by-flag.png",
+        "snapshot": "governance-policyeditor--disabled-by-flag.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-policyeditor--e-tag-conflict.png",
+        "itemId": "governance-policyeditor--e-tag-conflict.png",
+        "snapshot": "governance-policyeditor--e-tag-conflict.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-policyeditor--error.png",
+        "itemId": "governance-policyeditor--error.png",
+        "snapshot": "governance-policyeditor--error.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-policyeditor--submitting.png",
+        "itemId": "governance-policyeditor--submitting.png",
+        "snapshot": "governance-policyeditor--submitting.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-policyrow--hard-budget-enabled.png",
+        "itemId": "governance-policyrow--hard-budget-enabled.png",
+        "snapshot": "governance-policyrow--hard-budget-enabled.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-policyrow--no-limit.png",
+        "itemId": "governance-policyrow--no-limit.png",
+        "snapshot": "governance-policyrow--no-limit.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-policyrow--soft-wip-disabled.png",
+        "itemId": "governance-policyrow--soft-wip-disabled.png",
+        "snapshot": "governance-policyrow--soft-wip-disabled.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-systemhealthcard--amber.png",
+        "itemId": "governance-systemhealthcard--amber.png",
+        "snapshot": "governance-systemhealthcard--amber.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-systemhealthcard--backup-failed.png",
+        "itemId": "governance-systemhealthcard--backup-failed.png",
+        "snapshot": "governance-systemhealthcard--backup-failed.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-systemhealthcard--backup-healthy.png",
+        "itemId": "governance-systemhealthcard--backup-healthy.png",
+        "snapshot": "governance-systemhealthcard--backup-healthy.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-systemhealthcard--backup-no-offnode-warning.png",
+        "itemId": "governance-systemhealthcard--backup-no-offnode-warning.png",
+        "snapshot": "governance-systemhealthcard--backup-no-offnode-warning.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-systemhealthcard--backup-stale.png",
+        "itemId": "governance-systemhealthcard--backup-stale.png",
+        "snapshot": "governance-systemhealthcard--backup-stale.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-systemhealthcard--disabled-by-flag.png",
+        "itemId": "governance-systemhealthcard--disabled-by-flag.png",
+        "snapshot": "governance-systemhealthcard--disabled-by-flag.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-systemhealthcard--error.png",
+        "itemId": "governance-systemhealthcard--error.png",
+        "snapshot": "governance-systemhealthcard--error.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-systemhealthcard--green.png",
+        "itemId": "governance-systemhealthcard--green.png",
+        "snapshot": "governance-systemhealthcard--green.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-systemhealthcard--loading.png",
+        "itemId": "governance-systemhealthcard--loading.png",
+        "snapshot": "governance-systemhealthcard--loading.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-systemhealthcard--red.png",
+        "itemId": "governance-systemhealthcard--red.png",
+        "snapshot": "governance-systemhealthcard--red.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-systemhealthsubview--default.png",
+        "itemId": "governance-systemhealthsubview--default.png",
+        "snapshot": "governance-systemhealthsubview--default.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-systemhealthsubview--disabled-by-flag.png",
+        "itemId": "governance-systemhealthsubview--disabled-by-flag.png",
+        "snapshot": "governance-systemhealthsubview--disabled-by-flag.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-systemhealthsubview--error.png",
+        "itemId": "governance-systemhealthsubview--error.png",
+        "snapshot": "governance-systemhealthsubview--error.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-systemhealthsubview--loading.png",
+        "itemId": "governance-systemhealthsubview--loading.png",
+        "snapshot": "governance-systemhealthsubview--loading.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-telemetrysourcehealthpill--amber.png",
+        "itemId": "governance-telemetrysourcehealthpill--amber.png",
+        "snapshot": "governance-telemetrysourcehealthpill--amber.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-telemetrysourcehealthpill--disabled-by-flag.png",
+        "itemId": "governance-telemetrysourcehealthpill--disabled-by-flag.png",
+        "snapshot": "governance-telemetrysourcehealthpill--disabled-by-flag.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-telemetrysourcehealthpill--green.png",
+        "itemId": "governance-telemetrysourcehealthpill--green.png",
+        "snapshot": "governance-telemetrysourcehealthpill--green.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-telemetrysourcehealthpill--red.png",
+        "itemId": "governance-telemetrysourcehealthpill--red.png",
+        "snapshot": "governance-telemetrysourcehealthpill--red.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-telemetrysourcehealthpill--unknown.png",
+        "itemId": "governance-telemetrysourcehealthpill--unknown.png",
+        "snapshot": "governance-telemetrysourcehealthpill--unknown.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-windoweditor--conflict.png",
+        "itemId": "governance-windoweditor--conflict.png",
+        "snapshot": "governance-windoweditor--conflict.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-windoweditor--default.png",
+        "itemId": "governance-windoweditor--default.png",
+        "snapshot": "governance-windoweditor--default.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-windoweditor--disabled-by-flag.png",
+        "itemId": "governance-windoweditor--disabled-by-flag.png",
+        "snapshot": "governance-windoweditor--disabled-by-flag.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-windoweditor--dst-warning.png",
+        "itemId": "governance-windoweditor--dst-warning.png",
+        "snapshot": "governance-windoweditor--dst-warning.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-windoweditor--editing.png",
+        "itemId": "governance-windoweditor--editing.png",
+        "snapshot": "governance-windoweditor--editing.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-windoweditor--submitting.png",
+        "itemId": "governance-windoweditor--submitting.png",
+        "snapshot": "governance-windoweditor--submitting.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-windowssubview--default.png",
+        "itemId": "governance-windowssubview--default.png",
+        "snapshot": "governance-windowssubview--default.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-windowssubview--disabled-by-flag.png",
+        "itemId": "governance-windowssubview--disabled-by-flag.png",
+        "snapshot": "governance-windowssubview--disabled-by-flag.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-windowssubview--empty.png",
+        "itemId": "governance-windowssubview--empty.png",
+        "snapshot": "governance-windowssubview--empty.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-windowssubview--error.png",
+        "itemId": "governance-windowssubview--error.png",
+        "snapshot": "governance-windowssubview--error.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-windowssubview--loading.png",
+        "itemId": "governance-windowssubview--loading.png",
+        "snapshot": "governance-windowssubview--loading.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-wipindicatorpanel--at-limit.png",
+        "itemId": "governance-wipindicatorpanel--at-limit.png",
+        "snapshot": "governance-wipindicatorpanel--at-limit.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-wipindicatorpanel--disabled-by-flag.png",
+        "itemId": "governance-wipindicatorpanel--disabled-by-flag.png",
+        "snapshot": "governance-wipindicatorpanel--disabled-by-flag.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-wipindicatorpanel--empty.png",
+        "itemId": "governance-wipindicatorpanel--empty.png",
+        "snapshot": "governance-wipindicatorpanel--empty.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-wipindicatorpanel--over-limit.png",
+        "itemId": "governance-wipindicatorpanel--over-limit.png",
+        "snapshot": "governance-wipindicatorpanel--over-limit.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-governance-wipindicatorpanel--under-limit.png",
+        "itemId": "governance-wipindicatorpanel--under-limit.png",
+        "snapshot": "governance-wipindicatorpanel--under-limit.png",
+        "variant": "new"
+      },
+      {
+        "group": "feature-flag-admin",
+        "id": "new-platform-feature-flag-admin--admin-default-state.png",
+        "itemId": "platform-feature-flag-admin--admin-default-state.png",
+        "snapshot": "platform-feature-flag-admin--admin-default-state.png",
+        "variant": "new"
+      },
+      {
+        "group": "feature-flag-admin",
+        "id": "new-platform-feature-flag-admin--admin-toggle-journey.png",
+        "itemId": "platform-feature-flag-admin--admin-toggle-journey.png",
+        "snapshot": "platform-feature-flag-admin--admin-toggle-journey.png",
+        "variant": "new"
+      },
+      {
+        "group": "product-line-switcher",
+        "id": "new-product-line-visual-states--header-desktop-facility.png",
+        "itemId": "product-line-visual-states--header-desktop-facility.png",
+        "snapshot": "product-line-visual-states--header-desktop-facility.png",
+        "variant": "new"
+      },
+      {
+        "group": "product-line-switcher",
+        "id": "new-product-line-visual-states--header-mobile-scope-menu.png",
+        "itemId": "product-line-visual-states--header-mobile-scope-menu.png",
+        "snapshot": "product-line-visual-states--header-mobile-scope-menu.png",
+        "variant": "new"
+      },
+      {
+        "group": "product-line-switcher",
+        "id": "new-product-line-visual-states--task-board-alpha-scope.png",
+        "itemId": "product-line-visual-states--task-board-alpha-scope.png",
+        "snapshot": "product-line-visual-states--task-board-alpha-scope.png",
+        "variant": "new"
+      },
+      {
+        "group": "product-line-switcher",
+        "id": "new-product-line-visual-states--task-board-facility-scope.png",
+        "itemId": "product-line-visual-states--task-board-facility-scope.png",
+        "snapshot": "product-line-visual-states--task-board-facility-scope.png",
+        "variant": "new"
+      },
+      {
+        "group": "product-line-switcher",
+        "id": "new-product-line-visual-states--workspace-switcher-error.png",
+        "itemId": "product-line-visual-states--workspace-switcher-error.png",
+        "snapshot": "product-line-visual-states--workspace-switcher-error.png",
+        "variant": "new"
+      },
+      {
+        "group": "product-line-switcher",
+        "id": "new-product-line-visual-states--workspace-switcher-facility.png",
+        "itemId": "product-line-visual-states--workspace-switcher-facility.png",
+        "snapshot": "product-line-visual-states--workspace-switcher-facility.png",
+        "variant": "new"
+      },
+      {
+        "group": "product-line-switcher",
+        "id": "new-product-line-visual-states--workspace-switcher-loading.png",
+        "itemId": "product-line-visual-states--workspace-switcher-loading.png",
+        "snapshot": "product-line-visual-states--workspace-switcher-loading.png",
+        "variant": "new"
+      },
+      {
+        "group": "product-line-switcher",
+        "id": "new-product-line-visual-states--workspace-switcher-menu-open.png",
+        "itemId": "product-line-visual-states--workspace-switcher-menu-open.png",
+        "snapshot": "product-line-visual-states--workspace-switcher-menu-open.png",
+        "variant": "new"
+      },
+      {
+        "group": "ready-for-owner",
+        "id": "new-spec-005-ready-for-owner-ux--focused-ready-for-owner-card.png",
+        "itemId": "spec-005-ready-for-owner-ux--focused-ready-for-owner-card.png",
+        "snapshot": "spec-005-ready-for-owner-ux--focused-ready-for-owner-card.png",
+        "variant": "new"
+      },
+      {
+        "group": "ready-for-owner",
+        "id": "new-spec-005-ready-for-owner-ux--kanban-lane-order.png",
+        "itemId": "spec-005-ready-for-owner-ux--kanban-lane-order.png",
+        "snapshot": "spec-005-ready-for-owner-ux--kanban-lane-order.png",
+        "variant": "new"
+      },
+      {
+        "group": "ready-for-owner",
+        "id": "new-spec-005-ready-for-owner-ux--notification-action-required.png",
+        "itemId": "spec-005-ready-for-owner-ux--notification-action-required.png",
+        "snapshot": "spec-005-ready-for-owner-ux--notification-action-required.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-007",
+        "id": "new-spec-007-disposition-artifacts-ux--artifact-admin-panel-mixed-state.png",
+        "itemId": "spec-007-disposition-artifacts-ux--artifact-admin-panel-mixed-state.png",
+        "snapshot": "spec-007-disposition-artifacts-ux--artifact-admin-panel-mixed-state.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-007",
+        "id": "new-spec-007-disposition-artifacts-ux--audit-dispositions-tab.png",
+        "itemId": "spec-007-disposition-artifacts-ux--audit-dispositions-tab.png",
+        "snapshot": "spec-007-disposition-artifacts-ux--audit-dispositions-tab.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-007",
+        "id": "new-spec-007-disposition-artifacts-ux--dashboard-rollup-widget.png",
+        "itemId": "spec-007-disposition-artifacts-ux--dashboard-rollup-widget.png",
+        "snapshot": "spec-007-disposition-artifacts-ux--dashboard-rollup-widget.png",
+        "variant": "new"
+      },
+      {
+        "group": "unknown",
+        "id": "new-spec-013d-claim-control-section--active-operator.png",
+        "itemId": "spec-013d-claim-control-section--active-operator.png",
+        "snapshot": "spec-013d-claim-control-section--active-operator.png",
+        "variant": "new"
+      },
+      {
+        "group": "unknown",
+        "id": "new-spec-013d-claim-control-section--backoff-override.png",
+        "itemId": "spec-013d-claim-control-section--backoff-override.png",
+        "snapshot": "spec-013d-claim-control-section--backoff-override.png",
+        "variant": "new"
+      },
+      {
+        "group": "unknown",
+        "id": "new-spec-013d-claim-control-section--confirmation.png",
+        "itemId": "spec-013d-claim-control-section--confirmation.png",
+        "snapshot": "spec-013d-claim-control-section--confirmation.png",
+        "variant": "new"
+      },
+      {
+        "group": "unknown",
+        "id": "new-spec-013d-claim-control-section--disabled-reasons.png",
+        "itemId": "spec-013d-claim-control-section--disabled-reasons.png",
+        "snapshot": "spec-013d-claim-control-section--disabled-reasons.png",
+        "variant": "new"
+      },
+      {
+        "group": "unknown",
+        "id": "new-spec-013d-claim-control-section--error-state.png",
+        "itemId": "spec-013d-claim-control-section--error-state.png",
+        "snapshot": "spec-013d-claim-control-section--error-state.png",
+        "variant": "new"
+      },
+      {
+        "group": "unknown",
+        "id": "new-spec-013d-claim-control-section--flag-off.png",
+        "itemId": "spec-013d-claim-control-section--flag-off.png",
+        "snapshot": "spec-013d-claim-control-section--flag-off.png",
+        "variant": "new"
+      },
+      {
+        "group": "unknown",
+        "id": "new-spec-013d-claim-control-section--loading.png",
+        "itemId": "spec-013d-claim-control-section--loading.png",
+        "snapshot": "spec-013d-claim-control-section--loading.png",
+        "variant": "new"
+      },
+      {
+        "group": "unknown",
+        "id": "new-spec-013d-claim-control-section--receipt-conflict.png",
+        "itemId": "spec-013d-claim-control-section--receipt-conflict.png",
+        "snapshot": "spec-013d-claim-control-section--receipt-conflict.png",
+        "variant": "new"
+      },
+      {
+        "group": "unknown",
+        "id": "new-spec-013d-claim-control-section--viewer-read-only.png",
+        "itemId": "spec-013d-claim-control-section--viewer-read-only.png",
+        "snapshot": "spec-013d-claim-control-section--viewer-read-only.png",
+        "variant": "new"
+      },
+      {
+        "group": "task-pipeline-workflows",
+        "id": "new-task-pipeline-workflow-ui--workflow-chain-edit-fields.png",
+        "itemId": "task-pipeline-workflow-ui--workflow-chain-edit-fields.png",
+        "snapshot": "task-pipeline-workflow-ui--workflow-chain-edit-fields.png",
+        "variant": "new"
+      },
+      {
+        "group": "task-pipeline-workflows",
+        "id": "new-task-pipeline-workflow-ui--workflow-routing-validation-error.png",
+        "itemId": "task-pipeline-workflow-ui--workflow-routing-validation-error.png",
+        "snapshot": "task-pipeline-workflow-ui--workflow-routing-validation-error.png",
+        "variant": "new"
+      },
+      {
+        "group": "workflow-contracts",
+        "id": "new-workflow-contracts-diagnostics-ui--read-only-redacted-diagnostics.png",
+        "itemId": "workflow-contracts-diagnostics-ui--read-only-redacted-diagnostics.png",
+        "snapshot": "workflow-contracts-diagnostics-ui--read-only-redacted-diagnostics.png",
+        "variant": "new"
+      }
+    ]
+  }
+}
