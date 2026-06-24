@@ -21,6 +21,9 @@ permissions:
 
 jobs:
   storybook-approval:
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository
     uses: racecraft-lab/visual-review-pages/.github/workflows/visual-review-approval.yml@main
     with:
       pr_number: ${{ github.event_name == 'workflow_dispatch' && inputs.pr_number || '' }}
@@ -38,6 +41,7 @@ jobs:
         src/**/*.stories.tsx,
         src/app/globals.css,
         src/components/layout/**,
+        src/components/panels/office-panel.tsx,
         src/components/panels/notifications-panel.tsx,
         src/components/panels/orchestration-bar.tsx,
         src/components/panels/task-board-panel.tsx,
@@ -52,6 +56,9 @@ jobs:
       node_version: '22'
 
   playwright-approval:
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository
     uses: racecraft-lab/visual-review-pages/.github/workflows/visual-review-approval.yml@main
     with:
       pr_number: ${{ github.event_name == 'workflow_dispatch' && inputs.pr_number || '' }}
@@ -78,6 +85,7 @@ jobs:
         src/app/api/**,
         src/app/globals.css,
         src/components/layout/**,
+        src/components/panels/office-panel.tsx,
         src/components/panels/notifications-panel.tsx,
         src/components/panels/orchestration-bar.tsx,
         src/components/panels/task-board-panel.tsx,
