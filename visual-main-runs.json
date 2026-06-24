@@ -2,6 +2,33 @@
   "version": 1,
   "reports": [
     {
+      "surface": "playwright",
+      "runId": "28122540953",
+      "runAttempt": "1",
+      "runKey": "28122540953-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/28122540953",
+      "reportKey": "51023c91182e6f57b4dcb2600a0407d145f4aadd",
+      "reportHref": "https://racecraft-lab.github.io/Paddock/playwright/51023c91182e6f57b4dcb2600a0407d145f4aadd/",
+      "latestHref": "https://racecraft-lab.github.io/Paddock/playwright/latest/?v=28122540953-attempt-1",
+      "headSha": "51023c91182e6f57b4dcb2600a0407d145f4aadd",
+      "headRef": "main",
+      "baseRef": "main",
+      "workflowName": "Paddock UI E2E",
+      "workflowFile": "paddock-ui-e2e.yml",
+      "surfaceLabel": "Playwright UI E2E",
+      "sourcePullRequest": {
+        "baseRef": "main",
+        "headRef": "fix/office-activity-visuals",
+        "headSha": "023669d9338f2266467fa57891af9c6c15fb31df",
+        "indexHref": "https://racecraft-lab.github.io/Paddock/pr/86/",
+        "mergeCommitSha": "",
+        "number": "86",
+        "title": "Enhance Office activity visuals",
+        "url": "https://github.com/racecraft-lab/Paddock/pull/86"
+      },
+      "createdAt": "2026-06-24T19:10:50.135Z"
+    },
+    {
       "surface": "storybook",
       "runId": "28122540955",
       "runAttempt": "1",
@@ -1470,5 +1497,5 @@
       "createdAt": "2026-05-05T00:17:55.366Z"
     }
   ],
-  "updatedAt": "2026-06-24T19:05:36.100Z"
+  "updatedAt": "2026-06-24T19:10:50.135Z"
 }
