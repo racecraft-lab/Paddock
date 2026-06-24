@@ -56,7 +56,7 @@ Key source-backed findings:
 - Add an optional CrabTrap adapter boundary in `src/lib/crabtrap-adapter.ts`.
 - Keep `FEATURE_CRABTRAP_HONEYPOT=false` behavior as a complete no-op.
 - Normalize bounded denied-request or alert summaries into safe activity data.
-- Write `activities.kind='security_intrusion_detected'` only after feature flag,
+- Write `activities.type='security_intrusion_detected'` only after feature flag,
   config, payload shape, signature, replay, size, and unsafe-field checks pass.
 - Reject malformed, unsigned, stale, replayed, oversized, or unsafe payloads
   without writing activity evidence.

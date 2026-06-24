@@ -22,6 +22,9 @@ updated with exact commands after `spec.md`, `plan.md`, and `tasks.md` exist.
 4. Inspect `activities` and confirm exactly one
    `security_intrusion_detected` row with bounded safe `data`.
    - The event class is stored as `activities.type='security_intrusion_detected'`.
+   - The row producer may be the fixed Paddock-owned
+     `actor='crabtrap-adapter'`; payload-controlled actor IDs, user IDs, and
+     emails are forbidden.
    - Accepted evidence lands in the approved workspace activity scope, or the
      real facility workspace row when no approved workspace/project context
      exists.
@@ -48,7 +51,8 @@ updated with exact commands after `spec.md`, `plan.md`, and `tasks.md` exist.
    - Expected failure-code vocabulary is `crabtrap_intake_failure_code.v1`.
    - Unsafe-field diagnostics include only bounded field path/category and no
      raw values, matched substrings, raw secret hashes, headers, bodies,
-     cookies, auth material, query secrets, provider payloads, or audit rows.
+     cookies, auth material, query secrets, provider payloads, signing
+     material, payload-controlled actor identifiers, or audit rows.
 7. Confirm no raw URLs, raw headers, bodies, cookies, Authorization values,
    query secrets, provider payloads, raw actor identifiers, or full CrabTrap
    audit rows are persisted.
@@ -57,9 +61,9 @@ updated with exact commands after `spec.md`, `plan.md`, and `tasks.md` exist.
 
 ## Optional Evidence
 
-Live official CrabTrap Docker evidence is optional for this slice because the
-public CrabTrap docs do not define a generic webhook contract. If an operator
-does run CrabTrap, record:
+Live official CrabTrap Docker evidence is optional deploy evidence for this
+slice because the public CrabTrap docs do not define a generic webhook contract.
+It is not a blocking completion gate. If an operator does run CrabTrap, record:
 
 - CrabTrap version or image tag.
 - Whether evidence came from admin audit export, denial alerting, a custom
@@ -69,9 +73,10 @@ does run CrabTrap, record:
 ## Completion Rule
 
 SPEC-011 is complete only when fixture UAT, focused tests, guardrails,
-typecheck/lint, reviewability evidence, and roadmap/workflow status updates are
-recorded. Do not claim live CrabTrap integration unless implementation actually
-uses and verifies an official or operator-owned runtime source.
+typecheck/lint, no-raw-persistence proof, scope-control evidence,
+reviewability evidence, and roadmap/workflow status updates are recorded. Do
+not claim live CrabTrap integration unless implementation actually uses and
+verifies an official or operator-owned runtime source.
 
 Clarify Session 1 chose helper-only intake for this slice. Do not add or test a
 runtime route, webhook receiver, custom sender, admin poller, OpenAPI entry, or

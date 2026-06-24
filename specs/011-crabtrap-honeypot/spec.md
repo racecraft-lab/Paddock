@@ -31,6 +31,11 @@
 - Q: Are existing activity inspection surfaces sufficient? -> A: Yes. Existing `/api/activities` and Activity Feed inspection are sufficient; SPEC-011 adds no dedicated CrabTrap panel, OpenAPI/report surface, or dashboard view.
 - Q: Should accepted evidence create alerts or notifications? -> A: No. SPEC-011 creates no notification rows, default alert rules, or alert fanout. Existing operator-created alert rules may passively evaluate activity `type`, but CrabTrap-specific fanout is deferred to a future spec.
 - Q: How does replay dedupe work without a new schema? -> A: Before insert, the adapter checks existing activities in the chosen workspace/facility landing scope for `type='security_intrusion_detected'` with the same adapter-derived `data.replay_key_hash`; no cross-workspace scan or caller-only dedupe is allowed.
+- Q: Is live official CrabTrap Docker evidence required for completion? -> A: No. Live CrabTrap Docker evidence is optional deploy evidence only. Required completion evidence is fixture UAT, focused tests, guardrails, scope-control proof, and activity inspection.
+- Q: What fixture UAT matrix is required? -> A: Required fixture UAT covers flag-off no-op, missing/invalid-config no-op, one valid signed fixture creating exactly one `activities.type='security_intrusion_detected'` row, and malformed, unsigned, stale, replayed, oversized, and unsafe fixtures creating zero activity rows.
+- Q: What no-raw-persistence proof must UAT record? -> A: UAT must prove accepted activity `data` and rejection diagnostics contain no raw/full URLs, headers, bodies, cookies, Authorization values, tokens, query secrets, provider payloads, payload-controlled actor IDs, user IDs, emails, signing material, or full audit rows. The fixed Paddock-owned row producer `actor='crabtrap-adapter'` is allowed.
+- Q: Should UAT validate alerts or notifications? -> A: No. UAT inspects existing activities only. Operator-created alert rules may passively match `activities.type`, but SPEC-011 adds and validates no CrabTrap-specific alert or notification fanout.
+- Q: What scope-control evidence is required before closeout? -> A: Closeout must record diff or guardrail proof that no runtime route, webhook receiver, admin poller, custom sender, OpenAPI contract, migration, scheduler/task-dispatch path, UI panel, notification fanout, GitHub mutation, task terminal mutation, or successor-selection behavior entered the slice.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -131,9 +136,9 @@ As a reviewer, I need the final slice to be easy to inspect and prove isolated f
 - **FR-013**: System MUST isolate activity-write failures so a failed CrabTrap evidence write returns a bounded failure outcome without crashing scheduler, task-dispatch, task-chain, runner, sandbox, GitHub sync, or unrelated API behavior.
 - **FR-014**: System MUST NOT add a schema migration, new table, runtime route, OpenAPI contract, API-parity ignore, public webhook API, polling integration, dashboard panel, notification fanout, automatic remediation, GitHub mutation, task terminal mutation, or successor selection behavior.
 - **FR-015**: System MUST include focused tests for flag off, config missing, valid signed fixture, malformed fixture, signature failure, stale event, replayed event, oversized payload, unsafe-field rejection, and activity write failure isolation.
-- **FR-016**: System MUST support human validation through signed fixture replay and inspection of resulting activities without requiring live CrabTrap Docker evidence.
+- **FR-016**: System MUST support human validation through signed fixture replay and inspection of resulting activities without requiring live CrabTrap Docker evidence, runtime route, webhook receiver, custom sender, or admin-polling setup.
 - **FR-017**: System MUST keep CrabTrap disabled by default and absent-safe for existing installs.
-- **FR-018**: System MUST preserve reviewer evidence that the slice remains bounded to adapter behavior, focused tests, guardrails/docs, and fixture/UAT artifacts approved during planning.
+- **FR-018**: System MUST preserve reviewer evidence that the slice remains bounded to adapter behavior, focused tests, guardrails/docs, fixture/UAT artifacts, no-raw-persistence proof, and explicit scope-control artifacts approved during planning.
 
 ### Reviewability Budget *(mandatory)*
 
@@ -168,9 +173,9 @@ As a reviewer, I need the final slice to be easy to inspect and prove isolated f
 - **SC-001**: In 100% of flag-off and missing-config validation cases, no CrabTrap activity is recorded and unrelated workflows continue unchanged.
 - **SC-002**: In 100% of valid signed denial-summary fixture replays, exactly one security activity entry is created for each unique event.
 - **SC-003**: In 100% of malformed, unsigned, stale, replayed, oversized, and unsafe-field fixture cases, zero activity entries are created.
-- **SC-004**: Accepted activity evidence contains only approved bounded summary fields and hashes, with zero raw headers, bodies, cookies, Authorization values, API keys, query secrets, provider payloads, or full audit rows found during review.
+- **SC-004**: Accepted activity evidence and rejection diagnostics contain only approved bounded summary fields, safe hashes, bounded counts, and closed failure codes, with zero raw/full URLs, headers, bodies, cookies, Authorization values, API keys, tokens, query secrets, provider payloads, payload-controlled actor identifiers, signing material, or full audit rows found during review.
 - **SC-005**: A reviewer can verify from the final diff and PR packet that no schema migration, OpenAPI contract, scheduler/task-dispatch dependency, new panel, notification fanout, GitHub mutation, task terminal mutation, or successor-selection behavior was added.
-- **SC-006**: Human fixture replay and activity inspection can be completed in under 15 minutes without requiring a live CrabTrap service.
+- **SC-006**: Human fixture replay and activity inspection can be completed in under 15 minutes without requiring a live CrabTrap service; any live official CrabTrap Docker evidence is optional and must not be represented as the required completion gate.
 
 ## Assumptions
 
@@ -184,3 +189,4 @@ As a reviewer, I need the final slice to be easy to inspect and prove isolated f
 - Built-in platform cryptography is expected to be sufficient unless planning proves a pinned runtime dependency is necessary.
 - Live CrabTrap route, custom sender, and admin-polling integration belong to a future CrabTrap architecture/follow-up spec, not SPEC-011 implementation tasks.
 - Accepted hash fields use `sha256:<64hex>` only for safe canonical inputs; actor hashes representing low-entropy identifiers must be keyed or omitted.
+- Required UAT is fixture-first. Live official CrabTrap Docker evidence may be appended as deploy evidence only when an operator supplies it, and must not be used to widen SPEC-011 into runtime integration.

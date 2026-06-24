@@ -303,6 +303,18 @@ Confirm that required UAT is signed fixture replay for valid and malformed cases
 Use the setup decision: "Fixture UAT is required; live CrabTrap Docker is optional evidence."
 ```
 
+#### Clarify Session 5 Results
+
+| Question | Accepted Answer | Evidence | Artifact Impact |
+|---|---|---|---|
+| Live CrabTrap Docker evidence | Optional deploy evidence only. Required completion evidence is fixture UAT plus focused tests, guardrails, scope-control proof, and activity inspection. | Official CrabTrap docs do not publish a generic webhook contract, and the design concept already records live Docker as optional evidence | `spec.md` Clarifications, FR-016, SC-006; UAT runbook |
+| Fixture UAT matrix | Required fixture UAT covers flag-off no-op, missing/invalid-config no-op, one valid signed fixture creating exactly one `activities.type='security_intrusion_detected'` row, and malformed, unsigned, stale, replayed, oversized, and unsafe fixtures creating zero activity rows. | Spec success criteria and UAT runbook already require these paths; no live route/poller cases are in scope | `spec.md` Clarifications, SC-001 through SC-003; quickstart/tasks input |
+| No-raw-persistence proof | UAT must prove accepted activity `data` and rejection diagnostics contain no raw/full URLs, headers, bodies, cookies, Authorization values, tokens, query secrets, provider payloads, payload-controlled actor IDs, user IDs, emails, signing material, or full audit rows. The fixed row producer `actor='crabtrap-adapter'` is allowed. | Consensus aligned on OWASP/MITRE logging guidance and existing Paddock bounded diagnostic patterns; codebase consensus clarified the fixed actor-column nuance | `spec.md` SC-004, FR-012, FR-018; UAT runbook |
+| Alert/notification validation | Preserve activities-only UAT. Existing operator-created alert rules may passively evaluate `activities.type`, but SPEC-011 adds and validates no CrabTrap-specific alert or notification fanout. | Session 4 already closed activity-only inspection; older roadmap wording was narrower clarified here to avoid scope expansion | `spec.md` Clarifications, FR-014; roadmap HITL wording |
+| Scope-control closeout | Closeout must record diff or guardrail proof that no runtime route, webhook receiver, admin poller, custom sender, OpenAPI contract, migration, scheduler/task-dispatch path, UI panel, notification fanout, GitHub mutation, task terminal mutation, or successor-selection behavior entered the slice. | Existing guardrails already block CrabTrap markers until SPEC-011 owns its narrow production files; reviewability rules require explicit non-goal evidence | `spec.md` FR-018; Plan/Tasks/Analyze inputs |
+
+Consensus: Round 1 used `codebase-analyst`, `spec-context-analyst`, and `domain-researcher`. Outcome was AGREE for activities-only UAT and AGREE/MODIFY for no-raw-persistence proof; parent synthesis accepted the stricter proof while preserving the fixed Paddock-owned activity actor.
+
 ## Phase 3: Plan
 
 **When to run:** After spec is finalized. Output: `specs/011-crabtrap-honeypot/plan.md`.
