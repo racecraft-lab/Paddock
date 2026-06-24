@@ -17,9 +17,9 @@
 
 **Purpose**: Create the failing test and fixture surface before production implementation.
 
-- [ ] T001 Create failing Vitest cases for flag-off, missing config, valid fixture, malformed fixture, invalid signature, stale/replayed event, oversized payload, unsafe fields, and activity write failure isolation in `src/lib/__tests__/crabtrap-adapter.test.ts`
-- [ ] T002 [P] Add SPEC-011 fixture corpus for valid, malformed, unsigned, stale, replayed, oversized, unsafe, unsupported-decision, and unsupported-method cases in `src/lib/__tests__/fixtures/crabtrap/`
-- [ ] T003 Run `pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts` and record the expected RED failure evidence in `specs/011-crabtrap-honeypot/.process/uat-runbook.md`
+- [X] T001 Create failing Vitest cases for flag-off, missing config, valid fixture, malformed fixture, invalid signature, stale/replayed event, oversized payload, unsafe fields, and activity write failure isolation in `src/lib/__tests__/crabtrap-adapter.test.ts`
+- [X] T002 [P] Add SPEC-011 fixture corpus for valid, malformed, unsigned, stale, replayed, oversized, unsafe, unsupported-decision, and unsupported-method cases in `src/lib/__tests__/fixtures/crabtrap/`
+- [X] T003 Run `pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts` and record the expected RED failure evidence in `specs/011-crabtrap-honeypot/.process/uat-runbook.md`
 
 ---
 
@@ -27,10 +27,10 @@
 
 **Purpose**: Register the disabled-by-default flag, strict scope, guardrails, and reviewability checkpoint before user-story implementation.
 
-- [ ] T004 [P] Register `FEATURE_CRABTRAP_HONEYPOT` as a typed default-off flag in `src/lib/feature-flags.ts`
-- [ ] T005 [P] Add `src/lib/crabtrap-adapter.ts` and `src/lib/__tests__/crabtrap-adapter.test.ts` to strict new-module scope in `tsconfig.spec-strict.json` and `eslint.config.mjs`
-- [ ] T006 [P] Update SPEC-011 guardrail ownership/allowlist entries for the approved adapter, test, fixture, and UAT files in `scripts/check-guardrails.mjs`
-- [ ] T007 Record the pre-implementation reviewability checkpoint and stop/split condition in `specs/011-crabtrap-honeypot/.process/uat-runbook.md`
+- [X] T004 [P] Register `FEATURE_CRABTRAP_HONEYPOT` as a typed default-off flag in `src/lib/feature-flags.ts`
+- [X] T005 [P] Add `src/lib/crabtrap-adapter.ts` and `src/lib/__tests__/crabtrap-adapter.test.ts` to strict new-module scope in `tsconfig.spec-strict.json` and `eslint.config.mjs`
+- [X] T006 [P] Update SPEC-011 guardrail ownership/allowlist entries for the approved adapter, test, fixture, and UAT files in `scripts/check-guardrails.mjs`
+- [X] T007 Record the pre-implementation reviewability checkpoint and stop/split condition in `specs/011-crabtrap-honeypot/.process/uat-runbook.md`
 
 **Checkpoint**: Foundation ready. User-story implementation can start only after RED test evidence and reviewability checkpoint are recorded.
 

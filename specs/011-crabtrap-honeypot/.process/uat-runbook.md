@@ -3,6 +3,73 @@
 This runbook is scaffold guidance for the future implementation. It should be
 updated with exact commands after `spec.md`, `plan.md`, and `tasks.md` exist.
 
+## Foundation Marker Checkpoint
+
+Date: 2026-06-24
+
+Marker: `foundation` (`review_order=1`)
+
+Scope completed in this checkpoint:
+
+- Created the focused adapter RED suite at
+  `src/lib/__tests__/crabtrap-adapter.test.ts`.
+- Added the SPEC-011 fixture corpus at
+  `src/lib/__tests__/fixtures/crabtrap/crabtrap-fixtures.ts`.
+- Added only a minimal `src/lib/crabtrap-adapter.ts` type/export stub. No
+  adapter behavior is implemented in this marker.
+- Registered `FEATURE_CRABTRAP_HONEYPOT` as a typed default-off flag.
+- Added strict-scope and guardrail ownership entries for the approved
+  adapter, test, fixture, and UAT files.
+
+Pre-implementation reviewability checkpoint:
+
+- Source evidence: `specs/011-crabtrap-honeypot/.process/reviewability/tasks-gate.json`.
+- Marker plan status before implementation was a size-only task gate block
+  routed into marker execution, with no subdivision required for `foundation`.
+- Stop/split condition: stop and split before implementation if the slice
+  adds or requires any runtime route, webhook receiver, OpenAPI contract,
+  schema migration, scheduler/task-dispatch dependency, notification fanout,
+  GitHub mutation, task terminal mutation, successor selection, UI panel, live
+  CrabTrap Docker dependency, raw audit persistence, or a broader file/LOC
+  expansion outside the accepted helper-only adapter budget.
+
+## RED Evidence
+
+Command:
+
+```bash
+direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts
+```
+
+Environment note:
+
+- The linked worktree initially had no `node_modules`, so
+  `pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts` failed before
+  Vitest with `Command "vitest" not found`.
+- An offline frozen install first failed under Node v26.0.0 while rebuilding
+  `better-sqlite3`. After `direnv allow`, the worktree used `.nvmrc` Node
+  v22.22.2 and `direnv exec . pnpm install --frozen-lockfile --offline`
+  completed successfully.
+
+Expected RED result:
+
+- Vitest executed `src/lib/__tests__/crabtrap-adapter.test.ts`.
+- Result: 1 test file failed, 15 tests failed, exit code 1.
+- Failure shape: real assertion failures against the minimal stub, which
+  currently returns `{ status: "rejected", failureCode:
+  "payload_schema_invalid" }` for all inputs.
+- Representative failures:
+  - Expected flag-off result `{ status: "noop", failureCode:
+    "feature_disabled" }`, received `{ status: "rejected", failureCode:
+    "payload_schema_invalid" }`.
+  - Expected valid signed fixture result `{ status: "accepted" }`, received
+    `{ status: "rejected" }`.
+  - Expected oversized fixture failure code `payload_too_large`, received
+    `payload_schema_invalid`.
+  - Expected activity-write isolation result `{ status: "failed",
+    failureCode: "activity_write_failed" }`, received `{ status: "rejected",
+    failureCode: "payload_schema_invalid" }`.
+
 ## Required Validation
 
 1. Verify `FEATURE_CRABTRAP_HONEYPOT=false` records no CrabTrap activity and

@@ -138,6 +138,9 @@
     "src/lib/harness-adapters/__tests__/codex-app-server-runner.test.ts",
     "src/lib/harness-adapters/__tests__/codex-app-server-artifact-safety.test.ts",
     "src/lib/__tests__/task-dispatch-codex-app-server.test.ts",
-    "scripts/spec-014c/check-scope-guard.mjs"
+    "scripts/spec-014c/check-scope-guard.mjs",
+    "src/lib/crabtrap-adapter.ts",
+    "src/lib/__tests__/crabtrap-adapter.test.ts",
+    "src/lib/__tests__/fixtures/crabtrap/crabtrap-fixtures.ts"
   ]
 }
