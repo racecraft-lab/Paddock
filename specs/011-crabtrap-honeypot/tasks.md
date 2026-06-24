@@ -61,11 +61,11 @@
 
 ### Implementation for User Story 2
 
-- [ ] T012 [US2] Implement deterministic canonical JSON hashing, SHA-256 helpers, HMAC-SHA256 signing verification, and constant-time comparison in `src/lib/crabtrap-adapter.ts`
-- [ ] T013 [US2] Implement strict `crabtrap_denial_summary.v1` normalization with allowed fields, lowercased host, parsed pathname, hash/count bounds, and approved context scope in `src/lib/crabtrap-adapter.ts`
-- [ ] T014 [US2] Implement adapter-derived `data.replay_key_hash`, workspace/facility landing selection, existing-activity replay lookup, and exactly-one activity insert in `src/lib/crabtrap-adapter.ts`
-- [ ] T015 [US2] Finalize valid signed fixture and expected bounded activity data assertions in `src/lib/__tests__/fixtures/crabtrap/`
-- [ ] T016 [US2] Run US2 focused assertions in `src/lib/__tests__/crabtrap-adapter.test.ts` and confirm the valid signed fixture creates exactly one bounded activity row
+- [X] T012 [US2] Implement deterministic canonical JSON hashing, SHA-256 helpers, HMAC-SHA256 signing verification, and constant-time comparison in `src/lib/crabtrap-adapter.ts`
+- [X] T013 [US2] Implement strict `crabtrap_denial_summary.v1` normalization with allowed fields, lowercased host, parsed pathname, hash/count bounds, and approved context scope in `src/lib/crabtrap-adapter.ts`
+- [X] T014 [US2] Implement adapter-derived `data.replay_key_hash`, workspace/facility landing selection, existing-activity replay lookup, and exactly-one activity insert in `src/lib/crabtrap-adapter.ts`
+- [X] T015 [US2] Finalize valid signed fixture and expected bounded activity data assertions in `src/lib/__tests__/fixtures/crabtrap/`
+- [X] T016 [US2] Run US2 focused assertions in `src/lib/__tests__/crabtrap-adapter.test.ts` and confirm the valid signed fixture creates exactly one bounded activity row
 
 **Checkpoint**: User Story 2 is independently testable with one valid signed fixture and no raw audit persistence.
 
