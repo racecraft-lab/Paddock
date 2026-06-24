@@ -196,6 +196,7 @@ describe('updateWorkspaceFeatureFlag cascade persistence', () => {
       'FEATURE_TASK_ARTIFACTS',
       'FEATURE_RESOURCE_GOVERNANCE',
       'FEATURE_OPENCLAW_HEALTH_COSTS',
+      'FEATURE_CRABTRAP_HONEYPOT',
       'PILOT_PADDOCK_E2E',
       'FEATURE_TASK_CONTROL_PLANE',
       'FEATURE_GITHUB_SYNC_AUTOMATION',

@@ -97,10 +97,10 @@
 
 ### Implementation for User Story 4
 
-- [ ] T022 [P] [US4] Update fixture UAT evidence checklist and no-raw-persistence inspection steps in `specs/011-crabtrap-honeypot/.process/uat-runbook.md`
-- [ ] T023 [P] [US4] Draft PR review packet skeleton with review order, scope budget, traceability, verification evidence, known gaps, and rollback/flag notes in `specs/011-crabtrap-honeypot/.process/pr-review-packet.md`
-- [ ] T024 [US4] Run diff inspection for forbidden route, webhook, OpenAPI, UI, migration, scheduler, dispatch, notification, GitHub, task terminal, and successor-selection surfaces and record results in `specs/011-crabtrap-honeypot/.process/pr-review-packet.md`
-- [ ] T025 [US4] Confirm final touched-file and reviewable-LOC scope remains within the accepted budget and record the split decision in `specs/011-crabtrap-honeypot/.process/pr-review-packet.md`
+- [X] T022 [P] [US4] Update fixture UAT evidence checklist and no-raw-persistence inspection steps in `specs/011-crabtrap-honeypot/.process/uat-runbook.md`
+- [X] T023 [P] [US4] Draft PR review packet skeleton with review order, scope budget, traceability, verification evidence, known gaps, and rollback/flag notes in `specs/011-crabtrap-honeypot/.process/pr-review-packet.md`
+- [X] T024 [US4] Run diff inspection for forbidden route, webhook, OpenAPI, UI, migration, scheduler, dispatch, notification, GitHub, task terminal, and successor-selection surfaces and record results in `specs/011-crabtrap-honeypot/.process/pr-review-packet.md`
+- [X] T025 [US4] Confirm final touched-file and reviewable-LOC scope remains within the accepted budget and record the split decision in `specs/011-crabtrap-honeypot/.process/pr-review-packet.md`
 
 **Checkpoint**: Scope isolation is reviewable from guardrails, diff proof, UAT evidence, and the PR packet.
 
@@ -110,13 +110,13 @@
 
 **Purpose**: Complete fixture UAT, repository checks, review packet, and roadmap/workflow status updates.
 
-- [ ] T026 Run the full fixture UAT matrix and record flag-off, config-missing, valid, malformed, unsigned, stale, replayed, oversized, unsafe, unsupported, and activity-write-failed evidence in `specs/011-crabtrap-honeypot/.process/uat-runbook.md`
-- [ ] T027 Run `pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts` and record focused adapter verification in `specs/011-crabtrap-honeypot/.process/pr-review-packet.md`
-- [ ] T028 Run `pnpm guardrails` and record guardrail/scope-control verification in `specs/011-crabtrap-honeypot/.process/pr-review-packet.md`
-- [ ] T029 Run `pnpm typecheck` and `pnpm lint` and record TypeScript/lint verification in `specs/011-crabtrap-honeypot/.process/pr-review-packet.md`
-- [ ] T030 Run `pnpm test` and `pnpm build` and record unit/build verification in `specs/011-crabtrap-honeypot/.process/pr-review-packet.md`
-- [ ] T031 Finalize the PR packet with non-goals, review order, scope budget, traceability, verification evidence, known gaps, and rollback/feature-flag notes in `specs/011-crabtrap-honeypot/.process/pr-review-packet.md`
-- [ ] T032 Update SPEC-011 roadmap and workflow status after verification in `docs/ai/rc-factory-technical-roadmap.md` and `docs/ai/specs/.process/SPEC-011-workflow.md`
+- [X] T026 Run the full fixture UAT matrix and record flag-off, config-missing, valid, malformed, unsigned, stale, replayed, oversized, unsafe, unsupported, and activity-write-failed evidence in `specs/011-crabtrap-honeypot/.process/uat-runbook.md`
+- [X] T027 Run `pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts` and record focused adapter verification in `specs/011-crabtrap-honeypot/.process/pr-review-packet.md`
+- [X] T028 Run `pnpm guardrails` and record guardrail/scope-control verification in `specs/011-crabtrap-honeypot/.process/pr-review-packet.md`
+- [X] T029 Run `pnpm typecheck` and `pnpm lint` and record TypeScript/lint verification in `specs/011-crabtrap-honeypot/.process/pr-review-packet.md`
+- [X] T030 Run `pnpm test` and `pnpm build` and record unit/build verification in `specs/011-crabtrap-honeypot/.process/pr-review-packet.md`
+- [X] T031 Finalize the PR packet with non-goals, review order, scope budget, traceability, verification evidence, known gaps, and rollback/feature-flag notes in `specs/011-crabtrap-honeypot/.process/pr-review-packet.md`
+- [X] T032 Update SPEC-011 roadmap and workflow status after verification in `docs/ai/rc-factory-technical-roadmap.md` and `docs/ai/specs/.process/SPEC-011-workflow.md`
 
 ---
 
