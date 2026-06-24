@@ -1,0 +1,49 @@
+{
+  "schema": "visual-review-pages.visual-review-report.v1",
+  "version": 1,
+  "repository": "racecraft-lab/Paddock",
+  "reportMode": "pr",
+  "reportScope": "run",
+  "surface": "playwright",
+  "surfaceLabel": "Playwright UI E2E",
+  "workflowName": "Paddock UI E2E",
+  "workflowFile": "paddock-ui-e2e.yml",
+  "prNumber": "89",
+  "prUrl": "https://github.com/racecraft-lab/Paddock/pull/89",
+  "runId": "28069829596",
+  "runAttempt": "1",
+  "runKey": "28069829596-attempt-1",
+  "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/28069829596",
+  "headRef": "codex/speckit-0-11-upgrade",
+  "baseRef": "main",
+  "headSha": "a7f96b2b9ed70eff60c3f0a9655d06527b5dfcdc",
+  "reportHref": "https://racecraft-lab.github.io/Paddock/pr/89/runs/28069829596-attempt-1/playwright/",
+  "latestHref": "https://racecraft-lab.github.io/Paddock/pr/89/playwright/latest/?v=28069829596-attempt-1",
+  "createdAt": "2026-06-24T02:05:31.252Z",
+  "itemCounts": {
+    "baselineApproved": 0,
+    "changed": 0,
+    "deleted": 0,
+    "new": 0,
+    "open": 0,
+    "passed": 0,
+    "total": 0
+  },
+  "reviewScope": {
+    "domains": [],
+    "filtered": 154,
+    "reason": "changed-files-no-review-domain"
+  },
+  "sourcePullRequest": null,
+  "initialReviewState": null,
+  "canonicalReviewState": {
+    "schema": "visual-review-pages.visual-review-state.v1",
+    "repository": "racecraft-lab/Paddock",
+    "prNumber": "89",
+    "surface": "playwright",
+    "surfaceLabel": "Playwright UI E2E",
+    "headSha": "a7f96b2b9ed70eff60c3f0a9655d06527b5dfcdc",
+    "runKey": "28069829596-attempt-1",
+    "items": []
+  }
+}
