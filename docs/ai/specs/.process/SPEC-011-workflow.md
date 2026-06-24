@@ -1,0 +1,474 @@
+# SpecKit Workflow: SPEC-011 - CrabTrap Honeypot Adapter
+
+**Template Version**: 1.0.0, populated from SpecKit Pro workflow template
+**Created**: 2026-06-24
+**Purpose**: Prepare RC Factory Phase 7.5 for autonomous SpecKit execution by adding an optional, absent-safe CrabTrap evidence adapter.
+
+Run from the dedicated worktree:
+
+```bash
+cd /Users/fredrickgabelmann/.codex/worktrees/18d7/racecraft-mission-control/.worktrees/011-crabtrap-honeypot
+$speckit-autopilot docs/ai/specs/.process/SPEC-011-workflow.md
+```
+
+Do not run autopilot from the parent checkout. Keep review-visible feature artifacts under `specs/011-crabtrap-honeypot/` and scaffold-only artifacts under `.process/`.
+
+## Design Concept
+
+This workflow was enriched from a Grill Me setup interview. The source of truth for scoping decisions is:
+
+```text
+docs/ai/specs/.process/SPEC-011-design-concept.md
+```
+
+Re-read the design concept before each phase. If a generated artifact contradicts the design concept, treat the generated artifact as wrong unless it records an explicit human-approved revision.
+
+## Workflow Overview
+
+| Phase | Command | Status | Notes |
+|---|---|---|---|
+| Scaffold | `$speckit-scaffold-spec SPEC-011` | Complete | Branch/worktree, design concept, workflow, reviewability preset, SPEC-MOC, and UAT runbook created |
+| Specify | `$speckit-specify` | Pending | Generate `specs/011-crabtrap-honeypot/spec.md` |
+| Clarify | `$speckit-clarify` | Pending | Resolve intake route/poller boundary, signature scheme, payload contract, scope, alerts, and UAT |
+| Plan | `$speckit-plan` | Pending | Generate implementation blueprint using roadmap plus design concept decisions |
+| Checklist | `$speckit-checklist` | Pending | Run focused security, data-integrity, error-handling, and state-management checklists |
+| Tasks | `$speckit-tasks` | Pending | Generate TDD-first tasks bounded to the strict scope |
+| Analyze | `$speckit-analyze` | Pending | Cross-check generated artifacts against roadmap and design concept |
+| Implement | `$speckit-implement` | Pending | Implement only after G1-G6 gates pass |
+
+## Phase Gates
+
+| Gate | Checkpoint | Approval Criteria |
+|---|---|---|
+| G0 | After scaffold | Branch is `011-crabtrap-honeypot`; design concept, workflow, SPEC-MOC, UAT runbook, and reviewability preset are committed; roadmap marks SPEC-011 In Progress on this branch only |
+| G1 | After Specify | Requirements cover flag-off no-op, missing-config no-op, denial-summary normalization, signature/replay/size validation, malformed/unsafe rejection, and activity evidence |
+| G2 | After Clarify | Runtime intake boundary, signature scheme, payload fields, activity scope, alert/non-alert stance, and UAT requirements are closed |
+| G3 | After Plan | Architecture remains an optional adapter, uses `resolveFlag`, adds no migration, avoids OpenAPI unless explicitly ratified, and does not touch scheduler/task-dispatch |
+| G4 | After Checklist | Security, data-integrity, error-handling, and state-management checklists have zero unresolved `[Gap]` items |
+| G5 | After Tasks | Tasks are dependency ordered, TDD-first, and bounded to `src/lib/crabtrap-adapter.ts`, focused tests, guardrails/docs, and optional fixture/runbook files |
+| G6 | After Analyze | No CRITICAL/HIGH findings remain; generated artifacts agree with the library-first design concept and strict roadmap scope |
+| G7 | After Implement | Focused tests, guardrails, typecheck/lint as required, fixture UAT, reviewability gate, PR packet, and roadmap/workflow status updates are complete |
+
+## Prerequisites
+
+### Branch And Worktree
+
+| Field | Value |
+|---|---|
+| Branch | `011-crabtrap-honeypot` |
+| Worktree | `.worktrees/011-crabtrap-honeypot` |
+| Base | Active setup checkout commit `c65bb02b` |
+| Remote | `origin` (`https://github.com/racecraft-lab/Paddock.git`) |
+| Package manager | `pnpm`, detected from `pnpm-lock.yaml` |
+| SpecKit CLI | `specify` available at setup |
+| Reviewability preset | `.specify/presets/speckit-pro-reviewability/` resolves for spec, plan, and tasks templates |
+
+Reviewability setup gate evidence for the extracted SPEC-011 entry:
+
+```json
+{"mode":"setup","status":"pass","pass":true,"reviewable_loc":0,"production_files":0,"total_files":0,"primary_surface_count":1,"primary_surfaces":["docs/process"],"greenfield":false,"warnings":[],"blockers":[]}
+```
+
+The full-roadmap gate is not used for this setup because it measures unrelated historical roadmap text. The extracted SPEC-011 entry is the setup budget source.
+
+### Constitution Validation
+
+| Principle | Requirement | Verification |
+|---|---|---|
+| Zero-regression contract | Existing installs remain unchanged when `FEATURE_CRABTRAP_HONEYPOT` is off or config is missing | Focused flag-off/missing-config tests plus relevant guardrails |
+| Optional-adapter discipline | CrabTrap is operator-specific, disabled by default, and absent-safe | Tests prove absent binary/config does not write activity or break APIs |
+| Test-first implementation | Failing tests for flag-off, config, valid fixture, malformed fixture, replay, signature, and unsafe fields precede implementation | RED/GREEN evidence in tasks and final report |
+| Feature-flag discipline | Runtime behavior uses `resolveFlag('FEATURE_CRABTRAP_HONEYPOT', ctx)` and no inline env checks | Feature-flag tests and guardrails |
+| Data safety | No raw CrabTrap audit headers, bodies, cookies, tokens, query secrets, or provider payloads are persisted | Unsafe payload fixtures and activity-data assertions |
+| Strict scope | Primary production file is `src/lib/crabtrap-adapter.ts`; no schema, scheduler, task-dispatch, OpenAPI, or broad UI work | Static guardrail plus Analyze pass |
+| Human validation | Valid/malformed signed fixture replay plus flag-off and missing-config no-op proof is recorded | `specs/011-crabtrap-honeypot/.process/uat-runbook.md` |
+
+## External Context
+
+CrabTrap context was fetched during scaffold on 2026-06-24 and must be refreshed before Specify or Plan if implementation decisions depend on current upstream behavior.
+
+- Official repository: `https://github.com/brexhq/CrabTrap`
+- Official README: `https://raw.githubusercontent.com/brexhq/CrabTrap/main/README.md`
+- Official quickstart: `https://raw.githubusercontent.com/brexhq/CrabTrap/main/QUICKSTART.md`
+- Official design document: `https://raw.githubusercontent.com/brexhq/CrabTrap/main/DESIGN.md`
+- Official alerting docs: `https://raw.githubusercontent.com/brexhq/CrabTrap/main/docs/alerting.md`
+- Official config reference: `https://raw.githubusercontent.com/brexhq/CrabTrap/main/config/gateway.yaml.example`
+
+Setup finding: official CrabTrap is an outbound HTTP/HTTPS agent proxy with audit logs, admin APIs, metrics, and denial alerting. The public docs do not define a generic webhook contract. They also state CrabTrap is not an inbound firewall or WAF. Therefore this workflow starts library-first and treats any runtime HTTP intake as a Clarify decision.
+
+## Specification Context
+
+| Field | Value |
+|---|---|
+| Spec ID | SPEC-011 |
+| Name | CrabTrap Honeypot Adapter |
+| Branch short name | `crabtrap-honeypot` |
+| Feature directory | `specs/011-crabtrap-honeypot` |
+| Status | In Progress - scaffold branch created |
+| Priority | P2 |
+| Dependencies | SPEC-008 |
+| Enables | None |
+| Tool count / tool names | N/A - not a tool-surface spec |
+
+Roadmap scope:
+
+- Add an operator-specific optional CrabTrap adapter.
+- Validate honeypot or CrabTrap-derived payloads.
+- Write bounded `activities.kind='security_intrusion_detected'` evidence for Paddock API and sandbox probes.
+- Keep the feature disabled by default behind `FEATURE_CRABTRAP_HONEYPOT`.
+- Missing binary/config/webhook secret must be absent-safe.
+- No schema migration, no OpenAPI contract change, and no scheduler/task-dispatch dependency.
+
+Human-reviewed setup decisions:
+
+- Use a library-first adapter boundary because official CrabTrap docs do not publish a generic webhook contract.
+- Normalize denied-request or alert summaries, not raw audit rows.
+- Fail closed unless flag and config are valid.
+- Surface accepted evidence through existing `activities` only.
+- Require signature/replay/size validation for any future runtime intake.
+- Use signed fixture UAT as the required validation target; live CrabTrap Docker is optional evidence.
+
+## Phase 1: Specify
+
+**When to run:** At feature start. Output: `specs/011-crabtrap-honeypot/spec.md`.
+
+### Specify Prompt
+
+```bash
+$speckit-specify
+
+## Feature: SPEC-011 CrabTrap Honeypot Adapter
+
+Problem:
+Paddock has resource governance and security activity surfaces, but it does not yet have a bounded optional adapter for CrabTrap security signals. The roadmap calls for CrabTrap evidence to become `security_intrusion_detected` activity rows without making CrabTrap required, without adding schema, and without touching scheduler/task-dispatch behavior.
+
+Official CrabTrap context:
+- CrabTrap is documented as an outbound HTTP/HTTPS proxy for AI agents, with audit logs, admin APIs, metrics, and denial alerting.
+- Public docs do not define a generic webhook contract.
+- CrabTrap may see cleartext request data, including sensitive headers/bodies, so Paddock must never persist raw audit rows, headers, bodies, cookies, tokens, query secrets, or provider payloads.
+
+Primary users:
+- Operators who want security probe or denied-request evidence surfaced in Paddock's existing activity stream.
+- Maintainers who need a disabled-by-default optional adapter that cannot break installs when CrabTrap is absent.
+- Reviewers who need proof that this spec stays isolated from scheduler, dispatch, schema, OpenAPI, and UI expansion.
+
+User stories:
+1. As an operator, when `FEATURE_CRABTRAP_HONEYPOT` is off or CrabTrap config is missing, Paddock records no CrabTrap activity and existing behavior is unchanged.
+2. As an operator, when a valid signed denial-summary fixture is processed with the flag and config enabled, Paddock writes exactly one bounded `security_intrusion_detected` activity row.
+3. As an operator, malformed, unsigned, stale, replayed, oversized, or unsafe payloads are rejected without writing activity evidence.
+4. As a reviewer, I can confirm no schema migration, OpenAPI contract, scheduler/task-dispatch dependency, new panel, or raw audit persistence entered the slice.
+
+Functional requirements must cover:
+- A new `src/lib/crabtrap-adapter.ts` adapter module.
+- Feature flag gating through `resolveFlag('FEATURE_CRABTRAP_HONEYPOT', ctx)`.
+- Explicit config validation and absent-safe no-op behavior.
+- Denial-summary normalization with bounded fields: source, event id, timestamp, actor, decision, method, URL host/path, reason, safe request hash, counts, and workspace/project scope where Clarify approves it.
+- Unsafe-field rejection for raw headers, bodies, cookies, Authorization, API keys, query secrets, provider payloads, and full CrabTrap audit rows.
+- Signature, timestamp, replay, and max-size validation expectations for any runtime intake.
+- Activity write behavior using existing `activities` schema and existing DB helper patterns.
+- Focused tests for flag off, config missing, valid fixture, malformed fixture, signature failure, replay/stale event, oversized payload, unsafe-field rejection, and activity write failure isolation.
+- Human validation via signed fixture replay and inspection of activities.
+
+Constraints:
+- TypeScript 5 strict, Next.js 16 App Router, React 19, better-sqlite3, Vitest, pnpm.
+- No new runtime dependency unless Plan proves built-in Node `crypto` is insufficient.
+- No schema migration.
+- No OpenAPI contract change unless Clarify records a ratified strict-scope exception for a private route.
+- No scheduler, task-dispatch, task-chain, runner, sandbox, GitHub sync, or harness-adapter dependency.
+
+Out of scope:
+- Public or generic webhook API.
+- Polling CrabTrap admin APIs.
+- Live CrabTrap Docker requirement for merge completion.
+- New dashboard/panel or notification fanout.
+- Raw audit persistence, raw transcript/payload capture, or secret storage.
+- Automatic remediation, GitHub mutation, task terminal mutation, or successor selection.
+```
+
+### Specify Outputs
+
+- `specs/011-crabtrap-honeypot/spec.md`
+- Requirements checklist with no unresolved `[NEEDS CLARIFICATION]` markers.
+
+## Phase 2: Clarify
+
+**When to run:** After Specify. Maximum five questions per session.
+
+### Clarify Session 1: Intake Boundary
+
+```bash
+$speckit-clarify
+
+Focus on the SPEC-011 intake boundary.
+Resolve whether implementation stays helper-only or adds a private runtime route excluded from OpenAPI.
+Use the setup decision: "Use a library-first adapter boundary. Validate normalized CrabTrap alert/audit payload fixtures in `src/lib/crabtrap-adapter.ts`; leave any Paddock webhook route as a Clarify decision because official docs do not publish a generic webhook contract."
+```
+
+### Clarify Session 2: Signature, Replay, And Size
+
+```bash
+$speckit-clarify
+
+Focus on security validation.
+Define the signature scheme, header names if a route exists, timestamp tolerance, replay key, max payload size, malformed JSON behavior, and exact failure reason codes.
+Use the setup decision: "Require signature plus bounds for any runtime intake: shared-secret/HMAC-style signature, timestamp/replay/size checks, and unsafe-field rejection."
+```
+
+### Clarify Session 3: Normalized Payload Contract
+
+```bash
+$speckit-clarify
+
+Focus on the normalized denial-summary payload.
+Choose required/optional fields, URL host/path handling, actor/source identity, reason-code taxonomy, safe hashes/counts, and the list of forbidden raw fields.
+Use the setup decision: "Normalize denial summaries first; do not store raw request/response headers or bodies."
+```
+
+### Clarify Session 4: Activity Scope And Alerts
+
+```bash
+$speckit-clarify
+
+Focus on where accepted evidence lands.
+Decide whether activity rows are workspace scoped, project scoped, or facility/global when no task is implicated. Confirm that existing activities are enough for this spec and that alert/notification fanout is deferred unless existing helpers can be reused without scope expansion.
+Use the setup decision: "Activities only. Write bounded `security_intrusion_detected` rows and rely on existing activity inspection surfaces."
+```
+
+### Clarify Session 5: UAT And Live CrabTrap Evidence
+
+```bash
+$speckit-clarify
+
+Focus on human validation.
+Confirm that required UAT is signed fixture replay for valid and malformed cases, flag-off no-op, missing-config no-op, and activity inspection. Decide whether live official CrabTrap Docker evidence is optional deploy evidence or a blocking requirement.
+Use the setup decision: "Fixture UAT is required; live CrabTrap Docker is optional evidence."
+```
+
+## Phase 3: Plan
+
+**When to run:** After spec is finalized. Output: `specs/011-crabtrap-honeypot/plan.md`.
+
+### Plan Prompt
+
+```bash
+$speckit-plan
+
+## Tech Stack
+- Runtime: Node >=22, TypeScript 5 strict
+- App: Next.js 16 App Router, React 19
+- Database: SQLite through `better-sqlite3`
+- Tests: Vitest for focused adapter/config/activity behavior
+- Package manager: pnpm only
+- Crypto: prefer built-in Node `crypto`; add no runtime dependency unless strictly justified
+
+## Constitution Constraints
+- Preserve Zero-regression behavior with flag off and missing config.
+- Treat CrabTrap as an optional adapter: disabled by default, absent-safe, no schema migration.
+- Route all feature-flag checks through `resolveFlag`; no inline `process.env.FEATURE_*` reads.
+- Use test-first implementation.
+- Do not persist secrets or unsafe raw payloads.
+
+## Architecture Notes
+- Primary production module: `src/lib/crabtrap-adapter.ts`.
+- Focused tests should live near existing `src/lib/__tests__/` patterns.
+- Reuse existing `activities` table shape and insertion style.
+- Reuse existing `tableExists`/DB safety patterns where appropriate.
+- Update `src/lib/feature-flags.ts` only as needed to register `FEATURE_CRABTRAP_HONEYPOT`.
+- Update `scripts/check-guardrails.mjs` only to allow SPEC-011-owned CrabTrap markers in the new module/tests/docs as needed.
+- Keep `src/lib/task-dispatch.ts`, scheduler, OpenAPI, migrations, UI panels, and harness runtime files out of scope unless Clarify explicitly ratifies a split.
+
+## Design Concept Decisions To Preserve
+- "Use a library-first adapter boundary."
+- "Normalize denied-request or alert summaries, not raw audit rows."
+- "Fail closed unless flag and config are valid."
+- "Surface accepted evidence through existing `activities` only."
+- "Require signature/replay/size validation for any future runtime intake."
+- "Use signed fixture UAT as the required validation target; live CrabTrap Docker is optional evidence."
+
+## Data Safety
+- The official CrabTrap docs warn that the proxy can see cleartext request data. Plan must define rejection or reduction rules for raw headers, bodies, cookies, Authorization, API keys, query secrets, provider payloads, and full audit rows.
+- Activity `data` must contain bounded summaries and hashes only.
+```
+
+### Plan Outputs
+
+- `specs/011-crabtrap-honeypot/plan.md`
+- `specs/011-crabtrap-honeypot/research.md` if upstream CrabTrap/admin API choices need rationale
+- `specs/011-crabtrap-honeypot/data-model.md` for normalized event/config/activity data shape
+- `specs/011-crabtrap-honeypot/quickstart.md` with fixture UAT commands
+
+## Phase 4: Domain Checklists
+
+**When to run:** After Plan.
+
+### Security Checklist
+
+```bash
+$speckit-checklist security
+
+Focus on SPEC-011:
+- Signature, timestamp, replay, and payload-size validation.
+- Secret and unsafe-field rejection.
+- No raw CrabTrap audit rows, headers, bodies, cookies, tokens, query secrets, or provider payload persistence.
+- Feature flag and missing-config fail-closed behavior.
+- Activity write failure isolation.
+```
+
+### Data-Integrity Checklist
+
+```bash
+$speckit-checklist data-integrity
+
+Focus on SPEC-011:
+- Normalized denial-summary schema.
+- Exactly-one activity behavior for valid events.
+- Duplicate/replay handling.
+- Workspace/project/facility scope choice.
+- No migration and compatibility with existing `activities` rows.
+```
+
+### Error-Handling Checklist
+
+```bash
+$speckit-checklist error-handling
+
+Focus on SPEC-011:
+- Malformed JSON/payloads.
+- Missing config and flag-off no-op.
+- Invalid signature, stale timestamp, replay, and oversized payloads.
+- Unsafe-field rejection with bounded diagnostics.
+- Database/activity insert failures that do not break existing app behavior.
+```
+
+### State-Management Checklist
+
+```bash
+$speckit-checklist state-management
+
+Focus on SPEC-011:
+- Feature-flag context and workspace flags.
+- Replay/idempotency state if runtime intake exists.
+- Activity scope and no-op state transitions.
+- No scheduler/task-dispatch/task-chain state mutation.
+```
+
+## Phase 5: Tasks
+
+**When to run:** After checklists pass. Output: `specs/011-crabtrap-honeypot/tasks.md`.
+
+### Tasks Prompt
+
+```bash
+$speckit-tasks
+
+Generate TDD-first tasks for SPEC-011 using:
+- `specs/011-crabtrap-honeypot/spec.md`
+- `specs/011-crabtrap-honeypot/plan.md`
+- `docs/ai/specs/.process/SPEC-011-design-concept.md`
+
+Task constraints:
+- Start with failing Vitest tests for flag-off, missing config, valid fixture, malformed fixture, invalid signature, stale/replayed event, oversized payload, unsafe fields, and activity write failure isolation.
+- Keep implementation bounded to `src/lib/crabtrap-adapter.ts`, focused tests, feature-flag registration, guardrail allowlist updates, and docs/fixture/UAT files approved by Plan.
+- Mark any route, OpenAPI, UI, scheduler/task-dispatch, migration, or notification fanout work as out of scope unless Clarify and Plan explicitly ratified it.
+- Include a reviewability checkpoint before implementation if planned files exceed the warning threshold.
+- Include final tasks for fixture UAT, guardrails, typecheck/lint, PR packet, and roadmap/workflow status updates.
+
+Non-goals to preserve:
+- No schema migration.
+- No OpenAPI contract change by default.
+- No scheduler/task-dispatch dependency.
+- No raw audit persistence.
+- No live CrabTrap Docker blocking requirement unless Clarify changes it.
+```
+
+## Atomicity Route
+
+Leave this blank until after Tasks/G5. Autopilot records the classifier decision here.
+
+| Field | Value | Meaning |
+|---|---|---|
+| Route | | One of `split-PR`, `one-navigable-PR`, `single-atomic-PR`, `branch-by-abstraction`, or `out-of-scope` |
+| Releasable | | `true` or `false` |
+| Signals | | Decisive detector findings |
+| Warnings | | Release-safety warnings |
+
+## Phase 6: Analyze
+
+**When to run:** After tasks generation.
+
+### Analyze Prompt
+
+```bash
+$speckit-analyze
+
+Analyze SPEC-011 for consistency across:
+- `docs/ai/rc-factory-technical-roadmap.md`
+- `docs/ai/specs/.process/SPEC-011-design-concept.md`
+- `specs/011-crabtrap-honeypot/spec.md`
+- `specs/011-crabtrap-honeypot/plan.md`
+- `specs/011-crabtrap-honeypot/tasks.md`
+
+Focus on:
+1. No drift from library-first strict scope unless Clarify/Plan records a ratified change.
+2. No schema migration, OpenAPI contract, scheduler/task-dispatch, UI panel, GitHub mutation, task terminal mutation, or harness runtime dependency.
+3. Every accepted event path is gated by flag/config/signature/replay/size/safety checks.
+4. Raw CrabTrap audit rows and sensitive payload fields are rejected or reduced to hashes before persistence.
+5. Tests cover flag-off, missing-config, valid, malformed, replay, signature, oversized, unsafe-field, and DB-write-failure cases.
+6. Human UAT matches the fixture-first runbook and does not overclaim live CrabTrap integration.
+```
+
+## Phase 7: Implement
+
+**When to run:** After Analyze passes.
+
+### Implement Prompt
+
+```bash
+$speckit-implement
+
+Implement SPEC-011 from `specs/011-crabtrap-honeypot/tasks.md`, `specs/011-crabtrap-honeypot/plan.md`, and `docs/ai/specs/.process/SPEC-011-design-concept.md`.
+
+Approach:
+1. Follow RED -> GREEN -> REFACTOR for every production behavior.
+2. Keep feature flag OFF and missing config as complete no-op paths.
+3. Use bounded normalized denial-summary fixtures.
+4. Reject unsafe payloads before any persistence.
+5. Write activity evidence only through existing `activities` schema and only when all gates pass.
+6. Preserve reviewability: stop and split if implementation needs a route, OpenAPI, UI, migration, scheduler/task-dispatch, or notification fanout that was not ratified in Plan.
+
+Minimum verification:
+- Focused SPEC-011 Vitest tests.
+- `pnpm guardrails` or the narrow guardrail suite that owns CrabTrap marker checks.
+- `pnpm typecheck`.
+- `pnpm lint`.
+- Fixture UAT from `specs/011-crabtrap-honeypot/.process/uat-runbook.md`.
+```
+
+## Post-Implementation Checklist
+
+- [ ] All generated tasks are complete in `tasks.md`.
+- [ ] Focused SPEC-011 tests pass.
+- [ ] Guardrails pass with SPEC-011 ownership updated.
+- [ ] `pnpm typecheck` passes.
+- [ ] `pnpm lint` passes.
+- [ ] Fixture UAT evidence is recorded.
+- [ ] Reviewability diff gate is recorded.
+- [ ] PR review packet is generated.
+- [ ] Roadmap and workflow status are updated.
+
+## Project Structure Reference
+
+```text
+src/lib/crabtrap-adapter.ts                    # expected primary implementation file
+src/lib/__tests__/crabtrap-adapter.test.ts     # expected focused tests
+src/lib/feature-flags.ts                       # feature flag registry only if needed
+scripts/check-guardrails.mjs                   # SPEC-011 marker ownership update if needed
+docs/ai/specs/.process/SPEC-011-design-concept.md
+docs/ai/specs/.process/SPEC-011-workflow.md
+specs/011-crabtrap-honeypot/SPEC-MOC.md
+specs/011-crabtrap-honeypot/.process/uat-runbook.md
+```
+
+## Lessons Learned
+
+Fill this after implementation. Record whether the library-first boundary was enough or whether a follow-up spec is needed for a private route, polling integration, notification fanout, or live CrabTrap Docker/operator deployment.
