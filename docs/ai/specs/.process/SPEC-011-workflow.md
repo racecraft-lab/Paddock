@@ -214,6 +214,18 @@ Resolve whether implementation stays helper-only or adds a private runtime route
 Use the setup decision: "Use a library-first adapter boundary. Validate normalized CrabTrap alert/audit payload fixtures in `src/lib/crabtrap-adapter.ts`; leave any Paddock webhook route as a Clarify decision because official docs do not publish a generic webhook contract."
 ```
 
+#### Clarify Session 1 Results
+
+| Question | Accepted Answer | Evidence | Artifact Impact |
+|---|---|---|---|
+| Helper-only vs route | SPEC-011 stays helper-only; no runtime route, webhook endpoint, OpenAPI entry, or API-parity ignore is added | Design concept and roadmap strict scope are library-first; official CrabTrap docs do not define a generic webhook contract; local API parity treats routes as contract surfaces | `spec.md` Clarifications, FR-005, FR-009, FR-014, Assumptions |
+| Intake object | Use a Paddock-owned signed denial-summary fixture, not raw CrabTrap webhook/admin/audit rows | Current spec already requires normalized bounded summaries; CrabTrap can observe cleartext request details | `spec.md` user-story tests, key entities, assumptions |
+| Feature flag | Register `FEATURE_CRABTRAP_HONEYPOT` centrally and gate through `resolveFlag` | `src/lib/feature-flags.ts` is the typed registry; Constitution and roadmap require feature-flag discipline | `spec.md` FR-002 and reviewability budget |
+| API parity | No OpenAPI or parity-ignore change | No route is introduced in this slice | `spec.md` FR-014, SC-005 |
+| Live CrabTrap integration | Defer private route, custom sender, admin polling, and notification fanout to a future CrabTrap architecture/follow-up spec | Roadmap Lane B and design concept reserve broader CrabTrap architecture work for future specs | `spec.md` assumptions and PR packet requirements |
+
+Consensus: not required. The clarify executor reported no unresolved items.
+
 ### Clarify Session 2: Signature, Replay, And Size
 
 ```bash
@@ -223,6 +235,19 @@ Focus on security validation.
 Define the signature scheme, header names if a route exists, timestamp tolerance, replay key, max payload size, malformed JSON behavior, and exact failure reason codes.
 Use the setup decision: "Require signature plus bounds for any runtime intake: shared-secret/HMAC-style signature, timestamp/replay/size checks, and unsafe-field rejection."
 ```
+
+#### Clarify Session 2 Results
+
+| Question | Accepted Answer | Evidence | Artifact Impact |
+|---|---|---|---|
+| Signature scheme | Helper fixtures use HMAC-SHA256 over `v1:<timestamp>:<event_id>:<canonical_payload_sha256>` and carry `signature: "sha256=<hex>"`; `canonical_payload_sha256` hashes deterministic UTF-8 canonical JSON for the normalized denial summary excluding `signature` | Consensus aligned on HMAC-SHA256 and constant-time verification; parent synthesis chose repo-style `sha256=<hex>` and no route headers because SPEC-011 is helper-only | `spec.md` Clarifications, FR-009, CrabTrap Adapter Config |
+| Future route headers | SPEC-011 reserves no runtime route headers; any future live-intake spec defines its own headers and must satisfy at least these controls | Spec-context consensus rejected speculative route/header design in a helper-only slice | `spec.md` Clarifications and Assumptions |
+| Freshness and replay | Reject fixture timestamps outside +/-300 seconds; after signature verification and normalization, accepted evidence stores only `data.replay_key_hash = "sha256:<hex>"` from `source + "\0" + event_id + "\0" + occurred_at` | Consensus aligned on a 5-minute replay window and hashed replay identity; no schema table is added in this slice | `spec.md` Clarifications, Replay Identity, Edge Cases |
+| Size and malformed JSON | Raw fixture input is limited to 16 KiB UTF-8 before JSON parse; oversized returns `payload_too_large`; malformed JSON returns `malformed_json`; neither writes activity | Codebase and domain consensus support pre-parse size guarding for this small helper payload | `spec.md` FR-010, Edge Cases, UAT runbook |
+| Failure-code order | Closed `crabtrap_intake_failure_code.v1` first-match order: `feature_disabled`, `config_missing`, `config_invalid`, `payload_too_large`, `malformed_json`, `payload_schema_invalid`, `signature_missing`, `timestamp_missing`, `timestamp_invalid`, `timestamp_stale`, `signature_invalid`, `unsafe_field_present`, `unsupported_decision`, `unsupported_method`, `replay_detected`, `activity_write_failed` | Parent synthesis chose security-first ordering after three analyst recommendations differed on exact precedence | `spec.md` Clarifications, FR-010, FR-012 |
+| Unsafe diagnostics | Hard reject forbidden raw fields/keys or secret-like values at any depth as `unsafe_field_present`; diagnostics expose only bounded field path/category and never raw values, matched substrings, or raw secret hashes | Consensus agreed hard rejection is required because CrabTrap may observe cleartext request data | `spec.md` FR-008, FR-012, SC-004 |
+
+Consensus: Round 1 used `codebase-analyst`, `spec-context-analyst`, and `domain-researcher`. Outcome was MODIFY for Q1/Q4/Q5 and AGREE for Q2/Q3; parent synthesis accepted the common security posture, removed speculative route headers, selected repo-style signature formatting, and recorded deterministic validation order.
 
 ### Clarify Session 3: Normalized Payload Contract
 
