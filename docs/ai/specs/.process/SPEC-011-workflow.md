@@ -34,7 +34,7 @@ Re-read the design concept before each phase. If a generated artifact contradict
 | Checklist | `$speckit-checklist` | Complete | Security, data-integrity, error-handling, and state-management checklists complete with zero gaps |
 | Tasks | `$speckit-tasks` | Complete | Generated 32 TDD-first tasks across 7 groups; G5 passed; marker plan recorded for reviewability sizing |
 | Analyze | `$speckit-analyze` | Complete | Resolved 3 findings; G6 passed; security-routed consensus completed 3/3 high-confidence |
-| Implement | `$speckit-implement` | In Progress | Foundation, US1, and US2 checkpoints committed; US3 invalid-payload hardening marker in progress |
+| Implement | `$speckit-implement` | In Progress | Foundation through US3 checkpoints committed; US4/polish scope-isolation marker in progress |
 
 ## Phase Gates
 
@@ -591,7 +591,8 @@ Focus on:
 | `foundation` | `T001`-`T007` | Complete | Commit `ae5552fb`; RED evidence and reviewability checkpoint recorded in `specs/011-crabtrap-honeypot/.process/uat-runbook.md` |
 | `us1` | `T008`-`T011` | Complete | Commit `f74d3491`; feature-disabled and missing/invalid-config no-op behavior verified |
 | `us2` | `T012`-`T016` | Complete | Commit `246771e5`; valid signed fixture writes one bounded activity row and replay duplicate is rejected |
-| `us3` | `T017`-`T021` | Complete | Checkpoint commit pending parent; negative fixture matrix rejects stale, unsafe, oversized, malformed, unsigned, invalid-signature, unsupported, and replay cases with zero rejection-path activity rows |
+| `us3` | `T017`-`T021` | Complete | Commit `b461883a`; negative fixture matrix rejects stale, unsafe, oversized, malformed, unsigned, invalid-signature, unsupported, and replay cases with zero rejection-path activity rows |
+| `us4` + polish | `T022`-`T032` | In Progress | Scope-isolation review, fixture UAT, guardrails, docs, and PR packet next |
 
 ### Implement Prompt
 

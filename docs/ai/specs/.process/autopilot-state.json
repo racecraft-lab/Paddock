@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "workflow_file": "docs/ai/specs/.process/SPEC-011-workflow.md",
-  "updated_at": "2026-06-24T23:03:37Z",
+  "updated_at": "2026-06-24T23:06:54.324Z",
   "active_step": "Phase 7: us4 + polish (T022,T023,T024,T025,T026,T027,T028,T029,T030,T031,T032)",
   "spec_id": "SPEC-011",
   "feature_dir": "specs/011-crabtrap-honeypot",
@@ -181,7 +181,7 @@
     },
     {
       "step": "Phase 7: us4 + polish (T022,T023,T024,T025,T026,T027,T028,T029,T030,T031,T032)",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Post: Doctor Extension Check",
@@ -618,8 +618,9 @@
             "direnv exec . pnpm exec eslint src/lib/crabtrap-adapter.ts src/lib/__tests__/crabtrap-adapter.test.ts src/lib/__tests__/fixtures/crabtrap/crabtrap-fixtures.ts",
             "git diff --check"
           ],
-          "behavior_scope": "US3 invalid and unsafe payload hardening only; no route, OpenAPI, migration, scheduler/task-dispatch, notification, GitHub, task, UI, or CrabTrap runtime integration mutation; checkpoint commit SHA intentionally omitted for the parent orchestrator",
-          "completed_at": "2026-06-24T23:03:37Z"
+          "behavior_scope": "US3 invalid and unsafe payload hardening only; no route, OpenAPI, migration, scheduler/task-dispatch, notification, GitHub, task, UI, or CrabTrap runtime integration mutation",
+          "completed_at": "2026-06-24T23:03:37Z",
+          "commit_sha": "b461883a31c4f13a68615614cf1be6421996ec74"
         },
         "emission_mapping": {
           "status": "pending"
@@ -817,8 +818,9 @@
         "direnv exec . pnpm exec eslint src/lib/crabtrap-adapter.ts src/lib/__tests__/crabtrap-adapter.test.ts src/lib/__tests__/fixtures/crabtrap/crabtrap-fixtures.ts",
         "git diff --check"
       ],
-      "behavior_scope": "US3 invalid and unsafe payload hardening only; no route, OpenAPI, migration, scheduler/task-dispatch, notification, GitHub, task, UI, or CrabTrap runtime integration mutation; checkpoint commit SHA intentionally omitted for the parent orchestrator",
-      "completed_at": "2026-06-24T23:03:37Z"
+      "behavior_scope": "US3 invalid and unsafe payload hardening only; no route, OpenAPI, migration, scheduler/task-dispatch, notification, GitHub, task, UI, or CrabTrap runtime integration mutation",
+      "completed_at": "2026-06-24T23:03:37Z",
+      "commit_sha": "b461883a31c4f13a68615614cf1be6421996ec74"
     }
   },
   "marker_checkpoints": {
@@ -853,7 +855,7 @@
         "specs/011-crabtrap-honeypot/.process/marker-plan/pr-marker-plan.json"
       ],
       "focused_file_result": "1 test file passed; 15 tests passed",
-      "commit_sha_pending": true
+      "commit_sha": "b461883a31c4f13a68615614cf1be6421996ec74"
     }
   }
 }
