@@ -259,6 +259,18 @@ Choose required/optional fields, URL host/path handling, actor/source identity, 
 Use the setup decision: "Normalize denial summaries first; do not store raw request/response headers or bodies."
 ```
 
+#### Clarify Session 3 Results
+
+| Question | Accepted Answer | Evidence | Artifact Impact |
+|---|---|---|---|
+| Required and optional fields | Use a flat, strict `crabtrap_denial_summary.v1` schema. Required fields: `schema_version`, `source`, `event_id`, `signed_at`, `occurred_at`, `decision`, `method`, `url_host`, `url_path`, `reason_code`, `safe_request_hash`, `denial_count`, `actor_kind`, `signature`. Optional fields: `source_instance_hash`, `actor_ref_hash`, context-approved `workspace_id`, context-approved `project_id`, `probe_kind`, `url_path_hash`, `distinct_host_count`, `distinct_path_count`, `distinct_actor_count`. Unknown fields are rejected. | Consensus aligned with existing strict allowlist validation patterns and SPEC-011's no-raw-audit boundary | `spec.md` Clarifications, FR-006, Key Entities |
+| URL handling | Persist only lowercased `url_host` and parsed pathname `url_path`; reject raw/full URL, scheme, userinfo, query, fragment, CR/LF, blank host/path, and secret-like path values. `/` is allowed. `CONNECT` and `TRACE` are unsupported/deferred in this helper-only slice. | Codebase and domain consensus supported parsed URL reduction and explicit deferral of proxy-native `CONNECT` coverage | `spec.md` Clarifications, FR-007, FR-010, Edge Cases |
+| Actor and source identity | Activity producer is always `crabtrap-adapter`; payload identity is bounded `source`, optional `source_instance_hash`, required `actor_kind`, and optional keyed `actor_ref_hash`. Raw actor IDs, user IDs, and emails are forbidden. Scope IDs are accepted only from approved adapter context. | Spec-context consensus rejected payload-trusted scope and payload-controlled producer identity | `spec.md` Clarifications, FR-008, Assumptions |
+| Decision, method, and reason taxonomy | `decision` accepts only `deny`; method accepts `GET`, `HEAD`, `POST`, `PUT`, `PATCH`, `DELETE`, `OPTIONS`; reason codes are `static_rule_denied`, `llm_policy_denied`, `fallback_denied`, `ssrf_blocked`, `rate_limited`, `policy_denied`, and `unknown_denied`, with `policy_denied`/`unknown_denied` last-resort values. | Consensus preferred closed taxonomies and no raw vendor reason persistence | `spec.md` Clarifications, FR-010, FR-012 |
+| Hashes and counts | Hash fields must be `sha256:<64hex>` over safe canonical inputs; `actor_ref_hash` must be keyed when derived from low-entropy actor identity; `replay_key_hash` is adapter-derived evidence only; count fields are safe integers from 0 through 1,000,000 inclusive. | Consensus aligned on safe hashes/counts and rejected accepting `replay_key_hash` from intake | `spec.md` Clarifications, Replay Identity, UAT runbook |
+
+Consensus: Round 1 used `codebase-analyst`, `spec-context-analyst`, and `domain-researcher`. Outcome was MODIFY overall; parent synthesis accepted the common strict-schema posture, added consistent optional hash/count fields, required bounded actor kind, rejected unknown fields, kept scope context-approved, and deferred `CONNECT`/live-proxy behavior to a future CrabTrap architecture slice.
+
 ### Clarify Session 4: Activity Scope And Alerts
 
 ```bash
