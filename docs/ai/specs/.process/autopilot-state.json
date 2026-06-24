@@ -749,13 +749,13 @@
             "docs/ai/specs/.process/SPEC-011-workflow.md"
           ],
           "focused_file_command": "direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts",
-          "focused_file_result": "1 test file passed; 15 tests passed",
+          "focused_file_result": "1 test file passed; 19 tests passed",
           "verification": [
-            "direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts -> passed: 1 file, 15 tests",
+            "direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts -> passed: 1 file, 19 tests",
             "direnv exec . pnpm guardrails -> passed: 4 suites",
             "direnv exec . pnpm typecheck -> passed",
             "direnv exec . pnpm lint -> passed",
-            "direnv exec . pnpm test -> passed: 328 files, 3406 tests, 4 skipped, 84 todo",
+            "direnv exec . pnpm test -> passed: 328 files, 3410 tests, 4 skipped, 84 todo",
             "direnv exec . pnpm build -> passed",
             "git diff --check -> passed",
             "direnv exec . node --test scripts/spec-012b/__tests__/hard-status-evidence.test.mjs -> passed: 5 tests"
@@ -925,13 +925,13 @@
         "docs/ai/specs/.process/SPEC-011-workflow.md"
       ],
       "focused_file_command": "direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts",
-      "focused_file_result": "1 test file passed; 15 tests passed",
+      "focused_file_result": "1 test file passed; 19 tests passed",
       "verification": [
-        "direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts -> passed: 1 file, 15 tests",
+        "direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts -> passed: 1 file, 19 tests",
         "direnv exec . pnpm guardrails -> passed: 4 suites",
         "direnv exec . pnpm typecheck -> passed",
         "direnv exec . pnpm lint -> passed",
-        "direnv exec . pnpm test -> passed: 328 files, 3406 tests, 4 skipped, 84 todo",
+        "direnv exec . pnpm test -> passed: 328 files, 3410 tests, 4 skipped, 84 todo",
         "direnv exec . pnpm build -> passed",
         "git diff --check -> passed",
         "direnv exec . node --test scripts/spec-012b/__tests__/hard-status-evidence.test.mjs -> passed: 5 tests"
@@ -1006,9 +1006,9 @@
         "docs/ai/rc-factory-technical-roadmap.md",
         "docs/ai/specs/.process/SPEC-011-workflow.md"
       ],
-      "focused_file_result": "1 test file passed; 15 tests passed",
+      "focused_file_result": "1 test file passed; 19 tests passed",
       "guardrails_result": "passed: 4 suites",
-      "unit_result": "passed: 328 files, 3406 tests, 4 skipped, 84 todo",
+      "unit_result": "passed: 328 files, 3410 tests, 4 skipped, 84 todo",
       "build_result": "passed",
       "focused_status_detector_result": "passed: node --test scripts/spec-012b/__tests__/hard-status-evidence.test.mjs, 5 tests",
       "commit_sha": "ef92a3d40b6a377a3fa4f21428cc82b1334a1cc3"
