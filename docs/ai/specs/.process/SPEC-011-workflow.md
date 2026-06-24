@@ -31,7 +31,7 @@ Re-read the design concept before each phase. If a generated artifact contradict
 | Specify | `$speckit-specify` | Complete | Generated `specs/011-crabtrap-honeypot/spec.md` and requirements checklist; G1 passed with 0 markers |
 | Clarify | `$speckit-clarify` | Complete | Resolved intake boundary, signature scheme, payload contract, activity scope, alert stance, replay behavior, and fixture UAT requirements |
 | Plan | `$speckit-plan` | Complete | Generated helper-only implementation blueprint, research, data model, contract schema, and quickstart |
-| Checklist | `$speckit-checklist` | In Progress | Security and data-integrity checklists complete with zero gaps; error-handling and state-management remain |
+| Checklist | `$speckit-checklist` | In Progress | Security, data-integrity, and error-handling checklists complete with zero gaps; state-management remains |
 | Tasks | `$speckit-tasks` | Pending | Generate TDD-first tasks bounded to the strict scope |
 | Analyze | `$speckit-analyze` | Pending | Cross-check generated artifacts against roadmap and design concept |
 | Implement | `$speckit-implement` | Pending | Implement only after G1-G6 gates pass |
@@ -447,11 +447,13 @@ Focus on SPEC-011:
 |---|---|---:|---:|---|---|
 | Security | Complete | 24/24 checked | 0 | Not required | `specs/011-crabtrap-honeypot/checklists/security.md` validates signature, freshness, replay, payload-size, unsafe-field rejection, no-raw-persistence, flag/config no-op behavior, and activity write isolation |
 | Data integrity | Complete | 24/24 checked | 0 | Not required | `specs/011-crabtrap-honeypot/checklists/data-integrity.md` validates normalized denial-summary schema, exactly-one activity behavior, duplicate/replay handling, workspace/project/facility scope choice, and no-migration compatibility with existing `activities` rows |
+| Error handling | Complete | 24/24 checked | 0 | Not required | `specs/011-crabtrap-honeypot/checklists/error-handling.md` validates malformed JSON/payload handling, flag-off and missing/invalid-config no-op behavior, signature/timestamp/replay/size failures, unsafe bounded diagnostics, and activity write failure isolation |
 
 ### Addressing Gaps
 
 - Security: no unresolved `[Gap]` markers were produced, and the checklist executor reported no items requiring consensus.
 - Data integrity: no unresolved `[Gap]` markers were produced, and the checklist executor reported no items requiring consensus.
+- Error handling: no unresolved `[Gap]` markers were produced, and the checklist executor reported no items requiring consensus.
 
 ## Phase 5: Tasks
 
