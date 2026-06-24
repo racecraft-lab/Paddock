@@ -222,18 +222,23 @@ export function processCrabTrapDenialSummary(
     return rejected(parsed.failureCode)
   }
 
-  const normalized = normalizeSummary(parsed.value, input.context, input.config)
-  if (!normalized.ok) {
-    return rejected(normalized.failureCode, normalized.diagnostic)
+  const envelope = validateSignedPayloadEnvelope(parsed.value, input.config)
+  if (!envelope.ok) {
+    return rejected(envelope.failureCode, envelope.diagnostic)
   }
 
-  if (!verifySummarySignature(normalized.summary, input.config)) {
+  if (!verifyPayloadSignature(envelope.value, envelope, input.config)) {
     return rejected('signature_invalid')
   }
 
-  const unsafeDiagnostic = detectUnsafePayload(parsed.value, normalized.summary)
+  const unsafeDiagnostic = detectUnsafePayload(parsed.value)
   if (unsafeDiagnostic !== undefined) {
     return rejected('unsafe_field_present', unsafeDiagnostic)
+  }
+
+  const normalized = normalizeSummary(parsed.value, input.context)
+  if (!normalized.ok) {
+    return rejected(normalized.failureCode, normalized.diagnostic)
   }
 
   const replayKeyHash = deriveReplayKeyHash(normalized.summary)
@@ -346,7 +351,6 @@ function parsePayload(
 function normalizeSummary(
   value: unknown,
   context: CrabTrapAdapterContext,
-  config: CrabTrapAdapterConfig,
 ): SummaryNormalizationResult {
   if (!isRecord(value)) {
     return normalizationFailure('payload_schema_invalid')
@@ -356,15 +360,6 @@ function normalizeSummary(
     if (!ALLOWED_FIELDS.has(field) && classifyUnsafeFieldName(field) === undefined) {
       return normalizationFailure('payload_schema_invalid', field)
     }
-  }
-
-  if (!Object.hasOwn(value, 'signature')) {
-    return normalizationFailure('signature_missing')
-  }
-
-  const timestampFailure = validateTimestamps(value, config)
-  if (timestampFailure !== undefined) {
-    return normalizationFailure(timestampFailure)
   }
 
   const signature = readString(value, 'signature')
@@ -493,6 +488,55 @@ function normalizationFailure(
   }
 }
 
+interface SignedPayloadEnvelope {
+  readonly ok: true
+  readonly value: Record<string, unknown>
+  readonly signedAt: string
+  readonly eventId: string
+  readonly signature: string
+}
+
+function validateSignedPayloadEnvelope(
+  value: unknown,
+  config: CrabTrapAdapterConfig,
+): SignedPayloadEnvelope | RejectedSummaryResult {
+  if (!isRecord(value)) {
+    return normalizationFailure('payload_schema_invalid')
+  }
+
+  if (!Object.hasOwn(value, 'signature')) {
+    return normalizationFailure('signature_missing')
+  }
+
+  const timestampFailure = validateTimestamps(value, config)
+  if (timestampFailure !== undefined) {
+    return normalizationFailure(timestampFailure)
+  }
+
+  const signature = readString(value, 'signature')
+  if (signature === undefined || !SIGNATURE_PATTERN.test(signature)) {
+    return normalizationFailure('signature_invalid', 'signature')
+  }
+
+  const eventId = readString(value, 'event_id')
+  if (eventId === undefined || !EVENT_ID_PATTERN.test(eventId)) {
+    return normalizationFailure('payload_schema_invalid', 'event_id')
+  }
+
+  const signedAt = readString(value, 'signed_at')
+  if (signedAt === undefined) {
+    return normalizationFailure('timestamp_missing')
+  }
+
+  return {
+    ok: true,
+    value,
+    signedAt,
+    eventId,
+    signature,
+  }
+}
+
 function validateTimestamps(
   value: Record<string, unknown>,
   config: CrabTrapAdapterConfig,
@@ -507,6 +551,7 @@ function validateTimestamps(
   const now = config.clock?.() ?? new Date()
   const freshnessWindowMs = (config.freshnessWindowSeconds ?? 300) * 1000
   if (Math.abs(now.getTime() - signedAtTime) > freshnessWindowMs) return 'timestamp_stale'
+  if (Math.abs(now.getTime() - occurredAtTime) > freshnessWindowMs) return 'timestamp_stale'
 
   return undefined
 }
@@ -516,25 +561,30 @@ function readTimestamp(value: string): number | undefined {
   return Number.isFinite(time) ? time : undefined
 }
 
-function detectUnsafePayload(
-  value: unknown,
-  summary: NormalizedCrabTrapSummary,
-): CrabTrapIntakeDiagnostic | undefined {
-  if (!isRecord(value)) return undefined
-
-  for (const field of Object.keys(value)) {
-    const category = classifyUnsafeFieldName(field)
-    if (category !== undefined) {
-      return unsafeDiagnostic(field, category)
-    }
+function detectUnsafePayload(value: unknown, fieldPath = 'payload'): CrabTrapIntakeDiagnostic | undefined {
+  if (typeof value === 'string') {
+    const category = classifyUnsafeStringValue(value)
+    return category === undefined ? undefined : unsafeDiagnostic(fieldPath, category)
   }
 
-  for (const [field, fieldValue] of Object.entries(summary)) {
-    if (typeof fieldValue !== 'string') continue
-    const category = classifyUnsafeStringValue(fieldValue)
-    if (category !== undefined) {
-      return unsafeDiagnostic(field, category)
+  if (Array.isArray(value)) {
+    for (const [index, item] of value.entries()) {
+      const diagnostic = detectUnsafePayload(item, `${fieldPath}.${String(index)}`)
+      if (diagnostic !== undefined) return diagnostic
     }
+    return undefined
+  }
+
+  if (!isRecord(value)) return undefined
+
+  for (const [field, fieldValue] of Object.entries(value)) {
+    const category = classifyUnsafeFieldName(field)
+    if (category !== undefined) {
+      return unsafeDiagnostic(`${fieldPath}.${field}`, category)
+    }
+
+    const diagnostic = detectUnsafePayload(fieldValue, `${fieldPath}.${field}`)
+    if (diagnostic !== undefined) return diagnostic
   }
 
   return undefined
@@ -667,31 +717,36 @@ function isReasonCode(value: string): value is CrabTrapReasonCode {
   return REASON_CODES.has(value as CrabTrapReasonCode)
 }
 
-function verifySummarySignature(
-  summary: NormalizedCrabTrapSummary,
+function verifyPayloadSignature(
+  value: Record<string, unknown>,
+  envelope: SignedPayloadEnvelope,
   config: CrabTrapAdapterConfig,
 ): boolean {
-  const unsignedSummary = unsignedCanonicalSummary(summary)
-  const canonicalPayloadSha256 = sha256Hex(canonicalJson(unsignedSummary))
-  const message = `v1:${summary.signed_at}:${summary.event_id}:${canonicalPayloadSha256}`
+  const unsignedPayload = unsignedCanonicalPayload(value)
+  if (unsignedPayload === undefined) return false
+
+  const canonicalPayloadSha256 = sha256Hex(canonicalJson(unsignedPayload))
+  const message = `v1:${envelope.signedAt}:${envelope.eventId}:${canonicalPayloadSha256}`
   const expectedSignature = createHmac('sha256', config.signingSecret)
     .update(message, 'utf8')
     .digest('hex')
-  const actualSignature = summary.signature.slice('sha256='.length)
+  const actualSignature = envelope.signature.slice('sha256='.length)
 
   return constantTimeHexEqual(actualSignature, expectedSignature)
 }
 
-function unsignedCanonicalSummary(summary: NormalizedCrabTrapSummary): Record<string, CanonicalJsonValue> {
-  const unsignedSummary: Record<string, CanonicalJsonValue> = {}
+function unsignedCanonicalPayload(value: Record<string, unknown>): Record<string, CanonicalJsonValue> | undefined {
+  const unsignedPayload: Record<string, CanonicalJsonValue> = {}
 
-  for (const [key, value] of Object.entries(summary)) {
+  for (const [key, fieldValue] of Object.entries(value)) {
     if (key !== 'signature') {
-      unsignedSummary[key] = value as CanonicalJsonValue
+      const canonicalValue = toCanonicalJsonValue(fieldValue)
+      if (canonicalValue === undefined) return undefined
+      unsignedPayload[key] = canonicalValue
     }
   }
 
-  return unsignedSummary
+  return unsignedPayload
 }
 
 function deriveReplayKeyHash(summary: NormalizedCrabTrapSummary): string {
@@ -793,6 +848,42 @@ function canonicalJson(value: CanonicalJsonValue): string {
   }
 
   return JSON.stringify(value)
+}
+
+function toCanonicalJsonValue(value: unknown): CanonicalJsonValue | undefined {
+  if (
+    value === null ||
+    typeof value === 'string' ||
+    typeof value === 'boolean'
+  ) {
+    return value
+  }
+
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : undefined
+  }
+
+  if (Array.isArray(value)) {
+    const items: CanonicalJsonValue[] = []
+    for (const item of value) {
+      const canonicalItem = toCanonicalJsonValue(item)
+      if (canonicalItem === undefined) return undefined
+      items.push(canonicalItem)
+    }
+    return items
+  }
+
+  if (isRecord(value)) {
+    const result: Record<string, CanonicalJsonValue> = {}
+    for (const [key, fieldValue] of Object.entries(value)) {
+      const canonicalField = toCanonicalJsonValue(fieldValue)
+      if (canonicalField === undefined) return undefined
+      result[key] = canonicalField
+    }
+    return result
+  }
+
+  return undefined
 }
 
 function sha256Hex(value: string): string {

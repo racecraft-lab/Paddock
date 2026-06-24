@@ -39,6 +39,8 @@ config, signature, freshness, replay, size, and unsafe-field checks pass.
   `specs/011-crabtrap-honeypot/.process/reviewability/tasks-gate.json`.
 - Task gate result: size-only block with `reviewable_loc=1280`,
   `production_files=7`, `total_files=68`, and `primary_surface_count=6`.
+  The gate records `exception_honored=false`; marker planning accepted this as
+  sizing input, not as a ratified reviewability exception.
 - Atomicity route:
   `specs/011-crabtrap-honeypot/.process/reviewability/atomicity-route.json`
   records `one-navigable-PR`.
@@ -72,11 +74,11 @@ config, signature, freshness, replay, size, and unsafe-field checks pass.
 
 | Command | Result | Notes |
 |---|---|---|
-| `direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts` | Pass | 1 test file, 15 tests |
+| `direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts` | Pass | 1 test file, 19 tests |
 | `direnv exec . pnpm guardrails` | Pass | 4 guardrail suites passed after tightening the SPEC-012B stale-status detector so ordinary historical prose containing "current SPEC-012B" is not treated as an active status pointer claim |
 | `direnv exec . pnpm typecheck` | Pass | `tsc -b --pretty false` completed |
 | `direnv exec . pnpm lint` | Pass | `eslint .` completed |
-| `direnv exec . pnpm test` | Pass | 328 files passed, 3406 tests passed, 4 skipped, 84 todo |
+| `direnv exec . pnpm test` | Pass | 328 files passed, 3410 tests passed, 4 skipped, 84 todo |
 | `direnv exec . pnpm build` | Pass | Next.js build compiled, type-checked, generated 145 static pages, and finalized routes |
 | `git diff --check c65bb02b..HEAD` | Pass | No whitespace errors |
 
@@ -124,7 +126,9 @@ Results:
 ## Known Gaps
 
 - The PR remains above nominal reviewability thresholds; marker planning and
-  review order are the mitigation for this branch.
+  review order are the mitigation for this branch. The size block has
+  `exception_honored=false`, so this packet treats it as a documented gap
+  rather than a ratified exception.
 - US4/polish checkpoint commit:
   `ef92a3d40b6a377a3fa4f21428cc82b1334a1cc3`.
 

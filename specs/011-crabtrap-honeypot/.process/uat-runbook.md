@@ -296,7 +296,7 @@ direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts
 
 Result:
 
-- Passed: 1 test file, 15 tests.
+- Passed: 1 test file, 19 tests.
 - Evidence source: `src/lib/__tests__/crabtrap-adapter.test.ts` with fixtures in
   `src/lib/__tests__/fixtures/crabtrap/crabtrap-fixtures.ts`.
 
@@ -315,6 +315,10 @@ Fixture UAT matrix:
 | Replayed fixture | `rejected`, `replay_detected` | no duplicate row; count remains 1 after first accepted event |
 | Oversized fixture | `rejected`, `payload_too_large` | 0 rows; byte size exceeds 16 KiB before parse |
 | Unsafe fixture | `rejected`, `unsafe_field_present` | 0 rows; diagnostics do not include `super-secret-token` |
+| Nested unsafe fixture | `rejected`, `unsafe_field_present` | 0 rows; recursive diagnostics do not include raw secret values |
+| Invalid signature with unsupported decision | `rejected`, `signature_invalid` | 0 rows; authenticity is checked before semantic rejection |
+| Invalid signature with unsupported method | `rejected`, `signature_invalid` | 0 rows; authenticity is checked before semantic rejection |
+| Stale `occurred_at` fixture | `rejected`, `timestamp_stale` | 0 rows; both signed and event timestamps are freshness checked |
 | Unsupported decision fixture | `rejected`, `unsupported_decision` | 0 rows |
 | Unsupported method fixture | `rejected`, `unsupported_method` | 0 rows |
 | Activity write failed | `failed`, `activity_write_failed` | 0 rows; database error text is not leaked |
@@ -352,7 +356,7 @@ Broad verification notes:
 - `direnv exec . pnpm guardrails` passed 4 suites after tightening the
   SPEC-012B stale-status detector so ordinary historical prose containing
   "current SPEC-012B" is not treated as an active status pointer claim.
-- `direnv exec . pnpm test` passed with 328 files, 3406 tests, 4 skipped, and
+- `direnv exec . pnpm test` passed with 328 files, 3410 tests, 4 skipped, and
   84 todo after adding `FEATURE_CRABTRAP_HONEYPOT` to the Paddock/Product Line
   B cascade seed expectations.
 - `direnv exec . pnpm typecheck`, `direnv exec . pnpm lint`, and
