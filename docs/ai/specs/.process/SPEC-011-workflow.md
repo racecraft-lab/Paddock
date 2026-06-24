@@ -34,7 +34,7 @@ Re-read the design concept before each phase. If a generated artifact contradict
 | Checklist | `$speckit-checklist` | Complete | Security, data-integrity, error-handling, and state-management checklists complete with zero gaps |
 | Tasks | `$speckit-tasks` | Complete | Generated 32 TDD-first tasks across 7 groups; G5 passed; marker plan recorded for reviewability sizing |
 | Analyze | `$speckit-analyze` | Complete | Resolved 3 findings; G6 passed; security-routed consensus completed 3/3 high-confidence |
-| Implement | `$speckit-implement` | In Progress | Foundation checkpoint committed at `ae5552fb`; US1 gating/config marker in progress |
+| Implement | `$speckit-implement` | In Progress | Foundation and US1 checkpoints committed; US2 bounded denial-evidence marker in progress |
 
 ## Phase Gates
 
@@ -589,7 +589,8 @@ Focus on:
 | Marker | Tasks | Status | Evidence |
 |---|---|---|---|
 | `foundation` | `T001`-`T007` | Complete | Commit `ae5552fb`; RED evidence and reviewability checkpoint recorded in `specs/011-crabtrap-honeypot/.process/uat-runbook.md` |
-| `us1` | `T008`-`T011` | In Progress | Feature-flag and missing/invalid-config no-op behavior next |
+| `us1` | `T008`-`T011` | Complete | Commit `f74d3491`; feature-disabled and missing/invalid-config no-op behavior verified |
+| `us2` | `T012`-`T016` | In Progress | Bounded denial-summary parsing, signature validation, and activity evidence next |
 
 ### Implement Prompt
 

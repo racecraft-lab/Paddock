@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
   "workflow_file": "docs/ai/specs/.process/SPEC-011-workflow.md",
-  "updated_at": "2026-06-24T22:43:40Z",
-  "active_step": "Phase 7: us1 checkpoint complete (awaiting parent commit SHA)",
+  "updated_at": "2026-06-24T22:47:06.627Z",
+  "active_step": "Phase 7: us2 (T012,T013,T014,T015,T016)",
   "spec_id": "SPEC-011",
   "feature_dir": "specs/011-crabtrap-honeypot",
   "branch": "011-crabtrap-honeypot",
@@ -173,7 +173,7 @@
     },
     {
       "step": "Phase 7: us2 (T012,T013,T014,T015,T016)",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Phase 7: us3 (T017,T018,T019,T020,T021)",
@@ -463,7 +463,8 @@
             "direnv exec . pnpm exec eslint src/lib/crabtrap-adapter.ts src/lib/__tests__/crabtrap-adapter.test.ts src/lib/__tests__/fixtures/crabtrap/crabtrap-fixtures.ts"
           ],
           "behavior_scope": "feature flag and config no-op behavior only; payload parsing, HMAC verification, activity writes, replay detection, unsafe-field checks, URL normalization, routes, OpenAPI, migrations, scheduler/task-dispatch, notifications, UI panels, and CrabTrap runtime integration deferred",
-          "completed_at": "2026-06-24T22:43:40Z"
+          "completed_at": "2026-06-24T22:43:40Z",
+          "commit_sha": "f74d3491fdcc7418c270d66e69bc605bcdfb1fbb"
         },
         "emission_mapping": {
           "status": "pending"
@@ -675,7 +676,7 @@
     "hazard_route_sha": "1971e9aff27a7010222da332f1ac103e1f057f251d24a8d49ad11470c23521fc"
   },
   "implementation": {
-    "current_marker": "us1",
+    "current_marker": "us2",
     "completed_markers": [
       "foundation",
       "us1"
@@ -716,7 +717,8 @@
         "direnv exec . pnpm exec eslint src/lib/crabtrap-adapter.ts src/lib/__tests__/crabtrap-adapter.test.ts src/lib/__tests__/fixtures/crabtrap/crabtrap-fixtures.ts"
       ],
       "behavior_scope": "feature flag and config no-op behavior only; payload parsing, HMAC verification, activity writes, replay detection, unsafe-field checks, URL normalization, routes, OpenAPI, migrations, scheduler/task-dispatch, notifications, UI panels, and CrabTrap runtime integration deferred",
-      "completed_at": "2026-06-24T22:43:40Z"
+      "completed_at": "2026-06-24T22:43:40Z",
+      "commit_sha": "f74d3491fdcc7418c270d66e69bc605bcdfb1fbb"
     }
   }
 }
