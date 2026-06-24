@@ -769,7 +769,8 @@
           "remediation": [
             "Aligned FEATURE_CRABTRAP_HONEYPOT cascade prerequisites in feature flag and product-line seed configs/tests",
             "Tightened SPEC-012B stale-status detector to explicit pointer fields so historical prose does not fail guardrails"
-          ]
+          ],
+          "commit_sha": "ef92a3d40b6a377a3fa4f21428cc82b1334a1cc3"
         },
         "emission_mapping": {
           "status": "pending"
@@ -944,7 +945,8 @@
       "remediation": [
         "Aligned FEATURE_CRABTRAP_HONEYPOT cascade prerequisites in feature flag and product-line seed configs/tests",
         "Tightened SPEC-012B stale-status detector to explicit pointer fields so historical prose does not fail guardrails"
-      ]
+      ],
+      "commit_sha": "ef92a3d40b6a377a3fa4f21428cc82b1334a1cc3"
     }
   },
   "marker_checkpoints": {
@@ -1008,7 +1010,8 @@
       "guardrails_result": "passed: 4 suites",
       "unit_result": "passed: 328 files, 3406 tests, 4 skipped, 84 todo",
       "build_result": "passed",
-      "focused_status_detector_result": "passed: node --test scripts/spec-012b/__tests__/hard-status-evidence.test.mjs, 5 tests"
+      "focused_status_detector_result": "passed: node --test scripts/spec-012b/__tests__/hard-status-evidence.test.mjs, 5 tests",
+      "commit_sha": "ef92a3d40b6a377a3fa4f21428cc82b1334a1cc3"
     }
   }
 }
