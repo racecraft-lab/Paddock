@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "workflow_file": "docs/ai/specs/.process/SPEC-011-workflow.md",
-  "updated_at": "2026-06-24T16:31:25-05:00",
+  "updated_at": "2026-06-24T16:33:15-05:00",
   "active_step": "Phase 3: Plan",
   "spec_id": "SPEC-011",
   "feature_dir": "specs/011-crabtrap-honeypot",

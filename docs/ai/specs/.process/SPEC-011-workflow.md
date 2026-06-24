@@ -315,6 +315,13 @@ Use the setup decision: "Fixture UAT is required; live CrabTrap Docker is option
 
 Consensus: Round 1 used `codebase-analyst`, `spec-context-analyst`, and `domain-researcher`. Outcome was AGREE for activities-only UAT and AGREE/MODIFY for no-raw-persistence proof; parent synthesis accepted the stricter proof while preserving the fixed Paddock-owned activity actor.
 
+### Clarify Results
+
+| Artifact | Status | Evidence |
+|---|---|---|
+| G2 gate | Pass | `validate-gate.sh G2 specs/011-crabtrap-honeypot` returned `pass=true`, 0 markers |
+| Clarification closure | Complete | Runtime boundary, signature scheme, payload fields, activity scope, alert/non-alert stance, and UAT requirements are recorded above |
+
 ## Phase 3: Plan
 
 **When to run:** After spec is finalized. Output: `specs/011-crabtrap-honeypot/plan.md`.
