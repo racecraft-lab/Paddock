@@ -3,7 +3,7 @@
   "version": 1,
   "repository": "racecraft-lab/Paddock",
   "reportMode": "pr",
-  "reportScope": "latest",
+  "reportScope": "run",
   "surface": "playwright",
   "surfaceLabel": "Playwright UI E2E",
   "workflowName": "Paddock UI E2E",
@@ -17,7 +17,7 @@
   "headRef": "codex/security-alert-remediation",
   "baseRef": "main",
   "headSha": "97f511ce2ddbb5a04c8c04fa7afb1cf7eb55a7ab",
-  "reportHref": "https://racecraft-lab.github.io/Paddock/pr/90/playwright/latest/",
+  "reportHref": "https://racecraft-lab.github.io/Paddock/pr/90/runs/28123514389-attempt-1/playwright/",
   "latestHref": "https://racecraft-lab.github.io/Paddock/pr/90/playwright/latest/?v=28123514389-attempt-1",
   "createdAt": "2026-06-24T19:27:06.843Z",
   "itemCounts": {
