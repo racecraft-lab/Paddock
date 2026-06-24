@@ -28,8 +28,8 @@ Re-read the design concept before each phase. If a generated artifact contradict
 | Phase | Command | Status | Notes |
 |---|---|---|---|
 | Scaffold | `$speckit-scaffold-spec SPEC-011` | Complete | Branch/worktree, design concept, workflow, reviewability preset, SPEC-MOC, and UAT runbook created |
-| Specify | `$speckit-specify` | Pending | Generate `specs/011-crabtrap-honeypot/spec.md` |
-| Clarify | `$speckit-clarify` | Pending | Resolve intake route/poller boundary, signature scheme, payload contract, scope, alerts, and UAT |
+| Specify | `$speckit-specify` | Complete | Generated `specs/011-crabtrap-honeypot/spec.md` and requirements checklist; G1 passed with 0 markers |
+| Clarify | `$speckit-clarify` | In Progress | Resolve intake route/poller boundary, signature scheme, payload contract, scope, alerts, and UAT |
 | Plan | `$speckit-plan` | Pending | Generate implementation blueprint using roadmap plus design concept decisions |
 | Checklist | `$speckit-checklist` | Pending | Run focused security, data-integrity, error-handling, and state-management checklists |
 | Tasks | `$speckit-tasks` | Pending | Generate TDD-first tasks bounded to the strict scope |
@@ -187,8 +187,18 @@ Out of scope:
 
 ### Specify Outputs
 
-- `specs/011-crabtrap-honeypot/spec.md`
-- Requirements checklist with no unresolved `[NEEDS CLARIFICATION]` markers.
+- [x] `specs/011-crabtrap-honeypot/spec.md`
+- [x] `specs/011-crabtrap-honeypot/checklists/requirements.md`
+- [x] Requirements checklist with no unresolved `[NEEDS CLARIFICATION]` markers.
+
+### Specify Results
+
+| Artifact | Status | Evidence |
+|---|---|---|
+| Feature specification | Complete | `specs/011-crabtrap-honeypot/spec.md` created with 18 functional requirements, 4 user stories, and 11 acceptance scenarios |
+| Requirements checklist | Complete | `specs/011-crabtrap-honeypot/checklists/requirements.md` created with 16/16 items checked |
+| G1 gate | Pass | `validate-gate.sh G1 specs/011-crabtrap-honeypot` returned `pass=true`, 0 markers |
+| Clarification markers | Clear | Search found 0 active `[NEEDS CLARIFICATION]`, `[Gap]`, or `[CRITICAL]` markers in generated SPEC-011 artifacts |
 
 ## Phase 2: Clarify
 
