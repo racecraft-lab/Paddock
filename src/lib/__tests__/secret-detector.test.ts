@@ -110,7 +110,7 @@ const RUNTIME_FIXTURES: Partial<Record<string, { positive: string; negative: str
       'GOOGLE_API_KEY = ' + ['AI', 'za', 'SyAaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPp_'].join(''),
       'maps key ' + ['AI', 'za', 'Sy_aBcDeFgHiJkLmNoPqRsTuVwXyZ0-3-A'].join(''),
     ].join('\n'),
-    negative: 'AIza-too-short\nmaps key AI-z-not-a-prefix\nnot_a_key AIzaSy',
+    negative: readFileSync(join(FIXTURE_DIR, 'google-api-key-negative.txt'), 'utf8'),
   },
   'stripe-keys': {
     positive: [
