@@ -114,7 +114,7 @@ Roadmap scope:
 
 - Add an operator-specific optional CrabTrap adapter.
 - Validate honeypot or CrabTrap-derived payloads.
-- Write bounded `activities.kind='security_intrusion_detected'` evidence for Paddock API and sandbox probes.
+- Write bounded `activities.type='security_intrusion_detected'` evidence for Paddock API and sandbox probes.
 - Keep the feature disabled by default behind `FEATURE_CRABTRAP_HONEYPOT`.
 - Missing binary/config/webhook secret must be absent-safe.
 - No schema migration, no OpenAPI contract change, and no scheduler/task-dispatch dependency.
@@ -280,6 +280,18 @@ Focus on where accepted evidence lands.
 Decide whether activity rows are workspace scoped, project scoped, or facility/global when no task is implicated. Confirm that existing activities are enough for this spec and that alert/notification fanout is deferred unless existing helpers can be reused without scope expansion.
 Use the setup decision: "Activities only. Write bounded `security_intrusion_detected` rows and rely on existing activity inspection surfaces."
 ```
+
+#### Clarify Session 4 Results
+
+| Question | Accepted Answer | Evidence | Artifact Impact |
+|---|---|---|---|
+| Activity event field | Use `activities.type='security_intrusion_detected'`; `kind` is not a schema column | `src/lib/schema.sql` defines `type`, and existing helpers insert activity classes through `type` | `spec.md` Clarifications, FR-011, Security Activity Evidence |
+| Landing scope | Accepted evidence lands as `entity_type='workspace'`, `entity_id=workspace_id`, `workspace_id=workspace_id` when approved workspace context exists; otherwise it uses the real facility workspace row. Validated `project_id` stays only in bounded `data`. | Existing activity helper patterns and workspace filters are workspace-based; a `workspace_id=0` pseudo-global row would bypass normal scoped inspection | `spec.md` User Story 2, FR-011, Assumptions |
+| Inspection surfaces | Existing `/api/activities` and Activity Feed are enough for SPEC-011 UAT and review | The setup decision says activities only, and the current app already exposes activity filtering/inspection | `spec.md` FR-014, SC-005, UAT runbook |
+| Alerts and notifications | SPEC-011 creates no notification rows, default alert rules, or CrabTrap-specific fanout. Existing operator-created alert rules may passively evaluate activity `type`; fanout is deferred. | Design concept and current spec non-goals reject notification fanout in this slice; alerts are a separate product surface | `spec.md` Clarifications, FR-014, Assumptions, PR packet requirements |
+| Replay dedupe lookup | Dedupe checks existing activities in the chosen workspace/facility landing scope for `type='security_intrusion_detected'` plus matching adapter-derived `data.replay_key_hash`; no cross-workspace scan or caller-only dedupe. | No migration is allowed, replay hash is already adapter-derived, and activity filters are workspace scoped | `spec.md` Replay Identity, Edge Cases, SC-002/SC-003 |
+
+Consensus: not required. The clarify executor reported no unresolved items; parent synthesis accepted the recommended answers and corrected activity wording from `kind` to `type`.
 
 ### Clarify Session 5: UAT And Live CrabTrap Evidence
 

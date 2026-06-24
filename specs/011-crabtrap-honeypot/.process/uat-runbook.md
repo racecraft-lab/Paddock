@@ -21,8 +21,14 @@ updated with exact commands after `spec.md`, `plan.md`, and `tasks.md` exist.
      `DELETE`, and `OPTIONS`; `CONNECT`/`TRACE` are deferred.
 4. Inspect `activities` and confirm exactly one
    `security_intrusion_detected` row with bounded safe `data`.
+   - The event class is stored as `activities.type='security_intrusion_detected'`.
+   - Accepted evidence lands in the approved workspace activity scope, or the
+     real facility workspace row when no approved workspace/project context
+     exists.
    - Accepted evidence stores only `data.replay_key_hash = "sha256:<hex>"`,
      not raw event identity or raw signing material.
+   - Replay dedupe is checked in the same workspace/facility landing scope by
+     `type='security_intrusion_detected'` and `data.replay_key_hash`.
    - URL evidence stores only lowercased `url_host` and parsed `url_path`; no
      raw/full URL, scheme, userinfo, query, fragment, CR/LF, or blank host/path
      value is persisted.
@@ -46,6 +52,8 @@ updated with exact commands after `spec.md`, `plan.md`, and `tasks.md` exist.
 7. Confirm no raw URLs, raw headers, bodies, cookies, Authorization values,
    query secrets, provider payloads, raw actor identifiers, or full CrabTrap
    audit rows are persisted.
+8. Confirm no CrabTrap-specific notification rows, default alert rules, new
+   panels, or OpenAPI/report surfaces were added by this slice.
 
 ## Optional Evidence
 
