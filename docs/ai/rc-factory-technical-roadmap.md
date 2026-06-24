@@ -637,7 +637,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 
 ### SPEC-011: CrabTrap Honeypot Adapter
 
-- **Status:** In Progress - scaffold branch `011-crabtrap-honeypot` created with design concept, workflow, SPEC-MOC, and fixture-first UAT runbook.
+- **Status:** In Progress - US4/polish evidence recorded on branch `011-crabtrap-honeypot`; focused fixture UAT, forbidden-surface inspection, guardrails, typecheck, lint, full unit suite, build, and diff whitespace checks passed.
 - **Priority:** P2
 - **Branch short name:** `crabtrap-honeypot`
 - **Dependencies:** SPEC-008
@@ -648,7 +648,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Tool count / tool names:** N/A - not a tool-surface spec
 - **Strict Scope:** `src/lib/crabtrap-adapter.ts`, a Paddock-owned normalized event contract, and focused tests. No schema migration, no OpenAPI contract change, no scheduler/task-dispatch dependency, no live CrabTrap deployment, and no forked CrabTrap code in this slice.
 - **Autopilot notes:** Helper adapter only. With `FEATURE_CRABTRAP_HONEYPOT=false`, no CrabTrap path is reachable. Missing CrabTrap binary/service and missing or invalid adapter signing config must be absent-safe. Future integration must be handled by a separate spec for a private Paddock intake route, a CrabTrap custom sender, CrabTrap admin/audit polling, or harness-egress policy.
-- **Definition of done:** Flag-off no-op, valid signed fixture-to-activity, malformed fixture safe handling, and CrabTrap-absent handling are covered by tests and human deploy notes. A follow-up architecture decision is recorded if Paddock needs live CrabTrap deployment, policy/config management, harness egress enforcement, or a maintained CrabTrap fork.
+- **Definition of done:** Flag-off no-op, valid signed fixture-to-activity, malformed fixture safe handling, CrabTrap-absent handling, no-raw-persistence proof, forbidden-surface inspection, guardrails, full unit tests, typecheck, lint, and build are covered by focused tests and the fixture UAT runbook. The closeout also aligns Paddock/Product Line B feature-flag cascade seed expectations for `FEATURE_CRABTRAP_HONEYPOT`. A follow-up architecture decision is recorded if Paddock needs live CrabTrap deployment, policy/config management, harness egress enforcement, or a maintained CrabTrap fork.
 
 ### SPEC-012A: Repo Knowledge Index and AGENTS Map
 
