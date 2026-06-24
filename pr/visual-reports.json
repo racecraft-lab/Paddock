@@ -1,7 +1,25 @@
 {
   "version": 1,
-  "updatedAt": "2026-06-24T02:05:31.252Z",
+  "updatedAt": "2026-06-24T19:09:44.482Z",
   "prs": [
+    {
+      "prNumber": "90",
+      "prTitle": "fix(security): resolve GitHub security alerts",
+      "prUrl": "https://github.com/racecraft-lab/Paddock/pull/90",
+      "indexHref": "https://racecraft-lab.github.io/Paddock/pr/90/",
+      "headRef": "codex/security-alert-remediation",
+      "baseRef": "main",
+      "updatedAt": "2026-06-24T19:09:44.482Z",
+      "latest": {
+        "storybook": {
+          "runId": "28122951758",
+          "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/28122951758",
+          "latestHref": "https://racecraft-lab.github.io/Paddock/pr/90/storybook/latest/?v=28122951758-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/Paddock/pr/90/runs/28122951758-attempt-1/storybook/",
+          "updatedAt": "2026-06-24T19:09:44.482Z"
+        }
+      }
+    },
     {
       "prNumber": "89",
       "prTitle": "[codex] Upgrade SpecKit integration to 0.11.6",

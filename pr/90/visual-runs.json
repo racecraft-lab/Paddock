@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "prNumber": "90",
+  "prTitle": "fix(security): resolve GitHub security alerts",
+  "prUrl": "https://github.com/racecraft-lab/Paddock/pull/90",
+  "headRef": "codex/security-alert-remediation",
+  "baseRef": "main",
+  "reports": [
+    {
+      "surface": "storybook",
+      "runId": "28122951758",
+      "runAttempt": "1",
+      "runKey": "28122951758-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/28122951758",
+      "reportHref": "https://racecraft-lab.github.io/Paddock/pr/90/runs/28122951758-attempt-1/storybook/",
+      "latestHref": "https://racecraft-lab.github.io/Paddock/pr/90/storybook/latest/?v=28122951758-attempt-1",
+      "headSha": "56dc566a78acd7dfe3f779ce24ffaf1a95c95ad7",
+      "headRef": "codex/security-alert-remediation",
+      "baseRef": "main",
+      "workflowName": "Visual Storybook Snapshots",
+      "workflowFile": "visual-storybook.yml",
+      "surfaceLabel": "Storybook Components",
+      "createdAt": "2026-06-24T19:09:44.482Z"
+    }
+  ],
+  "updatedAt": "2026-06-24T19:09:44.482Z"
+}
