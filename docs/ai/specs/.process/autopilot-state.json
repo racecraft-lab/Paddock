@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
   "workflow_file": "docs/ai/specs/.process/SPEC-011-workflow.md",
-  "updated_at": "2026-06-24T17:20:42-05:00",
-  "active_step": "Phase 7: foundation (T001,T002,T003,T004,T005,T006,T007)",
+  "updated_at": "2026-06-24T22:39:32.329Z",
+  "active_step": "Phase 7: us1 (T008,T009,T010,T011)",
   "spec_id": "SPEC-011",
   "feature_dir": "specs/011-crabtrap-honeypot",
   "branch": "011-crabtrap-honeypot",
@@ -165,11 +165,11 @@
     },
     {
       "step": "Phase 7: foundation (T001,T002,T003,T004,T005,T006,T007)",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 7: us1 (T008,T009,T010,T011)",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Phase 7: us2 (T012,T013,T014,T015,T016)",
@@ -370,7 +370,26 @@
           "details": {}
         },
         "implementation_checkpoint": {
-          "status": "pending"
+          "status": "complete",
+          "completed_task_ids": [
+            "T001",
+            "T002",
+            "T003",
+            "T004",
+            "T005",
+            "T006",
+            "T007"
+          ],
+          "evidence_paths": [
+            "specs/011-crabtrap-honeypot/.process/uat-runbook.md",
+            "src/lib/__tests__/crabtrap-adapter.test.ts",
+            "src/lib/__tests__/fixtures/crabtrap/crabtrap-fixtures.ts"
+          ],
+          "red_command": "direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts",
+          "red_result": "1 test file failed, 15 tests failed with assertion failures against the minimal adapter stub",
+          "behavior_scope": "minimal type/export stub only; adapter behavior deferred to later markers",
+          "commit_sha": "ae5552fb13b55c4eda80dbe72ba348960488eea3",
+          "completed_at": "2026-06-24T22:39:32.329Z"
         },
         "emission_mapping": {
           "status": "pending"
@@ -631,5 +650,23 @@
     "tasks_sha": "98bf9c75f0f1b3d7bd7ae7aa2d5bfc9b57c1334986c02c2087c1c63aaf377696",
     "reviewability_sha": "e7962a8207de25d2de85c0e816bf5f23c318597d153e1efbe78fa2ef2d3a1dc4",
     "hazard_route_sha": "1971e9aff27a7010222da332f1ac103e1f057f251d24a8d49ad11470c23521fc"
+  },
+  "implementation": {
+    "current_marker": "us1",
+    "completed_markers": [
+      "foundation"
+    ],
+    "foundation_checkpoint": {
+      "commit_sha": "ae5552fb13b55c4eda80dbe72ba348960488eea3",
+      "completed_at": "2026-06-24T22:39:32.329Z",
+      "verification": [
+        "direnv exec . pnpm exec tsc -p tsconfig.spec-strict.json --pretty false",
+        "direnv exec . pnpm exec eslint src/lib/crabtrap-adapter.ts src/lib/__tests__/crabtrap-adapter.test.ts src/lib/__tests__/fixtures/crabtrap/crabtrap-fixtures.ts",
+        "direnv exec . pnpm check:strict-scope",
+        "git diff --check"
+      ],
+      "red_command": "direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts",
+      "red_result": "expected RED: 1 test file failed, 15 tests failed against the minimal adapter stub"
+    }
   }
 }
