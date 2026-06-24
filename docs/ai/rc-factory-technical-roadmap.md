@@ -18,6 +18,7 @@
 12. **Treat harness engineering as repository design.** Agent throughput depends on versioned repo knowledge, executable tests, UI/log/metric legibility, structural guardrails, and continuous cleanup. Do not grow one monolithic instruction file when a short map plus indexed sources of truth is possible.
 13. **Small specs are the operating system.** SPEC-009+ must be sliced so one branch, one agent, and one reviewer can understand the complete blast radius. If a spec would naturally create a massive PR, it is not ready for setup; split it first.
 14. **PR descriptions are review packets.** A spec is not ready for review until the PR body gives humans the review order, scope budget, traceability, validation evidence, known gaps, and rollback/flag story without requiring terminal history.
+15. **Treat CrabTrap as a security substrate candidate, not just an alert feed.** Paddock should plan for CrabTrap to become part of the agent egress/security architecture while preserving optional-adapter discipline. Any decision to fork CrabTrap, patch its alerting/admin surfaces, or make it a required runtime dependency must be captured in a dedicated spec with upstream-gap evidence, patch ownership, rebase/release policy, secret-retention rules, deployment boundaries, and a rollback/off-ramp.
 
 ## External Reference Anchors
 
@@ -643,11 +644,11 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Enables:** —
 - **Scope source:** Phase 7.5 - CrabTrap honeypot adapter
 - **Acceptance criteria source:** Phase 7.5 Acceptance Criteria
-- **Scope summary:** Add an operator-specific optional CrabTrap adapter that validates honeypot webhook payloads and writes bounded `activities.kind='security_intrusion_detected'` rows for Paddock API and sandbox probes.
+- **Scope summary:** Add an operator-specific optional CrabTrap adapter that validates normalized CrabTrap-derived denial/security summaries and writes bounded `activities.kind='security_intrusion_detected'` rows for Paddock API and sandbox probes. This is the first architecture slice for CrabTrap as a possible Paddock egress-security substrate, not the full live CrabTrap deployment.
 - **Tool count / tool names:** N/A - not a tool-surface spec
-- **Strict Scope:** `src/lib/crabtrap-adapter.ts` and focused tests. No schema migration, no OpenAPI contract change, no scheduler/task-dispatch dependency.
-- **Autopilot notes:** Runtime adapter only. With `FEATURE_CRABTRAP_HONEYPOT=false`, no CrabTrap path is reachable. Missing binary/config/webhook secret must be absent-safe.
-- **Definition of done:** Flag-off no-op, valid webhook-to-activity, malformed webhook safe handling, and CrabTrap-absent handling are covered by tests and human deploy notes.
+- **Strict Scope:** `src/lib/crabtrap-adapter.ts`, a Paddock-owned normalized event contract, and focused tests. No schema migration, no OpenAPI contract change, no scheduler/task-dispatch dependency, no live CrabTrap deployment, and no forked CrabTrap code in this slice.
+- **Autopilot notes:** Runtime adapter only. With `FEATURE_CRABTRAP_HONEYPOT=false`, no CrabTrap path is reachable. Missing binary/config/webhook secret must be absent-safe. Clarify must record whether future integration should use a private Paddock intake route, a CrabTrap custom sender, CrabTrap admin/audit polling, or a separate harness-egress policy spec.
+- **Definition of done:** Flag-off no-op, valid signed fixture-to-activity, malformed fixture safe handling, and CrabTrap-absent handling are covered by tests and human deploy notes. A follow-up architecture decision is recorded if Paddock needs live CrabTrap deployment, policy/config management, harness egress enforcement, or a maintained CrabTrap fork.
 
 ### SPEC-012A: Repo Knowledge Index and AGENTS Map
 
@@ -1419,9 +1420,11 @@ This is the critical path for using Paddock to finish its own roadmap. It onboar
 | SPEC-009E | Pilot eligibility + evidence surfaces | SPEC-009D | SPEC-012A if file scopes are disjoint | Inspect read-only pilot eligibility, GitHub-linked task evidence, smoke status, and deferred run-state fields |
 | SPEC-009F | Production triage outcome routing | SPEC-009E, SPEC-012A | SPEC-013A1 if file scopes are disjoint | Drive non-remediation triage fixtures and inspect correct lane/evidence without remediation successors |
 
-### Lane B - Optional Security Sidecar
+### Lane B - CrabTrap Security Architecture
 
-SPEC-011 can run any time after SPEC-008. It is deliberately outside the self-hosting critical path. It must stay disabled by default, absent-safe, schema-free, and operator-specific optional.
+SPEC-011 can run any time after SPEC-008. It is deliberately outside the self-hosting critical path, but it is the first slice of the broader CrabTrap security architecture lane. The immediate slice must stay disabled by default, absent-safe, schema-free, and operator-specific optional.
+
+Future CrabTrap specs may own live deployment, Paddock-managed CrabTrap policy/config, a private alert intake route, a CrabTrap custom sender, admin/audit API polling, harness egress enforcement, richer evidence retention, operator intervention flows, or a maintained Racecraft fork. Forking CrabTrap is allowed only after a spec records why upstream extension points are insufficient, what patch set Paddock owns, how upstream rebases/releases are handled, how sensitive audit data is reduced or rejected, and how operators can disable or roll back the integration.
 
 ### Lane C - Second Product Line Scale
 
@@ -1562,6 +1565,7 @@ First self-hosting proof is roughly 6-9 engineering days after SPEC-008 for one 
 | R14 Long-running runner sessions duplicate work after crash/restart | Phase 11B, 12C | Claim state is serialized in Paddock; dispatch reconciles before launch; restart recovery uses task/GitHub state plus workspace inspection |
 | R15 App-server/session logs leak secrets into review packets | Phase 12C | Reuse SPEC-007 secret detection/redaction and SPEC-008 observability redaction before persisting summaries or artifact previews |
 | R16 Agents learn bad local patterns and amplify documentation/test debt | Phase 10B | Harness-gardening scans create recurring narrow cleanup tasks instead of relying on periodic broad manual rewrites |
+| R17 CrabTrap fork or live proxy coupling becomes hidden platform debt | SPEC-011 and future CrabTrap/harness specs | Keep SPEC-011 as a normalized-adapter slice; require a dedicated architecture spec before live deployment, admin polling, required runtime coupling, or a Racecraft-maintained fork, with upstream-gap evidence and rollback/off-ramp policy |
 
 ## Rollback Strategy Summary
 
