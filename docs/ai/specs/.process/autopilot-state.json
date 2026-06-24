@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
   "workflow_file": "docs/ai/specs/.process/SPEC-011-workflow.md",
-  "updated_at": "2026-06-24T22:39:32.329Z",
-  "active_step": "Phase 7: us1 (T008,T009,T010,T011)",
+  "updated_at": "2026-06-24T22:43:40Z",
+  "active_step": "Phase 7: us1 checkpoint complete (awaiting parent commit SHA)",
   "spec_id": "SPEC-011",
   "feature_dir": "specs/011-crabtrap-honeypot",
   "branch": "011-crabtrap-honeypot",
@@ -169,7 +169,7 @@
     },
     {
       "step": "Phase 7: us1 (T008,T009,T010,T011)",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 7: us2 (T012,T013,T014,T015,T016)",
@@ -440,7 +440,30 @@
           "details": {}
         },
         "implementation_checkpoint": {
-          "status": "pending"
+          "status": "complete",
+          "completed_task_ids": [
+            "T008",
+            "T009",
+            "T010",
+            "T011"
+          ],
+          "evidence_paths": [
+            "specs/011-crabtrap-honeypot/.process/uat-runbook.md",
+            "src/lib/crabtrap-adapter.ts",
+            "src/lib/__tests__/crabtrap-adapter.test.ts"
+          ],
+          "red_command": "direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts -t \"feature_disabled|missing config|invalid config\"",
+          "red_result": "1 test file failed; 3 US1 tests failed with assertion failures against the foundation stub",
+          "green_command": "direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts -t \"feature_disabled|missing config|invalid config\"",
+          "green_result": "1 test file passed; 3 US1 tests passed and 12 later-marker tests skipped by filter",
+          "focused_file_command": "direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts",
+          "focused_file_result": "3 US1 tests passed; 12 expected later-marker failures remained for valid payload, invalid payload, replay, oversized payload, and activity write behavior",
+          "validation": [
+            "direnv exec . pnpm exec tsc -p tsconfig.spec-strict.json --pretty false",
+            "direnv exec . pnpm exec eslint src/lib/crabtrap-adapter.ts src/lib/__tests__/crabtrap-adapter.test.ts src/lib/__tests__/fixtures/crabtrap/crabtrap-fixtures.ts"
+          ],
+          "behavior_scope": "feature flag and config no-op behavior only; payload parsing, HMAC verification, activity writes, replay detection, unsafe-field checks, URL normalization, routes, OpenAPI, migrations, scheduler/task-dispatch, notifications, UI panels, and CrabTrap runtime integration deferred",
+          "completed_at": "2026-06-24T22:43:40Z"
         },
         "emission_mapping": {
           "status": "pending"
@@ -654,7 +677,8 @@
   "implementation": {
     "current_marker": "us1",
     "completed_markers": [
-      "foundation"
+      "foundation",
+      "us1"
     ],
     "foundation_checkpoint": {
       "commit_sha": "ae5552fb13b55c4eda80dbe72ba348960488eea3",
@@ -667,6 +691,32 @@
       ],
       "red_command": "direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts",
       "red_result": "expected RED: 1 test file failed, 15 tests failed against the minimal adapter stub"
+    },
+    "us1_checkpoint": {
+      "status": "complete",
+      "completed_task_ids": [
+        "T008",
+        "T009",
+        "T010",
+        "T011"
+      ],
+      "evidence_paths": [
+        "specs/011-crabtrap-honeypot/.process/uat-runbook.md",
+        "src/lib/crabtrap-adapter.ts",
+        "src/lib/__tests__/crabtrap-adapter.test.ts"
+      ],
+      "red_command": "direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts -t \"feature_disabled|missing config|invalid config\"",
+      "red_result": "1 test file failed; 3 US1 tests failed with assertion failures against the foundation stub",
+      "green_command": "direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts -t \"feature_disabled|missing config|invalid config\"",
+      "green_result": "1 test file passed; 3 US1 tests passed and 12 later-marker tests skipped by filter",
+      "focused_file_command": "direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts",
+      "focused_file_result": "3 US1 tests passed; 12 expected later-marker failures remained for valid payload, invalid payload, replay, oversized payload, and activity write behavior",
+      "validation": [
+        "direnv exec . pnpm exec tsc -p tsconfig.spec-strict.json --pretty false",
+        "direnv exec . pnpm exec eslint src/lib/crabtrap-adapter.ts src/lib/__tests__/crabtrap-adapter.test.ts src/lib/__tests__/fixtures/crabtrap/crabtrap-fixtures.ts"
+      ],
+      "behavior_scope": "feature flag and config no-op behavior only; payload parsing, HMAC verification, activity writes, replay detection, unsafe-field checks, URL normalization, routes, OpenAPI, migrations, scheduler/task-dispatch, notifications, UI panels, and CrabTrap runtime integration deferred",
+      "completed_at": "2026-06-24T22:43:40Z"
     }
   }
 }

@@ -44,10 +44,10 @@
 
 ### Implementation for User Story 1
 
-- [ ] T008 [US1] Implement exported adapter input, config, context, result, and closed failure-code types in `src/lib/crabtrap-adapter.ts`
-- [ ] T009 [US1] Implement `resolveFlag('FEATURE_CRABTRAP_HONEYPOT', ctx)` gating and feature-disabled no-op behavior in `src/lib/crabtrap-adapter.ts`
-- [ ] T010 [US1] Implement missing-config and invalid-config no-op validation without requiring any CrabTrap binary, service, route, or admin API in `src/lib/crabtrap-adapter.ts`
-- [ ] T011 [US1] Run US1 focused assertions in `src/lib/__tests__/crabtrap-adapter.test.ts` and keep only the expected non-US1 failures remaining
+- [X] T008 [US1] Implement exported adapter input, config, context, result, and closed failure-code types in `src/lib/crabtrap-adapter.ts`
+- [X] T009 [US1] Implement `resolveFlag('FEATURE_CRABTRAP_HONEYPOT', ctx)` gating and feature-disabled no-op behavior in `src/lib/crabtrap-adapter.ts`
+- [X] T010 [US1] Implement missing-config and invalid-config no-op validation without requiring any CrabTrap binary, service, route, or admin API in `src/lib/crabtrap-adapter.ts`
+- [X] T011 [US1] Run US1 focused assertions in `src/lib/__tests__/crabtrap-adapter.test.ts` and keep only the expected non-US1 failures remaining
 
 **Checkpoint**: User Story 1 is independently testable with no CrabTrap runtime and zero activity writes.
 
