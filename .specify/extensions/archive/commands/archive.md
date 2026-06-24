@@ -1,8 +1,7 @@
 ---
 description: "Archive merged feature specs into project memory with provenance, sweep discovery, and gated cleanup"
 scripts:
-  sh: ../../scripts/bash/check-prerequisites.sh --json --paths-only
-  ps: ../../scripts/powershell/check-prerequisites.ps1 -Json -PathsOnly
+  sh: .specify/scripts/bash/check-prerequisites.sh --json --paths-only
 ---
 Act as the **Chief Software Architect**, **Documentation Maintainer**, and
 **release provenance auditor**.

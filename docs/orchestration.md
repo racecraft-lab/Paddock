@@ -10,16 +10,16 @@ and never send both.
 
 ## Task Lifecycle
 
-Every task in Paddock follows this status flow:
+The core manual queue and review path follows this status flow:
 
 ```
 inbox ──► assigned ──► in_progress ──► review ──► done
   │          │             │              │
-  │          │             │              └──► rejected ──► assigned (retry)
+  │          │             │              └──► in_progress (rejected verdict retry)
   │          │             │
   │          │             └──► failed (max retries or timeout)
   │          │
-  │          └──► cancelled
+  │          └──► failed
   │
   └──► assigned (triaged by human or auto-dispatch)
 ```
@@ -29,7 +29,11 @@ Key transitions:
 - **assigned → in_progress**: Agent claims via queue poll or auto-dispatch sends it
 - **in_progress → review**: Agent completes work, awaits quality check
 - **review → done**: Aegis approves the work
-- **review → assigned**: Aegis rejects, task is requeued with feedback
+- **review → in_progress**: Aegis rejects, task is returned with feedback
+
+Other task states are used by specialized flows: `backlog` for pre-triage work,
+`awaiting_owner` and `ready_for_owner` for owner-gated work, `quality_review`
+for explicit review stages, and `failed` for terminal failure.
 
 Feature-flagged task chains add work after a task reaches terminal success. When `FEATURE_TASK_PIPELINES` is off, or when a completed task is not bound to a workflow template with advancement-driving chain metadata, the lifecycle above is unchanged. When it is on, a non-`done` to `done` transition can validate structured output, choose a successor template, and create exactly one follow-up task.
 
@@ -168,8 +172,8 @@ in_progress ──► review ──► Aegis reviews ──► APPROVED ──�
    API key is configured
 4. Parses the verdict:
    - `VERDICT: APPROVED` → task moves to `done`
-   - `VERDICT: REJECTED` → feedback is attached as a comment, task reverts to `assigned`
-5. Rejected tasks are re-dispatched with the feedback included in the prompt
+   - `VERDICT: REJECTED` → feedback is attached as a comment, task returns to `assigned`
+5. Rejected scheduler reviews are re-dispatched with the feedback on the next work pass. Direct `/api/quality-review` rejections move explicit review-stage tasks back to `in_progress`.
 
 ### Retry Limits
 
@@ -205,14 +209,11 @@ Schedule tasks to be created automatically on a recurring basis using natural la
 
 ```bash
 pnpm mc cron create --body '{
+  "action": "add",
   "name": "daily-standup-report",
   "schedule": "0 9 * * 1-5",
-  "task_template": {
-    "title": "Generate daily standup report",
-    "description": "Summarize all completed tasks from the past 24 hours.",
-    "priority": "medium",
-    "assigned_to": "iris"
-  }
+  "command": "Summarize all completed tasks from the past 24 hours.",
+  "model": "gpt-5.5"
 }'
 ```
 
@@ -223,17 +224,15 @@ curl -X POST "$MC_URL/api/cron" \
   -H "Authorization: Bearer $MC_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
+    "action": "add",
     "name": "weekly-security-scan",
     "schedule": "0 2 * * 0",
-    "task_template": {
-      "title": "Weekly security audit",
-      "priority": "high",
-      "assigned_to": "aegis"
-    }
+    "command": "Run the weekly security audit.",
+    "model": "gpt-5.5"
   }'
 ```
 
-The scheduler spawns dated child tasks from the template on each trigger. Manage cron jobs with `pause`, `resume`, and `remove` actions.
+The scheduler stores an OpenClaw cron job whose payload sends the configured command on each trigger. Manage cron jobs with `toggle`, `trigger`, `clone`, and `remove` actions.
 
 **When to use**: Reports, health checks, periodic audits, maintenance tasks.
 

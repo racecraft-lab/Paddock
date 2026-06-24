@@ -17,7 +17,9 @@
 ## 3. Diagnose
 
 - Inspect `reconciliation_batches` for the failing window.
-- Pull the underlying error from `recovery_action`.
+- Pull the underlying error from `reconciliation_batches.error_message`.
+- A manual retry logs a `backfill_window_retry` activity row with before/after
+  state and attempt metadata.
 
 ## 4. Mitigate
 
