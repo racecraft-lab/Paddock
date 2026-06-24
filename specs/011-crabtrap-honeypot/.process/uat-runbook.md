@@ -163,6 +163,48 @@ Additional validation:
 - `direnv exec . pnpm exec eslint src/lib/crabtrap-adapter.ts src/lib/__tests__/crabtrap-adapter.test.ts src/lib/__tests__/fixtures/crabtrap/crabtrap-fixtures.ts`
   passed.
 
+### US3 checkpoint - invalid and unsafe fixture rejection
+
+Completed at: 2026-06-24T23:03:37Z.
+
+Implementation notes:
+
+- Enforced signed-fixture freshness against `config.clock` and the configured
+  or default +/-300 second window before signature verification.
+- Added post-signature unsafe-field/value detection with bounded
+  `unsafe_field_present` diagnostics for raw URL, raw audit/provider payload,
+  raw identity/email, auth/header/body/cookie/query secret, payload replay hash,
+  and secret-like string categories.
+- Kept rejected, replayed, malformed, oversized, unsupported, stale, unsafe, and
+  activity-write-failed outcomes isolated from scheduler, dispatch, task,
+  GitHub, notification, route, UI, OpenAPI, and migration surfaces.
+- No fixture or test edits were needed.
+
+TDD evidence:
+
+- RED command:
+  `direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts -t "stale fixture|unsafe fixture"`
+- RED result: 1 test file failed; 2 US3 tests failed with real assertion
+  errors because stale and unsafe fixtures returned `accepted`.
+- GREEN command:
+  `direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts -t "stale fixture|unsafe fixture"`
+- GREEN result: 1 test file passed; 2 US3 tests passed and 13 tests were
+  skipped by the filter.
+- REFACTOR result: full focused file rerun stayed green.
+
+Focused file result:
+
+- Command:
+  `direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts`
+- Result: 1 test file passed; 15 tests passed.
+
+Additional validation:
+
+- `direnv exec . pnpm exec tsc -p tsconfig.spec-strict.json --pretty false`
+  passed.
+- `direnv exec . pnpm exec eslint src/lib/crabtrap-adapter.ts src/lib/__tests__/crabtrap-adapter.test.ts src/lib/__tests__/fixtures/crabtrap/crabtrap-fixtures.ts`
+  passed.
+
 ## Required Validation
 
 1. Verify `FEATURE_CRABTRAP_HONEYPOT=false` records no CrabTrap activity and

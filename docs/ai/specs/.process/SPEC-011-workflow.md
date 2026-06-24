@@ -591,7 +591,7 @@ Focus on:
 | `foundation` | `T001`-`T007` | Complete | Commit `ae5552fb`; RED evidence and reviewability checkpoint recorded in `specs/011-crabtrap-honeypot/.process/uat-runbook.md` |
 | `us1` | `T008`-`T011` | Complete | Commit `f74d3491`; feature-disabled and missing/invalid-config no-op behavior verified |
 | `us2` | `T012`-`T016` | Complete | Commit `246771e5`; valid signed fixture writes one bounded activity row and replay duplicate is rejected |
-| `us3` | `T017`-`T021` | In Progress | Stale timestamp and unsafe-field rejection hardening next |
+| `us3` | `T017`-`T021` | Complete | Checkpoint commit pending parent; negative fixture matrix rejects stale, unsafe, oversized, malformed, unsigned, invalid-signature, unsupported, and replay cases with zero rejection-path activity rows |
 
 ### Implement Prompt
 

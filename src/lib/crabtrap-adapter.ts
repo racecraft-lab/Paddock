@@ -188,6 +188,14 @@ const ALLOWED_FIELDS = new Set([
   'distinct_path_count',
   'distinct_actor_count',
 ])
+const RAW_URL_FIELD_PATTERN = /^(?:raw_)?(?:full_)?url$|^(?:raw_)?request_url$|^original_url$/
+const RAW_AUDIT_FIELD_PATTERN = /(?:^|_)(?:audit|audit_row|provider_payload|raw_payload|raw_event)(?:_|$)/
+const RAW_IDENTITY_FIELD_PATTERN = /(?:^|_)(?:raw_actor|actor_id|raw_user|user_id|email|email_address)(?:_|$)/
+const RAW_SECRET_FIELD_PATTERN = /(?:^|_)(?:authorization|auth|api[_-]?key|token|secret|password|credential|cookie|headers?|body|query|replay_key_hash|matched_substring|secret_hash)(?:_|$)/
+const FULL_URL_VALUE_PATTERN = /\bhttps?:\/\//i
+const EMAIL_VALUE_PATTERN = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i
+const QUERY_SECRET_VALUE_PATTERN = /[?&](?:api[_-]?key|token|secret|password|auth|authorization)=/i
+const SECRET_LIKE_VALUE_PATTERN = /(?:api[_-]?key|bearer|authorization|token|secret|password|credential|cookie)/i
 
 export function processCrabTrapDenialSummary(
   input: ProcessCrabTrapDenialSummaryInput,
@@ -214,13 +222,18 @@ export function processCrabTrapDenialSummary(
     return rejected(parsed.failureCode)
   }
 
-  const normalized = normalizeSummary(parsed.value, input.context)
+  const normalized = normalizeSummary(parsed.value, input.context, input.config)
   if (!normalized.ok) {
     return rejected(normalized.failureCode, normalized.diagnostic)
   }
 
   if (!verifySummarySignature(normalized.summary, input.config)) {
     return rejected('signature_invalid')
+  }
+
+  const unsafeDiagnostic = detectUnsafePayload(parsed.value, normalized.summary)
+  if (unsafeDiagnostic !== undefined) {
+    return rejected('unsafe_field_present', unsafeDiagnostic)
   }
 
   const replayKeyHash = deriveReplayKeyHash(normalized.summary)
@@ -330,13 +343,17 @@ function parsePayload(
   }
 }
 
-function normalizeSummary(value: unknown, context: CrabTrapAdapterContext): SummaryNormalizationResult {
+function normalizeSummary(
+  value: unknown,
+  context: CrabTrapAdapterContext,
+  config: CrabTrapAdapterConfig,
+): SummaryNormalizationResult {
   if (!isRecord(value)) {
     return normalizationFailure('payload_schema_invalid')
   }
 
   for (const field of Object.keys(value)) {
-    if (!ALLOWED_FIELDS.has(field)) {
+    if (!ALLOWED_FIELDS.has(field) && classifyUnsafeFieldName(field) === undefined) {
       return normalizationFailure('payload_schema_invalid', field)
     }
   }
@@ -345,14 +362,14 @@ function normalizeSummary(value: unknown, context: CrabTrapAdapterContext): Summ
     return normalizationFailure('signature_missing')
   }
 
+  const timestampFailure = validateTimestamps(value, config)
+  if (timestampFailure !== undefined) {
+    return normalizationFailure(timestampFailure)
+  }
+
   const signature = readString(value, 'signature')
   if (signature === undefined || !SIGNATURE_PATTERN.test(signature)) {
     return normalizationFailure('signature_invalid', 'signature')
-  }
-
-  const timestampFailure = validateTimestamps(value)
-  if (timestampFailure !== undefined) {
-    return normalizationFailure(timestampFailure)
   }
 
   const landingWorkspaceId = selectLandingWorkspaceId(context)
@@ -476,17 +493,87 @@ function normalizationFailure(
   }
 }
 
-function validateTimestamps(value: Record<string, unknown>): CrabTrapIntakeFailureCode | undefined {
+function validateTimestamps(
+  value: Record<string, unknown>,
+  config: CrabTrapAdapterConfig,
+): CrabTrapIntakeFailureCode | undefined {
   const signedAt = readString(value, 'signed_at')
   const occurredAt = readString(value, 'occurred_at')
   if (signedAt === undefined || occurredAt === undefined) return 'timestamp_missing'
-  if (!isValidTimestamp(signedAt) || !isValidTimestamp(occurredAt)) return 'timestamp_invalid'
+  const signedAtTime = readTimestamp(signedAt)
+  const occurredAtTime = readTimestamp(occurredAt)
+  if (signedAtTime === undefined || occurredAtTime === undefined) return 'timestamp_invalid'
+
+  const now = config.clock?.() ?? new Date()
+  const freshnessWindowMs = (config.freshnessWindowSeconds ?? 300) * 1000
+  if (Math.abs(now.getTime() - signedAtTime) > freshnessWindowMs) return 'timestamp_stale'
+
   return undefined
 }
 
-function isValidTimestamp(value: string): boolean {
+function readTimestamp(value: string): number | undefined {
   const time = Date.parse(value)
-  return Number.isFinite(time)
+  return Number.isFinite(time) ? time : undefined
+}
+
+function detectUnsafePayload(
+  value: unknown,
+  summary: NormalizedCrabTrapSummary,
+): CrabTrapIntakeDiagnostic | undefined {
+  if (!isRecord(value)) return undefined
+
+  for (const field of Object.keys(value)) {
+    const category = classifyUnsafeFieldName(field)
+    if (category !== undefined) {
+      return unsafeDiagnostic(field, category)
+    }
+  }
+
+  for (const [field, fieldValue] of Object.entries(summary)) {
+    if (typeof fieldValue !== 'string') continue
+    const category = classifyUnsafeStringValue(fieldValue)
+    if (category !== undefined) {
+      return unsafeDiagnostic(field, category)
+    }
+  }
+
+  return undefined
+}
+
+function classifyUnsafeFieldName(field: string): string | undefined {
+  const normalizedField = field.toLowerCase()
+  if (RAW_URL_FIELD_PATTERN.test(normalizedField)) return 'raw_url'
+  if (RAW_AUDIT_FIELD_PATTERN.test(normalizedField)) return 'raw_audit_row'
+  if (RAW_IDENTITY_FIELD_PATTERN.test(normalizedField)) return 'raw_identity'
+  if (RAW_SECRET_FIELD_PATTERN.test(normalizedField)) return 'secret_material'
+  return undefined
+}
+
+function classifyUnsafeStringValue(value: string): string | undefined {
+  if (FULL_URL_VALUE_PATTERN.test(value)) return 'raw_url'
+  if (QUERY_SECRET_VALUE_PATTERN.test(value)) return 'query_secret'
+  if (EMAIL_VALUE_PATTERN.test(value)) return 'raw_email'
+  if (SECRET_LIKE_VALUE_PATTERN.test(value)) return 'secret_like_value'
+  return undefined
+}
+
+function unsafeDiagnostic(fieldPath: string, category: string): CrabTrapIntakeDiagnostic {
+  return {
+    code: 'unsafe_field_present',
+    fieldPath: safeDiagnosticFieldPath(fieldPath),
+    category,
+  }
+}
+
+function safeDiagnosticFieldPath(fieldPath: string): string {
+  if (ALLOWED_FIELDS.has(fieldPath)) return fieldPath
+
+  const normalizedField = fieldPath.toLowerCase()
+  if (/^[a-z0-9_.-]{1,64}$/.test(normalizedField) && !SECRET_LIKE_VALUE_PATTERN.test(normalizedField)) {
+    return normalizedField
+  }
+
+  return 'payload'
 }
 
 function selectLandingWorkspaceId(context: CrabTrapAdapterContext): number | undefined {
