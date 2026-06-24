@@ -32,8 +32,8 @@ Re-read the design concept before each phase. If a generated artifact contradict
 | Clarify | `$speckit-clarify` | Complete | Resolved intake boundary, signature scheme, payload contract, activity scope, alert stance, replay behavior, and fixture UAT requirements |
 | Plan | `$speckit-plan` | Complete | Generated helper-only implementation blueprint, research, data model, contract schema, and quickstart |
 | Checklist | `$speckit-checklist` | Complete | Security, data-integrity, error-handling, and state-management checklists complete with zero gaps |
-| Tasks | `$speckit-tasks` | Pending | Generate TDD-first tasks bounded to the strict scope |
-| Analyze | `$speckit-analyze` | Pending | Cross-check generated artifacts against roadmap and design concept |
+| Tasks | `$speckit-tasks` | Complete | Generated 32 TDD-first tasks across 7 groups; G5 passed; marker plan recorded for reviewability sizing |
+| Analyze | `$speckit-analyze` | In Progress | Cross-check generated artifacts against roadmap and design concept |
 | Implement | `$speckit-implement` | Pending | Implement only after G1-G6 gates pass |
 
 ## Phase Gates
@@ -486,16 +486,48 @@ Non-goals to preserve:
 - No live CrabTrap Docker blocking requirement unless Clarify changes it.
 ```
 
-## Atomicity Route
+### Tasks Results
 
-Leave this blank until after Tasks/G5. Autopilot records the classifier decision here.
+| Metric | Value | Evidence |
+|---|---:|---|
+| Total tasks | 32 | `specs/011-crabtrap-honeypot/tasks.md` |
+| Task groups | 7 | Setup, Foundational, US1, US2, US3, US4, Polish/Verification |
+| Parallel-marked tasks | 6 | `[P]` appears only on disjoint fixture, flag/config, guardrail, UAT, and PR packet skeleton tasks |
+| G5 gate | Pass | `validate-gate.sh G5 specs/011-crabtrap-honeypot` returned `pass=true`, `task_count=32` |
+| Reviewability task gate | Size-only block | `specs/011-crabtrap-honeypot/.process/reviewability/tasks-gate.json`; marker planning continues per autopilot rules |
+| Marker plan | 5 markers | `foundation`, `us1`, `us2`, `us3`, `us4`; evidence in `specs/011-crabtrap-honeypot/.process/marker-plan/pr-marker-plan.json` |
+
+## Atomicity Route
 
 | Field | Value | Meaning |
 |---|---|---|
-| Route | | One of `split-PR`, `one-navigable-PR`, `single-atomic-PR`, `branch-by-abstraction`, or `out-of-scope` |
-| Releasable | | `true` or `false` |
-| Signals | | Decisive detector findings |
-| Warnings | | Release-safety warnings |
+| Route | `one-navigable-PR` | Advisory classifier did not require split-PR layer planning |
+| Releasable | `true` | No destructive migration or concurrency-sensitive release warning was detected |
+| Signals | `context:flag-system:guarded-cutover` | Decisive detector findings |
+| Warnings | none | Release-safety warnings |
+
+## Layer Plan
+
+| Field | Value |
+|---|---|
+| Status | skipped |
+| Reason | Atomicity route is `one-navigable-PR`; `split-PR` layer planner is not required |
+
+## PR Marker Plan Evidence
+
+| Field | Value |
+|---|---|
+| Schema | `pr-marker-plan.v1` |
+| Status | planned |
+| Fingerprint status | current |
+| Source evidence | `specs/011-crabtrap-honeypot/.process/reviewability/tasks-gate.json`, `specs/011-crabtrap-honeypot/.process/reviewability/atomicity-route.json`, `specs/011-crabtrap-honeypot/.process/marker-plan/pr-marker-plan.json` |
+| Ordered marker IDs | `foundation`, `us1`, `us2`, `us3`, `us4` |
+| Review order | 1. foundation (`T001`-`T007`); 2. us1 (`T008`-`T011`); 3. us2 (`T012`-`T016`); 4. us3 (`T017`-`T021`); 5. us4 (`T022`-`T025`, folded polish `T026`-`T032`) |
+| Marker checkpoints | pending |
+| Warnings | `reviewability_size_warning`: reviewability sizing result is marker-planning input |
+| Final marker split | pending |
+| Packet validation | pending |
+| PR mappings | pending |
 
 ## Phase 6: Analyze
 
