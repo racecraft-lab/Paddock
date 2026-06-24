@@ -29,9 +29,9 @@ Re-read the design concept before each phase. If a generated artifact contradict
 |---|---|---|---|
 | Scaffold | `$speckit-scaffold-spec SPEC-011` | Complete | Branch/worktree, design concept, workflow, reviewability preset, SPEC-MOC, and UAT runbook created |
 | Specify | `$speckit-specify` | Complete | Generated `specs/011-crabtrap-honeypot/spec.md` and requirements checklist; G1 passed with 0 markers |
-| Clarify | `$speckit-clarify` | In Progress | Resolve intake route/poller boundary, signature scheme, payload contract, scope, alerts, and UAT |
-| Plan | `$speckit-plan` | Pending | Generate implementation blueprint using roadmap plus design concept decisions |
-| Checklist | `$speckit-checklist` | Pending | Run focused security, data-integrity, error-handling, and state-management checklists |
+| Clarify | `$speckit-clarify` | Complete | Resolved intake boundary, signature scheme, payload contract, activity scope, alert stance, replay behavior, and fixture UAT requirements |
+| Plan | `$speckit-plan` | Complete | Generated helper-only implementation blueprint, research, data model, contract schema, and quickstart |
+| Checklist | `$speckit-checklist` | In Progress | Security and data-integrity checklists complete with zero gaps; error-handling and state-management remain |
 | Tasks | `$speckit-tasks` | Pending | Generate TDD-first tasks bounded to the strict scope |
 | Analyze | `$speckit-analyze` | Pending | Cross-check generated artifacts against roadmap and design concept |
 | Implement | `$speckit-implement` | Pending | Implement only after G1-G6 gates pass |
@@ -446,10 +446,12 @@ Focus on SPEC-011:
 | Domain | Status | Items | Gaps | Consensus | Evidence |
 |---|---|---:|---:|---|---|
 | Security | Complete | 24/24 checked | 0 | Not required | `specs/011-crabtrap-honeypot/checklists/security.md` validates signature, freshness, replay, payload-size, unsafe-field rejection, no-raw-persistence, flag/config no-op behavior, and activity write isolation |
+| Data integrity | Complete | 24/24 checked | 0 | Not required | `specs/011-crabtrap-honeypot/checklists/data-integrity.md` validates normalized denial-summary schema, exactly-one activity behavior, duplicate/replay handling, workspace/project/facility scope choice, and no-migration compatibility with existing `activities` rows |
 
 ### Addressing Gaps
 
 - Security: no unresolved `[Gap]` markers were produced, and the checklist executor reported no items requiring consensus.
+- Data integrity: no unresolved `[Gap]` markers were produced, and the checklist executor reported no items requiring consensus.
 
 ## Phase 5: Tasks
 
