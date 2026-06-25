@@ -485,7 +485,9 @@ function normalizationFailure(
   return {
     ok: false,
     failureCode,
-    ...(fieldPath === undefined ? {} : { diagnostic: { code: failureCode, fieldPath } }),
+    ...(fieldPath === undefined
+      ? {}
+      : { diagnostic: { code: failureCode, fieldPath: safeDiagnosticFieldPath(fieldPath) } }),
   }
 }
 
