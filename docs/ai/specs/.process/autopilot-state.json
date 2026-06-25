@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
   "workflow_file": "docs/ai/specs/.process/SPEC-011-workflow.md",
-  "updated_at": "2026-06-25T02:29:54Z",
-  "active_step": "Phase 7: us3 (T017,T018,T019,T020,T021)",
+  "updated_at": "2026-06-25T02:31:22Z",
+  "active_step": "Phase 7: us4 + polish (T022,T023,T024,T025,T026,T027,T028,T029,T030,T031,T032)",
   "spec_id": "SPEC-011",
   "feature_dir": "specs/011-crabtrap-honeypot",
   "branch": "011-crabtrap-honeypot",
@@ -177,7 +177,7 @@
     },
     {
       "step": "Phase 7: us3 (T017,T018,T019,T020,T021)",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 7: us4 + polish (T022,T023,T024,T025,T026,T027,T028,T029,T030,T031,T032)",
@@ -516,7 +516,33 @@
           "details": {}
         },
         "implementation_checkpoint": {
-          "status": "pending"
+          "status": "complete",
+          "completed_task_ids": [
+            "T012",
+            "T013",
+            "T014",
+            "T015",
+            "T016"
+          ],
+          "evidence_paths": [
+            "specs/011-crabtrap-honeypot/.process/uat-runbook.md",
+            "src/lib/crabtrap-adapter.ts",
+            "src/lib/__tests__/crabtrap-adapter.test.ts",
+            "src/lib/__tests__/fixtures/crabtrap/crabtrap-fixtures.ts"
+          ],
+          "red_command": "direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts -t \"valid signed fixture|replayed event\"",
+          "red_result": "1 test file failed; 2 US2 tests failed with assertion failures against the US1 adapter returning payload_schema_invalid",
+          "green_command": "direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts -t \"valid signed fixture|replayed event\"",
+          "green_result": "1 test file passed; 2 US2 tests passed and 13 tests skipped by filter",
+          "focused_file_command": "direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts",
+          "focused_file_result": "13 tests passed; 2 expected later-marker failures remained for stale timestamp and unsafe field rejection",
+          "validation": [
+            "direnv exec . pnpm exec tsc -p tsconfig.spec-strict.json --pretty false",
+            "direnv exec . pnpm exec eslint src/lib/crabtrap-adapter.ts src/lib/__tests__/crabtrap-adapter.test.ts src/lib/__tests__/fixtures/crabtrap/crabtrap-fixtures.ts"
+          ],
+          "behavior_scope": "US2 signature verification, strict normalization, replay-key lookup, and existing-schema activity insertion only; stale timestamp handling and unsafe-field scanning remain deferred to US3",
+          "completed_at": "2026-06-24T22:54:45Z",
+          "commit_sha": "246771e5b45713075768d76f3a84cdd704cbbe3b"
         },
         "emission_mapping": {
           "status": "pending"
@@ -568,7 +594,32 @@
           "details": {}
         },
         "implementation_checkpoint": {
-          "status": "pending"
+          "status": "complete",
+          "completed_task_ids": [
+            "T017",
+            "T018",
+            "T019",
+            "T020",
+            "T021"
+          ],
+          "evidence_paths": [
+            "specs/011-crabtrap-honeypot/.process/uat-runbook.md",
+            "src/lib/crabtrap-adapter.ts",
+            "src/lib/__tests__/crabtrap-adapter.test.ts"
+          ],
+          "red_command": "direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts -t \"stale fixture|unsafe fixture\"",
+          "red_result": "1 test file failed; 2 US3 tests failed with assertion failures because stale and unsafe fixtures returned accepted",
+          "green_command": "direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts -t \"stale fixture|unsafe fixture\"",
+          "green_result": "1 test file passed; 2 US3 tests passed and 13 tests skipped by filter",
+          "focused_file_command": "direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts",
+          "focused_file_result": "1 test file passed; 15 tests passed",
+          "validation": [
+            "direnv exec . pnpm exec tsc -p tsconfig.spec-strict.json --pretty false",
+            "direnv exec . pnpm exec eslint src/lib/crabtrap-adapter.ts src/lib/__tests__/crabtrap-adapter.test.ts src/lib/__tests__/fixtures/crabtrap/crabtrap-fixtures.ts",
+            "git diff --check"
+          ],
+          "behavior_scope": "US3 invalid and unsafe payload hardening only; no route, OpenAPI, migration, scheduler/task-dispatch, notification, GitHub, task, UI, or CrabTrap runtime integration mutation; checkpoint commit SHA intentionally omitted for the parent orchestrator",
+          "completed_at": "2026-06-24T23:03:37Z"
         },
         "emission_mapping": {
           "status": "pending"
@@ -676,11 +727,12 @@
     "hazard_route_sha": "1971e9aff27a7010222da332f1ac103e1f057f251d24a8d49ad11470c23521fc"
   },
   "implementation": {
-    "current_marker": "us3",
+    "current_marker": "us4",
     "completed_markers": [
       "foundation",
       "us1",
-      "us2"
+      "us2",
+      "us3"
     ],
     "foundation_checkpoint": {
       "commit_sha": "ae5552fb13b55c4eda80dbe72ba348960488eea3",
@@ -720,6 +772,54 @@
       "behavior_scope": "feature flag and config no-op behavior only; payload parsing, HMAC verification, activity writes, replay detection, unsafe-field checks, URL normalization, routes, OpenAPI, migrations, scheduler/task-dispatch, notifications, UI panels, and CrabTrap runtime integration deferred",
       "completed_at": "2026-06-24T22:43:40Z",
       "commit_sha": "0b9411f9688136e35df7d29690416d6b9b474aaa"
+    },
+    "us2_checkpoint": {
+      "status": "complete",
+      "commit_sha": "375767b126ddfcbda76662bccda5d4bfc51e549d",
+      "completed_at": "2026-06-24T22:54:45Z",
+      "completed_task_ids": [
+        "T012",
+        "T013",
+        "T014",
+        "T015",
+        "T016"
+      ],
+      "evidence_paths": [
+        "specs/011-crabtrap-honeypot/.process/uat-runbook.md",
+        "src/lib/crabtrap-adapter.ts",
+        "src/lib/__tests__/crabtrap-adapter.test.ts",
+        "src/lib/__tests__/fixtures/crabtrap/crabtrap-fixtures.ts"
+      ],
+      "focused_file_result": "13 tests passed; 2 expected US3 failures remained for stale timestamp and unsafe field rejection"
+    },
+    "us3_checkpoint": {
+      "status": "complete",
+      "completed_task_ids": [
+        "T017",
+        "T018",
+        "T019",
+        "T020",
+        "T021"
+      ],
+      "evidence_paths": [
+        "specs/011-crabtrap-honeypot/.process/uat-runbook.md",
+        "src/lib/crabtrap-adapter.ts",
+        "src/lib/__tests__/crabtrap-adapter.test.ts"
+      ],
+      "red_command": "direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts -t \"stale fixture|unsafe fixture\"",
+      "red_result": "1 test file failed; 2 US3 tests failed with assertion failures because stale and unsafe fixtures returned accepted",
+      "green_command": "direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts -t \"stale fixture|unsafe fixture\"",
+      "green_result": "1 test file passed; 2 US3 tests passed and 13 tests skipped by filter",
+      "focused_file_command": "direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts",
+      "focused_file_result": "1 test file passed; 15 tests passed",
+      "validation": [
+        "direnv exec . pnpm exec tsc -p tsconfig.spec-strict.json --pretty false",
+        "direnv exec . pnpm exec eslint src/lib/crabtrap-adapter.ts src/lib/__tests__/crabtrap-adapter.test.ts src/lib/__tests__/fixtures/crabtrap/crabtrap-fixtures.ts",
+        "git diff --check"
+      ],
+      "behavior_scope": "US3 invalid and unsafe payload hardening only; no route, OpenAPI, migration, scheduler/task-dispatch, notification, GitHub, task, UI, or CrabTrap runtime integration mutation",
+      "completed_at": "2026-06-24T23:03:37Z",
+      "commit_sha": "02cfab9565579c74d0c8338bc136b75387bffa7b"
     }
   },
   "marker_checkpoints": {
@@ -738,6 +838,23 @@
         "specs/011-crabtrap-honeypot/.process/uat-runbook.md",
         "specs/011-crabtrap-honeypot/.process/marker-plan/pr-marker-plan.json"
       ]
+    },
+    "us3": {
+      "status": "complete",
+      "completed_task_ids": [
+        "T017",
+        "T018",
+        "T019",
+        "T020",
+        "T021"
+      ],
+      "completed_at": "2026-06-24T23:03:37Z",
+      "evidence_paths": [
+        "specs/011-crabtrap-honeypot/.process/uat-runbook.md",
+        "specs/011-crabtrap-honeypot/.process/marker-plan/pr-marker-plan.json"
+      ],
+      "focused_file_result": "1 test file passed; 15 tests passed",
+      "commit_sha": "02cfab9565579c74d0c8338bc136b75387bffa7b"
     }
   }
 }
