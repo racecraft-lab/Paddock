@@ -1,7 +1,32 @@
 {
   "version": 1,
-  "updatedAt": "2026-06-25T00:35:21.954Z",
+  "updatedAt": "2026-06-25T00:38:54.207Z",
   "prs": [
+    {
+      "prNumber": "91",
+      "prTitle": "feat(speckit-pro): Add marker split emission fixtures",
+      "prUrl": "https://github.com/racecraft-lab/Paddock/pull/91",
+      "indexHref": "https://racecraft-lab.github.io/Paddock/pr/91/",
+      "headRef": "SPEC-011-crabtrap-honeypot-stack/01-foundation",
+      "baseRef": "main",
+      "updatedAt": "2026-06-25T00:38:54.207Z",
+      "latest": {
+        "playwright": {
+          "runId": "28138706562",
+          "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/28138706562",
+          "latestHref": "https://racecraft-lab.github.io/Paddock/pr/91/playwright/latest/?v=28138706562-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/Paddock/pr/91/runs/28138706562-attempt-1/playwright/",
+          "updatedAt": "2026-06-25T00:38:54.207Z"
+        },
+        "storybook": {
+          "runId": "28138706510",
+          "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/28138706510",
+          "latestHref": "https://racecraft-lab.github.io/Paddock/pr/91/storybook/latest/?v=28138706510-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/Paddock/pr/91/runs/28138706510-attempt-1/storybook/",
+          "updatedAt": "2026-06-25T00:34:07.759Z"
+        }
+      }
+    },
     {
       "prNumber": "95",
       "prTitle": "feat(speckit-pro): Add marker split emission fixtures",
@@ -24,31 +49,6 @@
           "latestHref": "https://racecraft-lab.github.io/Paddock/pr/95/playwright/latest/?v=28138202864-attempt-1",
           "reportHref": "https://racecraft-lab.github.io/Paddock/pr/95/runs/28138202864-attempt-1/playwright/",
           "updatedAt": "2026-06-25T00:31:52.326Z"
-        }
-      }
-    },
-    {
-      "prNumber": "91",
-      "prTitle": "feat(speckit-pro): Add marker split emission fixtures",
-      "prUrl": "https://github.com/racecraft-lab/Paddock/pull/91",
-      "indexHref": "https://racecraft-lab.github.io/Paddock/pr/91/",
-      "headRef": "SPEC-011-crabtrap-honeypot-stack/01-foundation",
-      "baseRef": "main",
-      "updatedAt": "2026-06-25T00:34:07.759Z",
-      "latest": {
-        "storybook": {
-          "runId": "28138706510",
-          "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/28138706510",
-          "latestHref": "https://racecraft-lab.github.io/Paddock/pr/91/storybook/latest/?v=28138706510-attempt-1",
-          "reportHref": "https://racecraft-lab.github.io/Paddock/pr/91/runs/28138706510-attempt-1/storybook/",
-          "updatedAt": "2026-06-25T00:34:07.759Z"
-        },
-        "playwright": {
-          "runId": "28138202934",
-          "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/28138202934",
-          "latestHref": "https://racecraft-lab.github.io/Paddock/pr/91/playwright/latest/?v=28138202934-attempt-1",
-          "reportHref": "https://racecraft-lab.github.io/Paddock/pr/91/runs/28138202934-attempt-1/playwright/",
-          "updatedAt": "2026-06-25T00:27:50.776Z"
         }
       }
     },
