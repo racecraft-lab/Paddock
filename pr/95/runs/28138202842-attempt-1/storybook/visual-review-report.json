@@ -3,7 +3,7 @@
   "version": 1,
   "repository": "racecraft-lab/Paddock",
   "reportMode": "pr",
-  "reportScope": "latest",
+  "reportScope": "run",
   "surface": "storybook",
   "surfaceLabel": "Storybook Components",
   "workflowName": "Visual Storybook Snapshots",
@@ -17,7 +17,7 @@
   "headRef": "SPEC-011-crabtrap-honeypot-stack/05-us4",
   "baseRef": "SPEC-011-crabtrap-honeypot-stack/04-us3",
   "headSha": "b93009a91fe6ce3bc6248d60716c9f3d0e05d3bd",
-  "reportHref": "https://racecraft-lab.github.io/Paddock/pr/95/storybook/latest/",
+  "reportHref": "https://racecraft-lab.github.io/Paddock/pr/95/runs/28138202842-attempt-1/storybook/",
   "latestHref": "https://racecraft-lab.github.io/Paddock/pr/95/storybook/latest/?v=28138202842-attempt-1",
   "createdAt": "2026-06-25T00:26:35.927Z",
   "itemCounts": {
