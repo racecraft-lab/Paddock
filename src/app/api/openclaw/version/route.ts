@@ -4,9 +4,33 @@ import { runOpenClaw } from '@/lib/command'
 const GITHUB_RELEASES_URL =
   'https://api.github.com/repos/openclaw/openclaw/releases/latest'
 
+function parseStableSemver(version: string): number[] | null {
+  const trimmed = version.trim()
+  const match = trimmed.match(/^v?(\d+\.\d+\.\d+)$/)
+  if (!match) return null
+
+  const parts = match[1].split('.').map((part) => Number(part))
+  if (parts.some(Number.isNaN)) return null
+
+  return parts
+}
+
+function parseVersionFromReleaseTag(tag: string | null | undefined): string | null {
+  const parsed = parseStableSemver(tag ? tag.trim() : '')
+  return parsed ? parsed.join('.') : null
+}
+
+function parseVersionFromOutput(stdout: string): string | null {
+  const match = stdout.match(/(\d+\.\d+\.\d+)/)
+  return match ? match[1] : null
+}
+
 function compareSemver(a: string, b: string): number {
-  const pa = a.replace(/^v/, '').split('.').map(Number)
-  const pb = b.replace(/^v/, '').split('.').map(Number)
+  const pa = parseStableSemver(a)
+  const pb = parseStableSemver(b)
+
+  if (!pa || !pb) return 0
+
   for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
     const na = pa[i] ?? 0
     const nb = pb[i] ?? 0
@@ -23,8 +47,7 @@ export async function GET() {
 
   try {
     const result = await runOpenClaw(['--version'], { timeoutMs: 3000 })
-    const match = result.stdout.match(/(\d+\.\d+\.\d+)/)
-    if (match) installed = match[1]
+    installed = parseVersionFromOutput(result.stdout)
   } catch {
     // OpenClaw not installed or not reachable
     return NextResponse.json(
@@ -54,8 +77,8 @@ export async function GET() {
     }
 
     const release = await res.json()
-    const latest = (release.tag_name ?? '').replace(/^v/, '')
-    const updateAvailable = compareSemver(latest, installed) > 0
+    const latest = parseVersionFromReleaseTag(release.tag_name)
+    const updateAvailable = latest !== null ? compareSemver(latest, installed) > 0 : false
 
     return NextResponse.json(
       {
