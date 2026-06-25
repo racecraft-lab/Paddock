@@ -127,10 +127,6 @@ interface RejectedSummaryResult {
 
 type SummaryNormalizationResult = NormalizedSummaryResult | RejectedSummaryResult
 
-interface ActivityDataRow {
-  readonly data: string | null
-}
-
 interface RunResultLike {
   readonly lastInsertRowid?: unknown
 }
@@ -484,7 +480,9 @@ function normalizationFailure(
   return {
     ok: false,
     failureCode,
-    ...(fieldPath === undefined ? {} : { diagnostic: { code: failureCode, fieldPath } }),
+    ...(fieldPath === undefined
+      ? {}
+      : { diagnostic: { code: failureCode, fieldPath: safeDiagnosticFieldPath(fieldPath) } }),
   }
 }
 
@@ -758,26 +756,27 @@ function hasReplay(
   landingWorkspaceId: number,
   replayKeyHash: string,
 ): boolean {
-  const rows = db
+  const row = db
     .prepare(
-      `SELECT data
+      `SELECT 1 AS found
        FROM activities
        WHERE type = ?
          AND entity_type = 'workspace'
          AND entity_id = ?
-         AND workspace_id = ?`,
+         AND workspace_id = ?
+         AND data IS NOT NULL
+         AND json_valid(data)
+         AND json_extract(data, '$.replay_key_hash') = ?
+       LIMIT 1`,
     )
-    .all(CRABTRAP_SECURITY_ACTIVITY_TYPE, landingWorkspaceId, landingWorkspaceId) as ActivityDataRow[]
+    .get(
+      CRABTRAP_SECURITY_ACTIVITY_TYPE,
+      landingWorkspaceId,
+      landingWorkspaceId,
+      replayKeyHash,
+    ) as { readonly found: 1 } | undefined
 
-  return rows.some((row) => {
-    if (typeof row.data !== 'string') return false
-    try {
-      const data = JSON.parse(row.data) as unknown
-      return isRecord(data) && data['replay_key_hash'] === replayKeyHash
-    } catch {
-      return false
-    }
-  })
+  return row !== undefined
 }
 
 function insertSecurityActivity(
