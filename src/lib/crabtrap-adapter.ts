@@ -1,4 +1,4 @@
-import type { FeatureFlagContext } from '@/lib/feature-flags'
+import { resolveFlag, type FeatureFlagContext } from '@/lib/feature-flags'
 
 export const CRABTRAP_SECURITY_ACTIVITY_TYPE = 'security_intrusion_detected'
 export const DEFAULT_CRABTRAP_MAX_PAYLOAD_BYTES = 16 * 1024
@@ -70,10 +70,74 @@ export interface ProcessCrabTrapDenialSummaryInput {
 export function processCrabTrapDenialSummary(
   input: ProcessCrabTrapDenialSummaryInput,
 ): CrabTrapIntakeResult {
-  void input
+  if (!resolveFlag('FEATURE_CRABTRAP_HONEYPOT', input.context.flagContext)) {
+    return noop('feature_disabled')
+  }
+
+  if (input.config == null) {
+    return noop('config_missing')
+  }
+
+  if (!isValidConfig(input.config)) {
+    return noop('config_invalid')
+  }
 
   return {
     status: 'rejected',
     failureCode: 'payload_schema_invalid',
+  }
+}
+
+function noop(failureCode: CrabTrapIntakeFailureCode): CrabTrapIntakeResult {
+  return {
+    status: 'noop',
+    failureCode,
+  }
+}
+
+function isValidConfig(config: CrabTrapAdapterConfig): boolean {
+  if (!isValidSigningSecret(config.signingSecret)) {
+    return false
+  }
+
+  if (
+    config.freshnessWindowSeconds !== undefined &&
+    !isPositiveSafeInteger(config.freshnessWindowSeconds)
+  ) {
+    return false
+  }
+
+  if (
+    config.maxPayloadBytes !== undefined &&
+    !isPositiveSafeInteger(config.maxPayloadBytes)
+  ) {
+    return false
+  }
+
+  if (config.clock !== undefined && !isValidClock(config.clock)) {
+    return false
+  }
+
+  return true
+}
+
+function isValidSigningSecret(secret: CrabTrapAdapterConfig['signingSecret']): boolean {
+  if (typeof secret === 'string') {
+    return secret.trim().length > 0
+  }
+
+  return secret instanceof Uint8Array && secret.byteLength > 0
+}
+
+function isPositiveSafeInteger(value: number): boolean {
+  return Number.isSafeInteger(value) && value > 0
+}
+
+function isValidClock(clock: () => Date): boolean {
+  try {
+    const now = clock()
+    return now instanceof Date && Number.isFinite(now.getTime())
+  } catch {
+    return false
   }
 }

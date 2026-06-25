@@ -70,6 +70,48 @@ Expected RED result:
     failureCode: "activity_write_failed" }`, received `{ status: "rejected",
     failureCode: "payload_schema_invalid" }`.
 
+## US1 Marker Checkpoint
+
+Date: 2026-06-24
+
+Marker: `us1` (`review_order=2`)
+
+Scope completed in this checkpoint:
+
+- Added adapter behavior for
+  `resolveFlag('FEATURE_CRABTRAP_HONEYPOT', ctx)` gating.
+- Added feature-disabled, missing-config, and invalid-config no-op returns with
+  zero activity writes.
+- Kept payload parsing, HMAC verification, activity writes, replay detection,
+  unsafe-field checks, URL normalization, routes, OpenAPI, migrations,
+  scheduler/task-dispatch, notifications, UI panels, and CrabTrap runtime
+  integration deferred to later markers.
+
+TDD evidence:
+
+- RED command:
+  `direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts -t "feature_disabled|missing config|invalid config"`
+- RED result: 1 test file failed; 3 US1 tests failed with real assertion
+  errors against the foundation stub returning `payload_schema_invalid`.
+- GREEN command:
+  `direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts -t "feature_disabled|missing config|invalid config"`
+- GREEN result: 1 test file passed; 3 US1 tests passed and 12 later-marker
+  tests were skipped by the filter.
+
+Focused file result:
+
+- Command:
+  `direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts`
+- Result: 1 test file failed as expected for later markers; 3 US1 tests passed
+  and 12 US2/US3 tests failed against deferred payload/activity behavior.
+
+Additional validation:
+
+- `direnv exec . pnpm exec tsc -p tsconfig.spec-strict.json --pretty false`
+  passed.
+- `direnv exec . pnpm exec eslint src/lib/crabtrap-adapter.ts src/lib/__tests__/crabtrap-adapter.test.ts src/lib/__tests__/fixtures/crabtrap/crabtrap-fixtures.ts`
+  passed.
+
 ## Required Validation
 
 1. Verify `FEATURE_CRABTRAP_HONEYPOT=false` records no CrabTrap activity and

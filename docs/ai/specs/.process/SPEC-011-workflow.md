@@ -34,7 +34,7 @@ Re-read the design concept before each phase. If a generated artifact contradict
 | Checklist | `$speckit-checklist` | Complete | Security, data-integrity, error-handling, and state-management checklists complete with zero gaps |
 | Tasks | `$speckit-tasks` | Complete | Generated 32 TDD-first tasks across 7 groups; G5 passed; marker plan recorded for reviewability sizing |
 | Analyze | `$speckit-analyze` | Complete | Resolved 3 findings; G6 passed; security-routed consensus completed 3/3 high-confidence |
-| Implement | `$speckit-implement` | In Progress | Implementing marker plan starting with foundation tasks |
+| Implement | `$speckit-implement` | In Progress | Foundation and US1 checkpoints committed; US2 bounded denial-evidence marker is next |
 
 ## Phase Gates
 
@@ -583,6 +583,13 @@ Focus on:
 ## Phase 7: Implement
 
 **When to run:** After Analyze passes.
+
+### Implementation Progress
+
+| Marker | Tasks | Status | Evidence |
+|---|---|---|---|
+| `foundation` | `T001`-`T007` | Complete | Commit `ae5552fb`; RED evidence and reviewability checkpoint recorded in `specs/011-crabtrap-honeypot/.process/uat-runbook.md` |
+| `us1` | `T008`-`T011` | Complete | Commit `0b9411f9`; feature-flag and missing/invalid-config no-op behavior recorded in `docs/ai/specs/.process/autopilot-state.json` |
 
 ### Implement Prompt
 
