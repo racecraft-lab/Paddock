@@ -1,7 +1,25 @@
 {
   "version": 1,
-  "updatedAt": "2026-06-25T00:44:33.956Z",
+  "updatedAt": "2026-06-25T00:44:44.493Z",
   "prs": [
+    {
+      "prNumber": "92",
+      "prTitle": "feat(SPEC-011): add CrabTrap no-op gating",
+      "prUrl": "https://github.com/racecraft-lab/Paddock/pull/92",
+      "indexHref": "https://racecraft-lab.github.io/Paddock/pr/92/",
+      "headRef": "SPEC-011-crabtrap-honeypot-stack/02-us1",
+      "baseRef": "SPEC-011-crabtrap-honeypot-stack/01-foundation",
+      "updatedAt": "2026-06-25T00:44:44.493Z",
+      "latest": {
+        "storybook": {
+          "runId": "28139100747",
+          "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/28139100747",
+          "latestHref": "https://racecraft-lab.github.io/Paddock/pr/92/storybook/latest/?v=28139100747-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/Paddock/pr/92/runs/28139100747-attempt-1/storybook/",
+          "updatedAt": "2026-06-25T00:44:44.493Z"
+        }
+      }
+    },
     {
       "prNumber": "91",
       "prTitle": "feat(SPEC-011): add CrabTrap adapter foundation",

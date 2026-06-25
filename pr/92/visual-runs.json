@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "prNumber": "92",
+  "prTitle": "feat(SPEC-011): add CrabTrap no-op gating",
+  "prUrl": "https://github.com/racecraft-lab/Paddock/pull/92",
+  "headRef": "SPEC-011-crabtrap-honeypot-stack/02-us1",
+  "baseRef": "SPEC-011-crabtrap-honeypot-stack/01-foundation",
+  "reports": [
+    {
+      "surface": "storybook",
+      "runId": "28139100747",
+      "runAttempt": "1",
+      "runKey": "28139100747-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/28139100747",
+      "reportHref": "https://racecraft-lab.github.io/Paddock/pr/92/runs/28139100747-attempt-1/storybook/",
+      "latestHref": "https://racecraft-lab.github.io/Paddock/pr/92/storybook/latest/?v=28139100747-attempt-1",
+      "headSha": "0b9411f9688136e35df7d29690416d6b9b474aaa",
+      "headRef": "SPEC-011-crabtrap-honeypot-stack/02-us1",
+      "baseRef": "SPEC-011-crabtrap-honeypot-stack/01-foundation",
+      "workflowName": "Visual Storybook Snapshots",
+      "workflowFile": "visual-storybook.yml",
+      "surfaceLabel": "Storybook Components",
+      "createdAt": "2026-06-25T00:44:44.493Z"
+    }
+  ],
+  "updatedAt": "2026-06-25T00:44:44.493Z"
+}
