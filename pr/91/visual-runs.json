@@ -7,6 +7,22 @@
   "baseRef": "main",
   "reports": [
     {
+      "surface": "storybook",
+      "runId": "28142859075",
+      "runAttempt": "1",
+      "runKey": "28142859075-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/28142859075",
+      "reportHref": "https://racecraft-lab.github.io/Paddock/pr/91/runs/28142859075-attempt-1/storybook/",
+      "latestHref": "https://racecraft-lab.github.io/Paddock/pr/91/storybook/latest/?v=28142859075-attempt-1",
+      "headSha": "41d967461e6e33a350706f39a5ebe265901b7d68",
+      "headRef": "SPEC-011-crabtrap-honeypot-stack/01-foundation",
+      "baseRef": "main",
+      "workflowName": "Visual Storybook Snapshots",
+      "workflowFile": "visual-storybook.yml",
+      "surfaceLabel": "Storybook Components",
+      "createdAt": "2026-06-25T02:31:28.538Z"
+    },
+    {
       "surface": "playwright",
       "runId": "28139100851",
       "runAttempt": "1",
@@ -135,5 +151,5 @@
       "createdAt": "2026-06-25T00:15:07.873Z"
     }
   ],
-  "updatedAt": "2026-06-25T00:49:11.954Z"
+  "updatedAt": "2026-06-25T02:31:28.538Z"
 }

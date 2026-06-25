@@ -1,7 +1,32 @@
 {
   "version": 1,
-  "updatedAt": "2026-06-25T00:50:29.621Z",
+  "updatedAt": "2026-06-25T02:31:28.538Z",
   "prs": [
+    {
+      "prNumber": "91",
+      "prTitle": "feat(SPEC-011): add CrabTrap adapter foundation",
+      "prUrl": "https://github.com/racecraft-lab/Paddock/pull/91",
+      "indexHref": "https://racecraft-lab.github.io/Paddock/pr/91/",
+      "headRef": "SPEC-011-crabtrap-honeypot-stack/01-foundation",
+      "baseRef": "main",
+      "updatedAt": "2026-06-25T02:31:28.538Z",
+      "latest": {
+        "storybook": {
+          "runId": "28142859075",
+          "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/28142859075",
+          "latestHref": "https://racecraft-lab.github.io/Paddock/pr/91/storybook/latest/?v=28142859075-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/Paddock/pr/91/runs/28142859075-attempt-1/storybook/",
+          "updatedAt": "2026-06-25T02:31:28.538Z"
+        },
+        "playwright": {
+          "runId": "28139100851",
+          "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/28139100851",
+          "latestHref": "https://racecraft-lab.github.io/Paddock/pr/91/playwright/latest/?v=28139100851-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/Paddock/pr/91/runs/28139100851-attempt-1/playwright/",
+          "updatedAt": "2026-06-25T00:49:11.954Z"
+        }
+      }
+    },
     {
       "prNumber": "92",
       "prTitle": "feat(SPEC-011): add CrabTrap no-op gating",
@@ -24,31 +49,6 @@
           "latestHref": "https://racecraft-lab.github.io/Paddock/pr/92/storybook/latest/?v=28139100747-attempt-1",
           "reportHref": "https://racecraft-lab.github.io/Paddock/pr/92/runs/28139100747-attempt-1/storybook/",
           "updatedAt": "2026-06-25T00:44:44.493Z"
-        }
-      }
-    },
-    {
-      "prNumber": "91",
-      "prTitle": "feat(SPEC-011): add CrabTrap adapter foundation",
-      "prUrl": "https://github.com/racecraft-lab/Paddock/pull/91",
-      "indexHref": "https://racecraft-lab.github.io/Paddock/pr/91/",
-      "headRef": "SPEC-011-crabtrap-honeypot-stack/01-foundation",
-      "baseRef": "main",
-      "updatedAt": "2026-06-25T00:49:11.954Z",
-      "latest": {
-        "playwright": {
-          "runId": "28139100851",
-          "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/28139100851",
-          "latestHref": "https://racecraft-lab.github.io/Paddock/pr/91/playwright/latest/?v=28139100851-attempt-1",
-          "reportHref": "https://racecraft-lab.github.io/Paddock/pr/91/runs/28139100851-attempt-1/playwright/",
-          "updatedAt": "2026-06-25T00:49:11.954Z"
-        },
-        "storybook": {
-          "runId": "28139100844",
-          "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/28139100844",
-          "latestHref": "https://racecraft-lab.github.io/Paddock/pr/91/storybook/latest/?v=28139100844-attempt-1",
-          "reportHref": "https://racecraft-lab.github.io/Paddock/pr/91/runs/28139100844-attempt-1/storybook/",
-          "updatedAt": "2026-06-25T00:44:33.956Z"
         }
       }
     },
