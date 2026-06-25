@@ -18,10 +18,10 @@
     "T016"
   ],
   "folded_polish_task_ids": [],
-  "commit_sha": "246771e5b45713075768d76f3a84cdd704cbbe3b",
-  "head_sha": "246771e5b45713075768d76f3a84cdd704cbbe3b",
+  "commit_sha": "b41a2004dce983c9f520ca8c51db4b94d0b12eac",
+  "head_sha": "b41a2004dce983c9f520ca8c51db4b94d0b12eac",
   "completed_at": "2026-06-24T22:54:45Z",
-  "updated_at": "2026-06-25T00:04:56.786Z",
+  "updated_at": "2026-06-25T00:16:25.468Z",
   "evidence_paths": [
     "specs/011-crabtrap-honeypot/.process/uat-runbook.md",
     "src/lib/crabtrap-adapter.ts",
@@ -33,5 +33,11 @@
     "direnv exec . pnpm exec eslint src/lib/crabtrap-adapter.ts src/lib/__tests__/crabtrap-adapter.test.ts src/lib/__tests__/fixtures/crabtrap/crabtrap-fixtures.ts"
   ],
   "behavior_scope": "US2 signature verification, strict normalization, replay-key lookup, and existing-schema activity insertion only; stale timestamp handling and unsafe-field scanning remain deferred to US3",
-  "remediation": []
+  "remediation": [],
+  "restacked_from": [
+    {
+      "reason": "Move SPEC-012B stale-claim guardrail fix into foundation so every stack PR passes quality-gate independently.",
+      "updated_at": "2026-06-25T00:16:25.468Z"
+    }
+  ]
 }

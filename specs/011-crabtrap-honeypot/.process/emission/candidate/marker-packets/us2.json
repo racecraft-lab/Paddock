@@ -2,11 +2,11 @@
   "slice_id": "us2",
   "review_order": 3,
   "total_slices": 5,
-  "base_branch": "011-crabtrap-honeypot/02-us1",
-  "head_branch": "011-crabtrap-honeypot/03-us2",
+  "base_branch": "SPEC-011-crabtrap-honeypot-stack/02-us1",
+  "head_branch": "SPEC-011-crabtrap-honeypot-stack/03-us2",
   "target": {
-    "base_branch": "011-crabtrap-honeypot/02-us1",
-    "head_branch": "011-crabtrap-honeypot/03-us2"
+    "base_branch": "SPEC-011-crabtrap-honeypot-stack/02-us1",
+    "head_branch": "SPEC-011-crabtrap-honeypot-stack/03-us2"
   },
   "generated_title": {
     "value": "feat(speckit-pro): Add marker split emission fixtures",
@@ -20,7 +20,7 @@
     },
     "rejected_candidates": [
       {
-        "value": "011-crabtrap-honeypot/03-us2",
+        "value": "SPEC-011-crabtrap-honeypot-stack/03-us2",
         "reason": "Branch names remain metadata and are not public title descriptions."
       },
       {
@@ -109,8 +109,8 @@
     "review_order": 3,
     "slice_id": "us2",
     "layer": "us2",
-    "branch": "011-crabtrap-honeypot/03-us2",
-    "base_branch": "011-crabtrap-honeypot/02-us1",
+    "branch": "SPEC-011-crabtrap-honeypot-stack/03-us2",
+    "base_branch": "SPEC-011-crabtrap-honeypot-stack/02-us1",
     "pr_number": null,
     "pr_url": null,
     "declared_files": [
@@ -123,7 +123,7 @@
     ],
     "verification_evidence": "specs/011-crabtrap-honeypot/.process/emission/us2/no_scoped_tests.txt",
     "status": "pending",
-    "head_sha": "246771e5b45713075768d76f3a84cdd704cbbe3b",
+    "head_sha": "b41a2004dce983c9f520ca8c51db4b94d0b12eac",
     "merged_sha": null
   },
   "marker_id": "us2",

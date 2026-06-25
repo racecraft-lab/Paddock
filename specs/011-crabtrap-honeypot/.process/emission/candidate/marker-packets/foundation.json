@@ -3,10 +3,10 @@
   "review_order": 1,
   "total_slices": 5,
   "base_branch": "main",
-  "head_branch": "011-crabtrap-honeypot/01-foundation",
+  "head_branch": "SPEC-011-crabtrap-honeypot-stack/01-foundation",
   "target": {
     "base_branch": "main",
-    "head_branch": "011-crabtrap-honeypot/01-foundation"
+    "head_branch": "SPEC-011-crabtrap-honeypot-stack/01-foundation"
   },
   "generated_title": {
     "value": "feat(speckit-pro): Add marker split emission fixtures",
@@ -20,7 +20,7 @@
     },
     "rejected_candidates": [
       {
-        "value": "011-crabtrap-honeypot/01-foundation",
+        "value": "SPEC-011-crabtrap-honeypot-stack/01-foundation",
         "reason": "Branch names remain metadata and are not public title descriptions."
       },
       {
@@ -221,7 +221,7 @@
     "review_order": 1,
     "slice_id": "foundation",
     "layer": "foundation",
-    "branch": "011-crabtrap-honeypot/01-foundation",
+    "branch": "SPEC-011-crabtrap-honeypot-stack/01-foundation",
     "base_branch": "main",
     "pr_number": null,
     "pr_url": null,
@@ -291,7 +291,7 @@
     ],
     "verification_evidence": "specs/011-crabtrap-honeypot/.process/emission/foundation/no_scoped_tests.txt",
     "status": "pending",
-    "head_sha": "ae5552fb13b55c4eda80dbe72ba348960488eea3",
+    "head_sha": "c21e3d4bf0568a4de4b6a116611af42e21931f98",
     "merged_sha": null
   },
   "marker_id": "foundation",

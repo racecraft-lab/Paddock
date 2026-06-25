@@ -50,6 +50,7 @@ specs/011-crabtrap-honeypot/.process/emission/foundation/marker-packet.json
 specs/011-crabtrap-honeypot/.process/emission/foundation/no_scoped_tests.txt
 specs/011-crabtrap-honeypot/.process/emission/foundation/pr-body.md
 specs/011-crabtrap-honeypot/.process/emission/full-verification-evidence.md
+specs/011-crabtrap-honeypot/.process/emission/restack-checkpoints.json
 specs/011-crabtrap-honeypot/.process/emission/us1/marker-packet.json
 specs/011-crabtrap-honeypot/.process/emission/us1/no_scoped_tests.txt
 specs/011-crabtrap-honeypot/.process/emission/us1/pr-body.md

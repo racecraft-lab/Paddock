@@ -25,10 +25,10 @@
     "T031",
     "T032"
   ],
-  "commit_sha": "8da3ae65bb0ed23462b7ae4fc184de5478018502",
-  "head_sha": "8da3ae65bb0ed23462b7ae4fc184de5478018502",
+  "commit_sha": "b93009a91fe6ce3bc6248d60716c9f3d0e05d3bd",
+  "head_sha": "b93009a91fe6ce3bc6248d60716c9f3d0e05d3bd",
   "completed_at": "2026-06-24T23:32:16Z",
-  "updated_at": "2026-06-25T00:04:56.786Z",
+  "updated_at": "2026-06-25T00:16:25.468Z",
   "evidence_paths": [
     "specs/011-crabtrap-honeypot/.process/uat-runbook.md",
     "specs/011-crabtrap-honeypot/.process/pr-review-packet.md",
@@ -57,5 +57,11 @@
   "remediation": [
     "Aligned FEATURE_CRABTRAP_HONEYPOT cascade prerequisites in feature flag and product-line seed configs/tests",
     "Tightened SPEC-012B stale-status detector to explicit pointer fields so historical prose does not fail guardrails"
+  ],
+  "restacked_from": [
+    {
+      "reason": "Move SPEC-012B stale-claim guardrail fix into foundation so every stack PR passes quality-gate independently.",
+      "updated_at": "2026-06-25T00:16:25.468Z"
+    }
   ]
 }

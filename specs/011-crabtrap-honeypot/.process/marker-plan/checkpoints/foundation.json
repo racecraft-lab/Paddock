@@ -20,10 +20,10 @@
     "T007"
   ],
   "folded_polish_task_ids": [],
-  "commit_sha": "ae5552fb13b55c4eda80dbe72ba348960488eea3",
-  "head_sha": "ae5552fb13b55c4eda80dbe72ba348960488eea3",
+  "commit_sha": "c21e3d4bf0568a4de4b6a116611af42e21931f98",
+  "head_sha": "c21e3d4bf0568a4de4b6a116611af42e21931f98",
   "completed_at": "2026-06-24T22:39:32.329Z",
-  "updated_at": "2026-06-25T00:04:56.786Z",
+  "updated_at": "2026-06-25T00:16:25.468Z",
   "evidence_paths": [
     "specs/011-crabtrap-honeypot/.process/uat-runbook.md",
     "src/lib/__tests__/crabtrap-adapter.test.ts",
@@ -31,5 +31,11 @@
   ],
   "validation": [],
   "behavior_scope": "minimal type/export stub only; adapter behavior deferred to later markers",
-  "remediation": []
+  "remediation": [],
+  "restacked_from": [
+    {
+      "reason": "Move SPEC-012B stale-claim guardrail fix into foundation so every stack PR passes quality-gate independently.",
+      "updated_at": "2026-06-25T00:16:25.468Z"
+    }
+  ]
 }

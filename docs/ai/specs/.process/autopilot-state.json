@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "workflow_file": "docs/ai/specs/.process/SPEC-011-workflow.md",
-  "updated_at": "2026-06-25T00:09:06.362Z",
+  "updated_at": "2026-06-25T00:16:25.468Z",
   "active_step": "Phase 7: us4 + polish complete; post gates pending",
   "spec_id": "SPEC-011",
   "feature_dir": "specs/011-crabtrap-honeypot",
@@ -616,11 +616,17 @@
           "red_command": "direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts",
           "red_result": "1 test file failed, 15 tests failed with assertion failures against the minimal adapter stub",
           "behavior_scope": "minimal type/export stub only; adapter behavior deferred to later markers",
-          "commit_sha": "ae5552fb13b55c4eda80dbe72ba348960488eea3",
+          "commit_sha": "c21e3d4bf0568a4de4b6a116611af42e21931f98",
           "completed_at": "2026-06-24T22:39:32.329Z",
           "evidence_path": "specs/011-crabtrap-honeypot/.process/marker-plan/checkpoints/foundation.json",
-          "head_sha": "ae5552fb13b55c4eda80dbe72ba348960488eea3",
-          "updated_at": "2026-06-25T00:09:06.362Z"
+          "head_sha": "c21e3d4bf0568a4de4b6a116611af42e21931f98",
+          "updated_at": "2026-06-25T00:16:25.468Z",
+          "restacked_from": [
+            {
+              "reason": "Move SPEC-012B stale-claim guardrail fix into foundation so every stack PR passes quality-gate independently.",
+              "updated_at": "2026-06-25T00:16:25.468Z"
+            }
+          ]
         },
         "emission_mapping": {
           "status": "pending"
@@ -711,10 +717,16 @@
           ],
           "behavior_scope": "feature flag and config no-op behavior only; payload parsing, HMAC verification, activity writes, replay detection, unsafe-field checks, URL normalization, routes, OpenAPI, migrations, scheduler/task-dispatch, notifications, UI panels, and CrabTrap runtime integration deferred",
           "completed_at": "2026-06-24T22:43:40Z",
-          "commit_sha": "f74d3491fdcc7418c270d66e69bc605bcdfb1fbb",
+          "commit_sha": "4b1204099df564b6e29f7441e4ecfd5c2368f1db",
           "evidence_path": "specs/011-crabtrap-honeypot/.process/marker-plan/checkpoints/us1.json",
-          "head_sha": "f74d3491fdcc7418c270d66e69bc605bcdfb1fbb",
-          "updated_at": "2026-06-25T00:07:45.649Z"
+          "head_sha": "4b1204099df564b6e29f7441e4ecfd5c2368f1db",
+          "updated_at": "2026-06-25T00:16:25.468Z",
+          "restacked_from": [
+            {
+              "reason": "Move SPEC-012B stale-claim guardrail fix into foundation so every stack PR passes quality-gate independently.",
+              "updated_at": "2026-06-25T00:16:25.468Z"
+            }
+          ]
         },
         "emission_mapping": {
           "status": "pending"
@@ -808,10 +820,16 @@
           ],
           "behavior_scope": "US2 signature verification, strict normalization, replay-key lookup, and existing-schema activity insertion only; stale timestamp handling and unsafe-field scanning remain deferred to US3",
           "completed_at": "2026-06-24T22:54:45Z",
-          "commit_sha": "246771e5b45713075768d76f3a84cdd704cbbe3b",
+          "commit_sha": "b41a2004dce983c9f520ca8c51db4b94d0b12eac",
           "evidence_path": "specs/011-crabtrap-honeypot/.process/marker-plan/checkpoints/us2.json",
-          "head_sha": "246771e5b45713075768d76f3a84cdd704cbbe3b",
-          "updated_at": "2026-06-25T00:07:45.649Z"
+          "head_sha": "b41a2004dce983c9f520ca8c51db4b94d0b12eac",
+          "updated_at": "2026-06-25T00:16:25.468Z",
+          "restacked_from": [
+            {
+              "reason": "Move SPEC-012B stale-claim guardrail fix into foundation so every stack PR passes quality-gate independently.",
+              "updated_at": "2026-06-25T00:16:25.468Z"
+            }
+          ]
         },
         "emission_mapping": {
           "status": "pending"
@@ -905,10 +923,16 @@
           ],
           "behavior_scope": "US3 invalid and unsafe payload hardening only; no route, OpenAPI, migration, scheduler/task-dispatch, notification, GitHub, task, UI, or CrabTrap runtime integration mutation",
           "completed_at": "2026-06-24T23:03:37Z",
-          "commit_sha": "b461883a31c4f13a68615614cf1be6421996ec74",
+          "commit_sha": "6ee512b277f121953f1c62bafc5dd54a049a4542",
           "evidence_path": "specs/011-crabtrap-honeypot/.process/marker-plan/checkpoints/us3.json",
-          "head_sha": "b461883a31c4f13a68615614cf1be6421996ec74",
-          "updated_at": "2026-06-25T00:07:45.649Z"
+          "head_sha": "6ee512b277f121953f1c62bafc5dd54a049a4542",
+          "updated_at": "2026-06-25T00:16:25.468Z",
+          "restacked_from": [
+            {
+              "reason": "Move SPEC-012B stale-claim guardrail fix into foundation so every stack PR passes quality-gate independently.",
+              "updated_at": "2026-06-25T00:16:25.468Z"
+            }
+          ]
         },
         "emission_mapping": {
           "status": "pending"
@@ -1089,10 +1113,16 @@
             "Aligned FEATURE_CRABTRAP_HONEYPOT cascade prerequisites in feature flag and product-line seed configs/tests",
             "Tightened SPEC-012B stale-status detector to explicit pointer fields so historical prose does not fail guardrails"
           ],
-          "commit_sha": "8da3ae65bb0ed23462b7ae4fc184de5478018502",
+          "commit_sha": "b93009a91fe6ce3bc6248d60716c9f3d0e05d3bd",
           "evidence_path": "specs/011-crabtrap-honeypot/.process/marker-plan/checkpoints/us4.json",
-          "head_sha": "8da3ae65bb0ed23462b7ae4fc184de5478018502",
-          "updated_at": "2026-06-25T00:07:45.649Z"
+          "head_sha": "b93009a91fe6ce3bc6248d60716c9f3d0e05d3bd",
+          "updated_at": "2026-06-25T00:16:25.468Z",
+          "restacked_from": [
+            {
+              "reason": "Move SPEC-012B stale-claim guardrail fix into foundation so every stack PR passes quality-gate independently.",
+              "updated_at": "2026-06-25T00:16:25.468Z"
+            }
+          ]
         },
         "emission_mapping": {
           "status": "pending"
@@ -1113,7 +1143,7 @@
         }
       }
     ],
-    "updated_at": "2026-06-25T00:09:06.362Z"
+    "updated_at": "2026-06-25T00:16:25.468Z"
   },
   "current_source_fingerprint": {
     "feature_spec_sha": "c96faf93d5cf509f3babeecaa67dee8adb53fd2b414b8ba068c63a435585e2e6",

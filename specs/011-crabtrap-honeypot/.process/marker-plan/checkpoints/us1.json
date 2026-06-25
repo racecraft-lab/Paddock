@@ -17,10 +17,10 @@
     "T011"
   ],
   "folded_polish_task_ids": [],
-  "commit_sha": "f74d3491fdcc7418c270d66e69bc605bcdfb1fbb",
-  "head_sha": "f74d3491fdcc7418c270d66e69bc605bcdfb1fbb",
+  "commit_sha": "4b1204099df564b6e29f7441e4ecfd5c2368f1db",
+  "head_sha": "4b1204099df564b6e29f7441e4ecfd5c2368f1db",
   "completed_at": "2026-06-24T22:43:40Z",
-  "updated_at": "2026-06-25T00:04:56.786Z",
+  "updated_at": "2026-06-25T00:16:25.468Z",
   "evidence_paths": [
     "specs/011-crabtrap-honeypot/.process/uat-runbook.md",
     "src/lib/crabtrap-adapter.ts",
@@ -31,5 +31,11 @@
     "direnv exec . pnpm exec eslint src/lib/crabtrap-adapter.ts src/lib/__tests__/crabtrap-adapter.test.ts src/lib/__tests__/fixtures/crabtrap/crabtrap-fixtures.ts"
   ],
   "behavior_scope": "feature flag and config no-op behavior only; payload parsing, HMAC verification, activity writes, replay detection, unsafe-field checks, URL normalization, routes, OpenAPI, migrations, scheduler/task-dispatch, notifications, UI panels, and CrabTrap runtime integration deferred",
-  "remediation": []
+  "remediation": [],
+  "restacked_from": [
+    {
+      "reason": "Move SPEC-012B stale-claim guardrail fix into foundation so every stack PR passes quality-gate independently.",
+      "updated_at": "2026-06-25T00:16:25.468Z"
+    }
+  ]
 }

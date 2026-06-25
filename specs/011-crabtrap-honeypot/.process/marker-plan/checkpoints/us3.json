@@ -18,10 +18,10 @@
     "T021"
   ],
   "folded_polish_task_ids": [],
-  "commit_sha": "b461883a31c4f13a68615614cf1be6421996ec74",
-  "head_sha": "b461883a31c4f13a68615614cf1be6421996ec74",
+  "commit_sha": "6ee512b277f121953f1c62bafc5dd54a049a4542",
+  "head_sha": "6ee512b277f121953f1c62bafc5dd54a049a4542",
   "completed_at": "2026-06-24T23:03:37Z",
-  "updated_at": "2026-06-25T00:04:56.786Z",
+  "updated_at": "2026-06-25T00:16:25.468Z",
   "evidence_paths": [
     "specs/011-crabtrap-honeypot/.process/uat-runbook.md",
     "src/lib/crabtrap-adapter.ts",
@@ -33,5 +33,11 @@
     "git diff --check"
   ],
   "behavior_scope": "US3 invalid and unsafe payload hardening only; no route, OpenAPI, migration, scheduler/task-dispatch, notification, GitHub, task, UI, or CrabTrap runtime integration mutation",
-  "remediation": []
+  "remediation": [],
+  "restacked_from": [
+    {
+      "reason": "Move SPEC-012B stale-claim guardrail fix into foundation so every stack PR passes quality-gate independently.",
+      "updated_at": "2026-06-25T00:16:25.468Z"
+    }
+  ]
 }
