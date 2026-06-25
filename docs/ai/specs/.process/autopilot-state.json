@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "workflow_file": "docs/ai/specs/.process/SPEC-011-workflow.md",
-  "updated_at": "2026-06-24T23:32:16Z",
+  "updated_at": "2026-06-25T02:33:29Z",
   "active_step": "Phase 7: us4 + polish complete; post gates pending",
   "spec_id": "SPEC-011",
   "feature_dir": "specs/011-crabtrap-honeypot",
@@ -852,11 +852,11 @@
       ],
       "behavior_scope": "feature flag and config no-op behavior only; payload parsing, HMAC verification, activity writes, replay detection, unsafe-field checks, URL normalization, routes, OpenAPI, migrations, scheduler/task-dispatch, notifications, UI panels, and CrabTrap runtime integration deferred",
       "completed_at": "2026-06-24T22:43:40Z",
-      "commit_sha": "f74d3491fdcc7418c270d66e69bc605bcdfb1fbb"
+      "commit_sha": "0b9411f9688136e35df7d29690416d6b9b474aaa"
     },
     "us2_checkpoint": {
       "status": "complete",
-      "commit_sha": "246771e5b45713075768d76f3a84cdd704cbbe3b",
+      "commit_sha": "375767b126ddfcbda76662bccda5d4bfc51e549d",
       "completed_at": "2026-06-24T22:54:45Z",
       "completed_task_ids": [
         "T012",
@@ -900,7 +900,7 @@
       ],
       "behavior_scope": "US3 invalid and unsafe payload hardening only; no route, OpenAPI, migration, scheduler/task-dispatch, notification, GitHub, task, UI, or CrabTrap runtime integration mutation",
       "completed_at": "2026-06-24T23:03:37Z",
-      "commit_sha": "b461883a31c4f13a68615614cf1be6421996ec74"
+      "commit_sha": "02cfab9565579c74d0c8338bc136b75387bffa7b"
     },
     "us4_checkpoint": {
       "status": "complete",
@@ -946,7 +946,7 @@
         "Aligned FEATURE_CRABTRAP_HONEYPOT cascade prerequisites in feature flag and product-line seed configs/tests",
         "Tightened SPEC-012B stale-status detector to explicit pointer fields so historical prose does not fail guardrails"
       ],
-      "commit_sha": "ef92a3d40b6a377a3fa4f21428cc82b1334a1cc3"
+      "commit_sha": "8e3aba38a3b404bf4d1ef45d71a8756f633129e8"
     }
   },
   "marker_checkpoints": {
@@ -959,7 +959,7 @@
         "T015",
         "T016"
       ],
-      "commit_sha": "246771e5b45713075768d76f3a84cdd704cbbe3b",
+      "commit_sha": "375767b126ddfcbda76662bccda5d4bfc51e549d",
       "completed_at": "2026-06-24T22:54:45Z",
       "evidence_paths": [
         "specs/011-crabtrap-honeypot/.process/uat-runbook.md",
@@ -981,7 +981,7 @@
         "specs/011-crabtrap-honeypot/.process/marker-plan/pr-marker-plan.json"
       ],
       "focused_file_result": "1 test file passed; 15 tests passed",
-      "commit_sha": "b461883a31c4f13a68615614cf1be6421996ec74"
+      "commit_sha": "02cfab9565579c74d0c8338bc136b75387bffa7b"
     },
     "us4": {
       "status": "complete",
@@ -1011,7 +1011,7 @@
       "unit_result": "passed: 328 files, 3410 tests, 4 skipped, 84 todo",
       "build_result": "passed",
       "focused_status_detector_result": "passed: node --test scripts/spec-012b/__tests__/hard-status-evidence.test.mjs, 5 tests",
-      "commit_sha": "ef92a3d40b6a377a3fa4f21428cc82b1334a1cc3"
+      "commit_sha": "8e3aba38a3b404bf4d1ef45d71a8756f633129e8"
     }
   }
 }

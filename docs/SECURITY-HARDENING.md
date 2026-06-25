@@ -253,6 +253,39 @@ Keep OpenClaw updated. Notable past vulnerabilities:
 | CVE-2026-26329 | High | Path traversal | v2026.2.25 |
 | CVE-2026-26319 | Medium | Missing webhook auth | v2026.2.25 |
 
+### 8. OpenClaw Release & Plugin Safety (Alpha Feed Guardrail)
+
+For `openclaw` specifically, avoid pulling release metadata from unstable channels into production gateways.
+
+- Do **not** auto-update production from non-stable channels.
+- In staging, use disposable environments to validate:
+  - `openclaw status --deep`
+  - `openclaw plugins inspect <id> --runtime --json`
+- If update checks regress, pin gateways to the latest known stable OpenClaw version
+  (example: `2026.6.5`) until the issue is resolved.
+
+Add a lightweight pre-job probe:
+
+```bash
+openclaw --version          # quick CLI reachability check
+openclaw status --deep      # runtime health before scheduled work
+openclaw doctor             # baseline CLI health in CI smoke
+```
+
+In CI, run this smoke command (already wired in Quality Gate):
+
+```bash
+pnpm openclaw:smoke
+```
+
+To validate plugin runtime discovery on demand, set:
+
+```bash
+OPENCLAW_SMOKE_PLUGIN_ID=<plugin-id> pnpm openclaw:smoke
+```
+
+Keep this as a non-blocking precondition for deployment or scheduled job pipelines.
+
 ---
 
 ## Deployment Architecture
