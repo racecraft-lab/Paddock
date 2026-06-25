@@ -1,7 +1,25 @@
 {
   "version": 1,
-  "updatedAt": "2026-06-24T19:27:06.843Z",
+  "updatedAt": "2026-06-25T00:15:07.873Z",
   "prs": [
+    {
+      "prNumber": "91",
+      "prTitle": "feat(speckit-pro): Add marker split emission fixtures",
+      "prUrl": "https://github.com/racecraft-lab/Paddock/pull/91",
+      "indexHref": "https://racecraft-lab.github.io/Paddock/pr/91/",
+      "headRef": "SPEC-011-crabtrap-honeypot-stack/01-foundation",
+      "baseRef": "main",
+      "updatedAt": "2026-06-25T00:15:07.873Z",
+      "latest": {
+        "storybook": {
+          "runId": "28137994800",
+          "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/28137994800",
+          "latestHref": "https://racecraft-lab.github.io/Paddock/pr/91/storybook/latest/?v=28137994800-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/Paddock/pr/91/runs/28137994800-attempt-1/storybook/",
+          "updatedAt": "2026-06-25T00:15:07.873Z"
+        }
+      }
+    },
     {
       "prNumber": "90",
       "prTitle": "fix(security): resolve GitHub security alerts",
