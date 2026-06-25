@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-06-25T00:21:40.883Z",
+  "updatedAt": "2026-06-25T00:21:58.821Z",
   "prs": [
     {
       "prNumber": "95",
@@ -9,8 +9,15 @@
       "indexHref": "https://racecraft-lab.github.io/Paddock/pr/95/",
       "headRef": "SPEC-011-crabtrap-honeypot-stack/05-us4",
       "baseRef": "SPEC-011-crabtrap-honeypot-stack/04-us3",
-      "updatedAt": "2026-06-25T00:21:40.883Z",
+      "updatedAt": "2026-06-25T00:21:58.821Z",
       "latest": {
+        "playwright": {
+          "runId": "28138009670",
+          "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/28138009670",
+          "latestHref": "https://racecraft-lab.github.io/Paddock/pr/95/playwright/latest/?v=28138009670-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/Paddock/pr/95/runs/28138009670-attempt-1/playwright/",
+          "updatedAt": "2026-06-25T00:21:58.821Z"
+        },
         "storybook": {
           "runId": "28138202807",
           "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/28138202807",

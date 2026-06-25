@@ -1,0 +1,49 @@
+{
+  "schema": "visual-review-pages.visual-review-report.v1",
+  "version": 1,
+  "repository": "racecraft-lab/Paddock",
+  "reportMode": "pr",
+  "reportScope": "latest",
+  "surface": "playwright",
+  "surfaceLabel": "Playwright UI E2E",
+  "workflowName": "Paddock UI E2E",
+  "workflowFile": "paddock-ui-e2e.yml",
+  "prNumber": "95",
+  "prUrl": "https://github.com/racecraft-lab/Paddock/pull/95",
+  "runId": "28138009670",
+  "runAttempt": "1",
+  "runKey": "28138009670-attempt-1",
+  "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/28138009670",
+  "headRef": "SPEC-011-crabtrap-honeypot-stack/05-us4",
+  "baseRef": "SPEC-011-crabtrap-honeypot-stack/04-us3",
+  "headSha": "8da3ae65bb0ed23462b7ae4fc184de5478018502",
+  "reportHref": "https://racecraft-lab.github.io/Paddock/pr/95/playwright/latest/",
+  "latestHref": "https://racecraft-lab.github.io/Paddock/pr/95/playwright/latest/?v=28138009670-attempt-1",
+  "createdAt": "2026-06-25T00:21:58.821Z",
+  "itemCounts": {
+    "baselineApproved": 0,
+    "changed": 0,
+    "deleted": 0,
+    "new": 0,
+    "open": 0,
+    "passed": 0,
+    "total": 0
+  },
+  "reviewScope": {
+    "domains": [],
+    "filtered": 155,
+    "reason": "changed-files-no-review-domain"
+  },
+  "sourcePullRequest": null,
+  "initialReviewState": null,
+  "canonicalReviewState": {
+    "schema": "visual-review-pages.visual-review-state.v1",
+    "repository": "racecraft-lab/Paddock",
+    "prNumber": "95",
+    "surface": "playwright",
+    "surfaceLabel": "Playwright UI E2E",
+    "headSha": "8da3ae65bb0ed23462b7ae4fc184de5478018502",
+    "runKey": "28138009670-attempt-1",
+    "items": []
+  }
+}
