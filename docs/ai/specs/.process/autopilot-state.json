@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "workflow_file": "docs/ai/specs/.process/SPEC-011-workflow.md",
-  "updated_at": "2026-06-24T23:03:37Z",
+  "updated_at": "2026-06-25T02:31:22Z",
   "active_step": "Phase 7: us4 + polish (T022,T023,T024,T025,T026,T027,T028,T029,T030,T031,T032)",
   "spec_id": "SPEC-011",
   "feature_dir": "specs/011-crabtrap-honeypot",
@@ -771,11 +771,11 @@
       ],
       "behavior_scope": "feature flag and config no-op behavior only; payload parsing, HMAC verification, activity writes, replay detection, unsafe-field checks, URL normalization, routes, OpenAPI, migrations, scheduler/task-dispatch, notifications, UI panels, and CrabTrap runtime integration deferred",
       "completed_at": "2026-06-24T22:43:40Z",
-      "commit_sha": "f74d3491fdcc7418c270d66e69bc605bcdfb1fbb"
+      "commit_sha": "0b9411f9688136e35df7d29690416d6b9b474aaa"
     },
     "us2_checkpoint": {
       "status": "complete",
-      "commit_sha": "246771e5b45713075768d76f3a84cdd704cbbe3b",
+      "commit_sha": "375767b126ddfcbda76662bccda5d4bfc51e549d",
       "completed_at": "2026-06-24T22:54:45Z",
       "completed_task_ids": [
         "T012",
@@ -817,8 +817,9 @@
         "direnv exec . pnpm exec eslint src/lib/crabtrap-adapter.ts src/lib/__tests__/crabtrap-adapter.test.ts src/lib/__tests__/fixtures/crabtrap/crabtrap-fixtures.ts",
         "git diff --check"
       ],
-      "behavior_scope": "US3 invalid and unsafe payload hardening only; no route, OpenAPI, migration, scheduler/task-dispatch, notification, GitHub, task, UI, or CrabTrap runtime integration mutation; checkpoint commit SHA intentionally omitted for the parent orchestrator",
-      "completed_at": "2026-06-24T23:03:37Z"
+      "behavior_scope": "US3 invalid and unsafe payload hardening only; no route, OpenAPI, migration, scheduler/task-dispatch, notification, GitHub, task, UI, or CrabTrap runtime integration mutation",
+      "completed_at": "2026-06-24T23:03:37Z",
+      "commit_sha": "02cfab9565579c74d0c8338bc136b75387bffa7b"
     }
   },
   "marker_checkpoints": {
@@ -831,7 +832,7 @@
         "T015",
         "T016"
       ],
-      "commit_sha": "246771e5b45713075768d76f3a84cdd704cbbe3b",
+      "commit_sha": "375767b126ddfcbda76662bccda5d4bfc51e549d",
       "completed_at": "2026-06-24T22:54:45Z",
       "evidence_paths": [
         "specs/011-crabtrap-honeypot/.process/uat-runbook.md",
@@ -853,7 +854,7 @@
         "specs/011-crabtrap-honeypot/.process/marker-plan/pr-marker-plan.json"
       ],
       "focused_file_result": "1 test file passed; 15 tests passed",
-      "commit_sha_pending": true
+      "commit_sha": "02cfab9565579c74d0c8338bc136b75387bffa7b"
     }
   }
 }
