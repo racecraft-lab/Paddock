@@ -98,4 +98,5 @@ Note: for open PR rows, `SHA` records the PR evidence snapshot head commit; for 
 - [.process/uat-runbook.md](.process/uat-runbook.md)
 - [quickstart.md](quickstart.md)
 - [verify-tasks-report.md](verify-tasks-report.md)
+- [retrospective.md](retrospective.md)
 <!-- GENERATED:BACKLINKS:END -->
