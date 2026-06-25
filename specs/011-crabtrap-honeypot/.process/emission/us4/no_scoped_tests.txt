@@ -1,0 +1,4 @@
+No declared scoped tests or applicable project command protects this slice.
+Full regression evidence remains required before emission.
+command: <none>
+exit_status: 0

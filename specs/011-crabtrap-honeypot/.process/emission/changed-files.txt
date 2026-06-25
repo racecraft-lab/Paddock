@@ -50,6 +50,18 @@ specs/011-crabtrap-honeypot/.process/emission/foundation/marker-packet.json
 specs/011-crabtrap-honeypot/.process/emission/foundation/no_scoped_tests.txt
 specs/011-crabtrap-honeypot/.process/emission/foundation/pr-body.md
 specs/011-crabtrap-honeypot/.process/emission/full-verification-evidence.md
+specs/011-crabtrap-honeypot/.process/emission/us1/marker-packet.json
+specs/011-crabtrap-honeypot/.process/emission/us1/no_scoped_tests.txt
+specs/011-crabtrap-honeypot/.process/emission/us1/pr-body.md
+specs/011-crabtrap-honeypot/.process/emission/us2/marker-packet.json
+specs/011-crabtrap-honeypot/.process/emission/us2/no_scoped_tests.txt
+specs/011-crabtrap-honeypot/.process/emission/us2/pr-body.md
+specs/011-crabtrap-honeypot/.process/emission/us3/marker-packet.json
+specs/011-crabtrap-honeypot/.process/emission/us3/no_scoped_tests.txt
+specs/011-crabtrap-honeypot/.process/emission/us3/pr-body.md
+specs/011-crabtrap-honeypot/.process/emission/us4/marker-packet.json
+specs/011-crabtrap-honeypot/.process/emission/us4/no_scoped_tests.txt
+specs/011-crabtrap-honeypot/.process/emission/us4/pr-body.md
 specs/011-crabtrap-honeypot/.process/final-reviewability/gate-state.json
 specs/011-crabtrap-honeypot/.process/marker-plan/checkpoints/foundation.json
 specs/011-crabtrap-honeypot/.process/marker-plan/checkpoints/us1.json
@@ -59,6 +71,7 @@ specs/011-crabtrap-honeypot/.process/marker-plan/checkpoints/us4.json
 specs/011-crabtrap-honeypot/.process/marker-plan/final-marker-split-result.json
 specs/011-crabtrap-honeypot/.process/marker-plan/pr-marker-plan.json
 specs/011-crabtrap-honeypot/.process/pr-review-packet.md
+specs/011-crabtrap-honeypot/.process/prs.json
 specs/011-crabtrap-honeypot/.process/review-report.md
 specs/011-crabtrap-honeypot/.process/reviewability/atomicity-route.json
 specs/011-crabtrap-honeypot/.process/reviewability/tasks-gate.json

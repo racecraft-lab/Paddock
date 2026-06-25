@@ -1339,7 +1339,7 @@
   },
   "multi_pr_emission": {
     "schema_version": 2,
-    "status": "blocked",
+    "status": "complete",
     "emission_mode": "marker",
     "route": "marker_split",
     "base_branch": "main",
@@ -1400,11 +1400,11 @@
         "source": "prs-v2",
         "mismatch_reason": "observed stack order did not match expected topology",
         "expected_order": [
-          "011-crabtrap-honeypot/01-foundation",
-          "011-crabtrap-honeypot/02-us1",
-          "011-crabtrap-honeypot/03-us2",
-          "011-crabtrap-honeypot/04-us3",
-          "011-crabtrap-honeypot/05-us4"
+          "SPEC-011-crabtrap-honeypot-stack/01-foundation",
+          "SPEC-011-crabtrap-honeypot-stack/02-us1",
+          "SPEC-011-crabtrap-honeypot-stack/03-us2",
+          "SPEC-011-crabtrap-honeypot-stack/04-us3",
+          "SPEC-011-crabtrap-honeypot-stack/05-us4"
         ],
         "observed_order": []
       },
@@ -1420,7 +1420,7 @@
             "--base",
             "main",
             "--head",
-            "011-crabtrap-honeypot/01-foundation",
+            "SPEC-011-crabtrap-honeypot-stack/01-foundation",
             "--body-file",
             "specs/011-crabtrap-honeypot/.process/pr-packets/foundation.md",
             "--title",
@@ -1443,7 +1443,7 @@
           {
             "review_order": 1,
             "slice_id": "foundation",
-            "branch": "011-crabtrap-honeypot/01-foundation",
+            "branch": "SPEC-011-crabtrap-honeypot-stack/01-foundation",
             "base_branch": "main",
             "pr_number": null,
             "pr_url": null,
@@ -1453,8 +1453,8 @@
           {
             "review_order": 2,
             "slice_id": "us1",
-            "branch": "011-crabtrap-honeypot/02-us1",
-            "base_branch": "011-crabtrap-honeypot/01-foundation",
+            "branch": "SPEC-011-crabtrap-honeypot-stack/02-us1",
+            "base_branch": "SPEC-011-crabtrap-honeypot-stack/01-foundation",
             "pr_number": null,
             "pr_url": null,
             "head_sha": "f74d3491fdcc7418c270d66e69bc605bcdfb1fbb",
@@ -1463,8 +1463,8 @@
           {
             "review_order": 3,
             "slice_id": "us2",
-            "branch": "011-crabtrap-honeypot/03-us2",
-            "base_branch": "011-crabtrap-honeypot/02-us1",
+            "branch": "SPEC-011-crabtrap-honeypot-stack/03-us2",
+            "base_branch": "SPEC-011-crabtrap-honeypot-stack/02-us1",
             "pr_number": null,
             "pr_url": null,
             "head_sha": "246771e5b45713075768d76f3a84cdd704cbbe3b",
@@ -1473,8 +1473,8 @@
           {
             "review_order": 4,
             "slice_id": "us3",
-            "branch": "011-crabtrap-honeypot/04-us3",
-            "base_branch": "011-crabtrap-honeypot/03-us2",
+            "branch": "SPEC-011-crabtrap-honeypot-stack/04-us3",
+            "base_branch": "SPEC-011-crabtrap-honeypot-stack/03-us2",
             "pr_number": null,
             "pr_url": null,
             "head_sha": "b461883a31c4f13a68615614cf1be6421996ec74",
@@ -1483,8 +1483,8 @@
           {
             "review_order": 5,
             "slice_id": "us4",
-            "branch": "011-crabtrap-honeypot/05-us4",
-            "base_branch": "011-crabtrap-honeypot/04-us3",
+            "branch": "SPEC-011-crabtrap-honeypot-stack/05-us4",
+            "base_branch": "SPEC-011-crabtrap-honeypot-stack/04-us3",
             "pr_number": null,
             "pr_url": null,
             "head_sha": "8da3ae65bb0ed23462b7ae4fc184de5478018502",
@@ -1497,13 +1497,13 @@
       "evidence_path": "specs/011-crabtrap-honeypot/.process/stack-manager/emission/link/preflight/decision.json"
     },
     "stack_manager_evidence_path": "specs/011-crabtrap-honeypot/.process/stack-manager/emission/link/preflight/decision.json",
-    "next_slice_id": "foundation",
+    "next_slice_id": null,
     "reconciled_at": "2026-06-10T00:00:00Z",
     "slices": [
       {
         "slice_id": "foundation",
         "review_order": 1,
-        "expected_branch": "011-crabtrap-honeypot/01-foundation",
+        "expected_branch": "SPEC-011-crabtrap-honeypot-stack/01-foundation",
         "expected_base_branch": "main",
         "head_sha": "ae5552fb13b55c4eda80dbe72ba348960488eea3",
         "declared_files": [
@@ -1585,7 +1585,7 @@
             }
           ]
         },
-        "status": "failed",
+        "status": "pr_opened",
         "marker_id": "foundation",
         "source_marker_ids": [
           "foundation"
@@ -1595,20 +1595,21 @@
         ],
         "route": "marker_split",
         "marker_split_evidence": "specs/011-crabtrap-honeypot/.process/marker-plan/final-marker-split-result.json",
-        "last_error": {
-          "slice_id": "foundation",
-          "failed_at": "2026-06-10T00:00:00Z",
-          "phase": "git_branch",
-          "command": "git branch failed for slice foundation",
-          "exit_status": 2,
-          "evidence_path": ""
+        "pr": {
+          "number": 91,
+          "url": "https://github.com/racecraft-lab/Paddock/pull/91",
+          "state": "opened",
+          "base_ref": "main",
+          "head_ref": "SPEC-011-crabtrap-honeypot-stack/01-foundation",
+          "head_sha": "ae5552fb13b55c4eda80dbe72ba348960488eea3",
+          "merged_sha": null
         }
       },
       {
         "slice_id": "us1",
         "review_order": 2,
-        "expected_branch": "011-crabtrap-honeypot/02-us1",
-        "expected_base_branch": "011-crabtrap-honeypot/01-foundation",
+        "expected_branch": "SPEC-011-crabtrap-honeypot-stack/02-us1",
+        "expected_base_branch": "SPEC-011-crabtrap-honeypot-stack/01-foundation",
         "head_sha": "f74d3491fdcc7418c270d66e69bc605bcdfb1fbb",
         "declared_files": [
           "docs/ai/specs/.process/autopilot-state.json",
@@ -1633,7 +1634,7 @@
             }
           ]
         },
-        "status": "pending",
+        "status": "pr_opened",
         "marker_id": "us1",
         "source_marker_ids": [
           "us1"
@@ -1642,13 +1643,22 @@
           "specs/011-crabtrap-honeypot/.process/marker-plan/checkpoints/us1.json"
         ],
         "route": "marker_split",
-        "marker_split_evidence": "specs/011-crabtrap-honeypot/.process/marker-plan/final-marker-split-result.json"
+        "marker_split_evidence": "specs/011-crabtrap-honeypot/.process/marker-plan/final-marker-split-result.json",
+        "pr": {
+          "number": 92,
+          "url": "https://github.com/racecraft-lab/Paddock/pull/92",
+          "state": "opened",
+          "base_ref": "SPEC-011-crabtrap-honeypot-stack/01-foundation",
+          "head_ref": "SPEC-011-crabtrap-honeypot-stack/02-us1",
+          "head_sha": "f74d3491fdcc7418c270d66e69bc605bcdfb1fbb",
+          "merged_sha": null
+        }
       },
       {
         "slice_id": "us2",
         "review_order": 3,
-        "expected_branch": "011-crabtrap-honeypot/03-us2",
-        "expected_base_branch": "011-crabtrap-honeypot/02-us1",
+        "expected_branch": "SPEC-011-crabtrap-honeypot-stack/03-us2",
+        "expected_base_branch": "SPEC-011-crabtrap-honeypot-stack/02-us1",
         "head_sha": "246771e5b45713075768d76f3a84cdd704cbbe3b",
         "declared_files": [
           "docs/ai/specs/.process/autopilot-state.json",
@@ -1673,7 +1683,7 @@
             }
           ]
         },
-        "status": "pending",
+        "status": "pr_opened",
         "marker_id": "us2",
         "source_marker_ids": [
           "us2"
@@ -1682,13 +1692,22 @@
           "specs/011-crabtrap-honeypot/.process/marker-plan/checkpoints/us2.json"
         ],
         "route": "marker_split",
-        "marker_split_evidence": "specs/011-crabtrap-honeypot/.process/marker-plan/final-marker-split-result.json"
+        "marker_split_evidence": "specs/011-crabtrap-honeypot/.process/marker-plan/final-marker-split-result.json",
+        "pr": {
+          "number": 93,
+          "url": "https://github.com/racecraft-lab/Paddock/pull/93",
+          "state": "opened",
+          "base_ref": "SPEC-011-crabtrap-honeypot-stack/02-us1",
+          "head_ref": "SPEC-011-crabtrap-honeypot-stack/03-us2",
+          "head_sha": "246771e5b45713075768d76f3a84cdd704cbbe3b",
+          "merged_sha": null
+        }
       },
       {
         "slice_id": "us3",
         "review_order": 4,
-        "expected_branch": "011-crabtrap-honeypot/04-us3",
-        "expected_base_branch": "011-crabtrap-honeypot/03-us2",
+        "expected_branch": "SPEC-011-crabtrap-honeypot-stack/04-us3",
+        "expected_base_branch": "SPEC-011-crabtrap-honeypot-stack/03-us2",
         "head_sha": "b461883a31c4f13a68615614cf1be6421996ec74",
         "declared_files": [
           "docs/ai/specs/.process/autopilot-state.json",
@@ -1713,7 +1732,7 @@
             }
           ]
         },
-        "status": "pending",
+        "status": "pr_opened",
         "marker_id": "us3",
         "source_marker_ids": [
           "us3"
@@ -1722,13 +1741,22 @@
           "specs/011-crabtrap-honeypot/.process/marker-plan/checkpoints/us3.json"
         ],
         "route": "marker_split",
-        "marker_split_evidence": "specs/011-crabtrap-honeypot/.process/marker-plan/final-marker-split-result.json"
+        "marker_split_evidence": "specs/011-crabtrap-honeypot/.process/marker-plan/final-marker-split-result.json",
+        "pr": {
+          "number": 94,
+          "url": "https://github.com/racecraft-lab/Paddock/pull/94",
+          "state": "opened",
+          "base_ref": "SPEC-011-crabtrap-honeypot-stack/03-us2",
+          "head_ref": "SPEC-011-crabtrap-honeypot-stack/04-us3",
+          "head_sha": "b461883a31c4f13a68615614cf1be6421996ec74",
+          "merged_sha": null
+        }
       },
       {
         "slice_id": "us4",
         "review_order": 5,
-        "expected_branch": "011-crabtrap-honeypot/05-us4",
-        "expected_base_branch": "011-crabtrap-honeypot/04-us3",
+        "expected_branch": "SPEC-011-crabtrap-honeypot-stack/05-us4",
+        "expected_base_branch": "SPEC-011-crabtrap-honeypot-stack/04-us3",
         "head_sha": "8da3ae65bb0ed23462b7ae4fc184de5478018502",
         "declared_files": [
           "docs/ai/product-lines/paddock.yaml",
@@ -1768,7 +1796,7 @@
             }
           ]
         },
-        "status": "pending",
+        "status": "pr_opened",
         "marker_id": "us4",
         "source_marker_ids": [
           "us4"
@@ -1777,7 +1805,16 @@
           "specs/011-crabtrap-honeypot/.process/marker-plan/checkpoints/us4.json"
         ],
         "route": "marker_split",
-        "marker_split_evidence": "specs/011-crabtrap-honeypot/.process/marker-plan/final-marker-split-result.json"
+        "marker_split_evidence": "specs/011-crabtrap-honeypot/.process/marker-plan/final-marker-split-result.json",
+        "pr": {
+          "number": 95,
+          "url": "https://github.com/racecraft-lab/Paddock/pull/95",
+          "state": "opened",
+          "base_ref": "SPEC-011-crabtrap-honeypot-stack/04-us3",
+          "head_ref": "SPEC-011-crabtrap-honeypot-stack/05-us4",
+          "head_sha": "8da3ae65bb0ed23462b7ae4fc184de5478018502",
+          "merged_sha": null
+        }
       }
     ],
     "source_marker_plan": {

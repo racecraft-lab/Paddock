@@ -7,8 +7,8 @@
       "layer": "foundation",
       "branch": "SPEC-011-crabtrap-honeypot-stack/01-foundation",
       "base_branch": "main",
-      "pr_number": null,
-      "pr_url": null,
+      "pr_number": 91,
+      "pr_url": "https://github.com/racecraft-lab/Paddock/pull/91",
       "declared_files": [
         ".agents/skills/speckit-converge/SKILL.md",
         ".agents/skills/speckit-specify/SKILL.md",
@@ -74,7 +74,8 @@
         "tsconfig.spec-strict.json"
       ],
       "verification_evidence": "specs/011-crabtrap-honeypot/.process/emission/foundation/no_scoped_tests.txt",
-      "status": "pending",
+      "stack_manager_evidence_path": "specs/011-crabtrap-honeypot/.process/stack-manager/emission/link/preflight/decision.json",
+      "status": "opened",
       "head_sha": "ae5552fb13b55c4eda80dbe72ba348960488eea3",
       "merged_sha": null
     },
@@ -84,8 +85,8 @@
       "layer": "us1",
       "branch": "SPEC-011-crabtrap-honeypot-stack/02-us1",
       "base_branch": "SPEC-011-crabtrap-honeypot-stack/01-foundation",
-      "pr_number": null,
-      "pr_url": null,
+      "pr_number": 92,
+      "pr_url": "https://github.com/racecraft-lab/Paddock/pull/92",
       "declared_files": [
         "docs/ai/specs/.process/autopilot-state.json",
         "docs/ai/specs/.process/SPEC-011-workflow.md",
@@ -95,7 +96,8 @@
         "src/lib/crabtrap-adapter.ts"
       ],
       "verification_evidence": "specs/011-crabtrap-honeypot/.process/emission/us1/no_scoped_tests.txt",
-      "status": "pending",
+      "stack_manager_evidence_path": "specs/011-crabtrap-honeypot/.process/stack-manager/emission/link/preflight/decision.json",
+      "status": "opened",
       "head_sha": "f74d3491fdcc7418c270d66e69bc605bcdfb1fbb",
       "merged_sha": null
     },
@@ -105,8 +107,8 @@
       "layer": "us2",
       "branch": "SPEC-011-crabtrap-honeypot-stack/03-us2",
       "base_branch": "SPEC-011-crabtrap-honeypot-stack/02-us1",
-      "pr_number": null,
-      "pr_url": null,
+      "pr_number": 93,
+      "pr_url": "https://github.com/racecraft-lab/Paddock/pull/93",
       "declared_files": [
         "docs/ai/specs/.process/autopilot-state.json",
         "docs/ai/specs/.process/SPEC-011-workflow.md",
@@ -116,7 +118,8 @@
         "src/lib/crabtrap-adapter.ts"
       ],
       "verification_evidence": "specs/011-crabtrap-honeypot/.process/emission/us2/no_scoped_tests.txt",
-      "status": "pending",
+      "stack_manager_evidence_path": "specs/011-crabtrap-honeypot/.process/stack-manager/emission/link/preflight/decision.json",
+      "status": "opened",
       "head_sha": "246771e5b45713075768d76f3a84cdd704cbbe3b",
       "merged_sha": null
     },
@@ -126,8 +129,8 @@
       "layer": "us3",
       "branch": "SPEC-011-crabtrap-honeypot-stack/04-us3",
       "base_branch": "SPEC-011-crabtrap-honeypot-stack/03-us2",
-      "pr_number": null,
-      "pr_url": null,
+      "pr_number": 94,
+      "pr_url": "https://github.com/racecraft-lab/Paddock/pull/94",
       "declared_files": [
         "docs/ai/specs/.process/autopilot-state.json",
         "docs/ai/specs/.process/SPEC-011-workflow.md",
@@ -137,7 +140,8 @@
         "src/lib/crabtrap-adapter.ts"
       ],
       "verification_evidence": "specs/011-crabtrap-honeypot/.process/emission/us3/no_scoped_tests.txt",
-      "status": "pending",
+      "stack_manager_evidence_path": "specs/011-crabtrap-honeypot/.process/stack-manager/emission/link/preflight/decision.json",
+      "status": "opened",
       "head_sha": "b461883a31c4f13a68615614cf1be6421996ec74",
       "merged_sha": null
     },
@@ -147,8 +151,8 @@
       "layer": "us4",
       "branch": "SPEC-011-crabtrap-honeypot-stack/05-us4",
       "base_branch": "SPEC-011-crabtrap-honeypot-stack/04-us3",
-      "pr_number": null,
-      "pr_url": null,
+      "pr_number": 95,
+      "pr_url": "https://github.com/racecraft-lab/Paddock/pull/95",
       "declared_files": [
         "docs/ai/product-lines/paddock.yaml",
         "docs/ai/product-lines/product-line-b.yaml",
@@ -173,7 +177,8 @@
         "src/lib/product-line-seed/types.ts"
       ],
       "verification_evidence": "specs/011-crabtrap-honeypot/.process/emission/us4/no_scoped_tests.txt",
-      "status": "pending",
+      "stack_manager_evidence_path": "specs/011-crabtrap-honeypot/.process/stack-manager/emission/link/preflight/decision.json",
+      "status": "opened",
       "head_sha": "8da3ae65bb0ed23462b7ae4fc184de5478018502",
       "merged_sha": null
     }
