@@ -1,14 +1,18 @@
 ## Summary
 
-This PR covers one reviewer-ready slice: Add marker split emission fixtures.
+SPEC-011 stack slice 1/5. Adds the CrabTrap adapter foundation, fixtures, feature flag wiring, and strict-project coverage.
 
 ## What Changed
 
-- Builds the generated PR title and reviewer-readable body for this slice.
-- Keeps detailed validation records in packet files instead of putting logs and paths in the PR description.
+- Adds the CrabTrap adapter foundation and fixture corpus.
+- Adds feature-flag wiring and strict TypeScript project coverage.
+- Includes the SPEC-012B stale-claim guardrail parity fix required for stack CI.
+- Defers future-marker CrabTrap behavior tests until the final US4 slice.
 
-## Why It Matters
+## Verification
 
-Reviewers can scan the PR quickly and open implementation files only when they want more detail.
+- Foundation spot-check: `direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts` (test file skipped by design in this slice).
 
-Source: generated PR packet.
+## Scope
+
+This PR is limited to the foundation slice for SPEC-011. Later slices add no-op gating, evidence intake, invalid-payload hardening, and final verification activation.

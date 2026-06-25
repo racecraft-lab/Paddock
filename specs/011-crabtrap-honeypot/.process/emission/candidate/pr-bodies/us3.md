@@ -1,14 +1,18 @@
 ## Summary
 
-This PR covers one reviewer-ready slice: Add marker split emission fixtures.
+SPEC-011 stack slice 4/5. Adds bounded rejection behavior for invalid CrabTrap payloads.
 
 ## What Changed
 
-- Builds the generated PR title and reviewer-readable body for this slice.
-- Keeps detailed validation records in packet files instead of putting logs and paths in the PR description.
+- Rejects malformed, stale, unsigned, unsupported, oversized, and unsafe CrabTrap payloads.
+- Bounds schema diagnostic field paths before returning them to callers.
+- Keeps future-marker CrabTrap behavior tests deferred until the final US4 slice.
 
-## Why It Matters
+## Verification
 
-Reviewers can scan the PR quickly and open implementation files only when they want more detail.
+- `direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts` (deferred in this slice)
+- `direnv exec . pnpm typecheck`
 
-Source: generated PR packet.
+## Scope
+
+This PR is limited to the US3 invalid-payload hardening slice for SPEC-011.

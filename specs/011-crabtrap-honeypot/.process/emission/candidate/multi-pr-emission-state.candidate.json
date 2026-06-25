@@ -14,7 +14,7 @@
         "review_order": 1,
         "expected_branch": "SPEC-011-crabtrap-honeypot-stack/01-foundation",
         "expected_base_branch": "main",
-        "head_sha": "c21e3d4bf0568a4de4b6a116611af42e21931f98",
+        "head_sha": "1d4c10c8da07e960aa23a17a53e3c8049a84f0fd",
         "declared_files": [
           ".agents/skills/speckit-converge/SKILL.md",
           ".agents/skills/speckit-specify/SKILL.md",
@@ -110,7 +110,7 @@
         "review_order": 2,
         "expected_branch": "SPEC-011-crabtrap-honeypot-stack/02-us1",
         "expected_base_branch": "SPEC-011-crabtrap-honeypot-stack/01-foundation",
-        "head_sha": "4b1204099df564b6e29f7441e4ecfd5c2368f1db",
+        "head_sha": "7ffcb4c8649944dedd4593a3e7f2c4378be4b98d",
         "declared_files": [
           "docs/ai/specs/.process/autopilot-state.json",
           "docs/ai/specs/.process/SPEC-011-workflow.md",
@@ -150,7 +150,7 @@
         "review_order": 3,
         "expected_branch": "SPEC-011-crabtrap-honeypot-stack/03-us2",
         "expected_base_branch": "SPEC-011-crabtrap-honeypot-stack/02-us1",
-        "head_sha": "b41a2004dce983c9f520ca8c51db4b94d0b12eac",
+        "head_sha": "db1826efb4b89717447699a4aa088ab4fb017967",
         "declared_files": [
           "docs/ai/specs/.process/autopilot-state.json",
           "docs/ai/specs/.process/SPEC-011-workflow.md",
@@ -190,7 +190,7 @@
         "review_order": 4,
         "expected_branch": "SPEC-011-crabtrap-honeypot-stack/04-us3",
         "expected_base_branch": "SPEC-011-crabtrap-honeypot-stack/03-us2",
-        "head_sha": "6ee512b277f121953f1c62bafc5dd54a049a4542",
+        "head_sha": "7ef9a71983fa01920ed7e37a5019e2946e853c78",
         "declared_files": [
           "docs/ai/specs/.process/autopilot-state.json",
           "docs/ai/specs/.process/SPEC-011-workflow.md",
@@ -230,7 +230,7 @@
         "review_order": 5,
         "expected_branch": "SPEC-011-crabtrap-honeypot-stack/05-us4",
         "expected_base_branch": "SPEC-011-crabtrap-honeypot-stack/04-us3",
-        "head_sha": "b93009a91fe6ce3bc6248d60716c9f3d0e05d3bd",
+        "head_sha": "0f7df1d6d0a96cf08247a3163832955642848c0b",
         "declared_files": [
           "docs/ai/product-lines/paddock.yaml",
           "docs/ai/product-lines/product-line-b.yaml",

@@ -1,56 +1,19 @@
-
 ## Summary
 
-<!-- speckit-pro-editable:summary:start -->
-This PR covers one reviewer-ready slice: Add marker split emission fixtures.
-<!-- speckit-pro-editable:summary:end -->
-
-Source: generated PR packet.
+SPEC-011 stack slice 3/5. Adds signed CrabTrap denial-summary intake and bounded security activity persistence.
 
 ## What Changed
 
-<!-- speckit-pro-editable:what_changed:start -->
-- Implements the slice named in the title: Add marker split emission fixtures.
-- Generates a specific PR title, summary, review path, verification status, and traceability for that slice.
-- Keeps detailed validation records in packet files instead of putting logs and paths in the PR description.
-<!-- speckit-pro-editable:what_changed:end -->
-
-Source: generated PR packet.
-
-## Why It Matters
-
-<!-- speckit-pro-editable:why_it_matters:start -->
-Reviewers should understand the purpose, scope, and acceptance signal before opening implementation files.
-<!-- speckit-pro-editable:why_it_matters:end -->
-
-## How To Review
-
-1. Confirm the title and Summary describe the slice you expected: Add marker split emission fixtures.
-2. Review the changed files tab for implementation details.
-3. Use Verification and Scope as pass/fail and boundary checks; detailed records stay in the PR files.
-
-## How To UAT
-
-No browser UAT is needed for this packet-generation slice. Automated checks are the acceptance path.
+- Accepts valid signed CrabTrap denial summaries.
+- Writes bounded `security_intrusion_detected` activity evidence.
+- Adds replay detection using SQLite JSON lookup with `json_extract(... LIMIT 1)`.
+- Keeps future-marker CrabTrap behavior tests deferred until the final US4 slice.
 
 ## Verification
 
-- Focused packet checks passed for this slice.
-- Full SpecKit Pro regression passed before PR emission.
-
-Source: validation metadata in the generated PR packet.
+- `direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts` (deferred in this slice)
+- `direnv exec . pnpm typecheck`
 
 ## Scope
 
-- Scope: this PR is limited to the slice named in the title.
-- Review surface: use the PR changed-files tab for the exact file list.
-- Traceability: FR-010 is covered by this packet slice and its automated checks.
-- Non-goals: this PR does not broaden the declared slice scope.
-
-## Known Gaps
-
-No known gaps for this split packet.
-
-## UAT Runbook
-
-No manual UAT path is required for this PR packet slice. The automated checks above are the review acceptance path.
+This PR is limited to the US2 denial evidence intake slice for SPEC-011.

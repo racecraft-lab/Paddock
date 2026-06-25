@@ -9,10 +9,10 @@
     "head_branch": "SPEC-011-crabtrap-honeypot-stack/04-us3"
   },
   "generated_title": {
-    "value": "feat(speckit-pro): Add marker split emission fixtures",
+    "value": "feat(SPEC-011): harden CrabTrap invalid payload rejection",
     "type": "feat",
-    "scope": "speckit-pro",
-    "description": "Add marker split emission fixtures",
+    "scope": "SPEC-011",
+    "description": "harden CrabTrap invalid payload rejection",
     "source_evidence": {
       "kind": "marker_source_boundary",
       "source": "us3",
@@ -123,7 +123,7 @@
     ],
     "verification_evidence": "specs/011-crabtrap-honeypot/.process/emission/us3/no_scoped_tests.txt",
     "status": "pending",
-    "head_sha": "6ee512b277f121953f1c62bafc5dd54a049a4542",
+    "head_sha": "7ef9a71983fa01920ed7e37a5019e2946e853c78",
     "merged_sha": null
   },
   "marker_id": "us3",

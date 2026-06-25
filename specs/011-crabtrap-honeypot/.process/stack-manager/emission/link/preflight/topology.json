@@ -75,7 +75,7 @@
       ],
       "verification_evidence": "specs/011-crabtrap-honeypot/.process/emission/foundation/no_scoped_tests.txt",
       "status": "pending",
-      "head_sha": "c21e3d4bf0568a4de4b6a116611af42e21931f98",
+      "head_sha": "1d4c10c8da07e960aa23a17a53e3c8049a84f0fd",
       "merged_sha": null
     },
     {
@@ -96,7 +96,7 @@
       ],
       "verification_evidence": "specs/011-crabtrap-honeypot/.process/emission/us1/no_scoped_tests.txt",
       "status": "pending",
-      "head_sha": "4b1204099df564b6e29f7441e4ecfd5c2368f1db",
+      "head_sha": "7ffcb4c8649944dedd4593a3e7f2c4378be4b98d",
       "merged_sha": null
     },
     {
@@ -117,7 +117,7 @@
       ],
       "verification_evidence": "specs/011-crabtrap-honeypot/.process/emission/us2/no_scoped_tests.txt",
       "status": "pending",
-      "head_sha": "b41a2004dce983c9f520ca8c51db4b94d0b12eac",
+      "head_sha": "db1826efb4b89717447699a4aa088ab4fb017967",
       "merged_sha": null
     },
     {
@@ -138,7 +138,7 @@
       ],
       "verification_evidence": "specs/011-crabtrap-honeypot/.process/emission/us3/no_scoped_tests.txt",
       "status": "pending",
-      "head_sha": "6ee512b277f121953f1c62bafc5dd54a049a4542",
+      "head_sha": "7ef9a71983fa01920ed7e37a5019e2946e853c78",
       "merged_sha": null
     },
     {
@@ -174,7 +174,7 @@
       ],
       "verification_evidence": "specs/011-crabtrap-honeypot/.process/emission/us4/no_scoped_tests.txt",
       "status": "pending",
-      "head_sha": "b93009a91fe6ce3bc6248d60716c9f3d0e05d3bd",
+      "head_sha": "0f7df1d6d0a96cf08247a3163832955642848c0b",
       "merged_sha": null
     }
   ]

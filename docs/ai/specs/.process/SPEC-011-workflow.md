@@ -675,3 +675,14 @@ while letting `pnpm guardrails` pass.
 - Reconciled existing PR#93 for `us2` (SPEC-011-crabtrap-honeypot-stack/03-us2 -> SPEC-011-crabtrap-honeypot-stack/02-us1).
 - Reconciled existing PR#94 for `us3` (SPEC-011-crabtrap-honeypot-stack/04-us3 -> SPEC-011-crabtrap-honeypot-stack/03-us2).
 - Reconciled existing PR#95 for `us4` (SPEC-011-crabtrap-honeypot-stack/05-us4 -> SPEC-011-crabtrap-honeypot-stack/04-us3).
+
+### Review remediation and restack evidence
+
+- Review remediation on source branch `011-crabtrap-honeypot` is recorded in commit `f5ea0ab0`: replay checks now use SQLite `json_extract(... LIMIT 1)` and schema diagnostics sanitize field paths before returning them.
+- The stack was restacked and force-pushed with current heads: foundation `1d4c10c8`, us1 `7ffcb4c8`, us2 `db1826ef`, us3 `7ef9a719`, us4 `0f7df1d6`.
+- PR metadata was corrected for PR#91-PR#95 to describe the actual SPEC-011 slices instead of generic marker-emission wording.
+- Verification after remediation/restack:
+  - Source remediation: `direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts`, `direnv exec . pnpm typecheck`, `direnv exec . pnpm lint`.
+  - Foundation spot-check: `direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts` (CrabTrap test file skipped by design before final marker).
+  - US2 and US3 spot-checks: `direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts` plus `direnv exec . pnpm typecheck`.
+  - Final US4 head: `direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts`, `direnv exec . pnpm typecheck`, `direnv exec . pnpm lint`, `direnv exec . pnpm guardrails`, and full `direnv exec . pnpm test`.

@@ -1,14 +1,17 @@
 ## Summary
 
-This PR covers one reviewer-ready slice: Add marker split emission fixtures.
+SPEC-011 stack slice 2/5. Adds feature-flag and configuration no-op behavior for CrabTrap intake.
 
 ## What Changed
 
-- Builds the generated PR title and reviewer-readable body for this slice.
-- Keeps detailed validation records in packet files instead of putting logs and paths in the PR description.
+- Returns bounded no-op results when `FEATURE_CRABTRAP_HONEYPOT` is disabled.
+- Returns bounded no-op results for missing or invalid CrabTrap adapter config.
+- Keeps future-marker CrabTrap behavior tests deferred until the final US4 slice.
 
-## Why It Matters
+## Verification
 
-Reviewers can scan the PR quickly and open implementation files only when they want more detail.
+- US2/restack spot-check later confirmed the deferred test file remains CI-safe before behavior tests are activated.
 
-Source: generated PR packet.
+## Scope
+
+This PR is limited to the US1 no-op gating slice for SPEC-011.

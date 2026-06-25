@@ -1,14 +1,21 @@
 ## Summary
 
-This PR covers one reviewer-ready slice: Add marker split emission fixtures.
+SPEC-011 stack slice 5/5. Completes CrabTrap honeypot intake, evidence hardening, and roadmap/product-line documentation.
 
 ## What Changed
 
-- Builds the generated PR title and reviewer-readable body for this slice.
-- Keeps detailed validation records in packet files instead of putting logs and paths in the PR description.
+- Re-enables the full CrabTrap behavior test suite in this final slice.
+- Records post-review hardening for signature precedence, stale timestamps, unsafe nested fields, replay lookup, and bounded diagnostics.
+- Updates roadmap and product-line documentation for CrabTrap as an optional security adapter.
 
-## Why It Matters
+## Verification
 
-Reviewers can scan the PR quickly and open implementation files only when they want more detail.
+- `direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts`
+- `direnv exec . pnpm typecheck`
+- `direnv exec . pnpm lint`
+- `direnv exec . pnpm guardrails`
+- `direnv exec . pnpm test`
 
-Source: generated PR packet.
+## Scope
+
+This PR is limited to the final US4 completion and verification slice for SPEC-011.

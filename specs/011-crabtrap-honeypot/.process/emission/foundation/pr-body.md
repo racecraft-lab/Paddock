@@ -1,56 +1,18 @@
-
 ## Summary
 
-<!-- speckit-pro-editable:summary:start -->
-This PR covers one reviewer-ready slice: Add marker split emission fixtures.
-<!-- speckit-pro-editable:summary:end -->
-
-Source: generated PR packet.
+SPEC-011 stack slice 1/5. Adds the CrabTrap adapter foundation, fixtures, feature flag wiring, and strict-project coverage.
 
 ## What Changed
 
-<!-- speckit-pro-editable:what_changed:start -->
-- Implements the slice named in the title: Add marker split emission fixtures.
-- Generates a specific PR title, summary, review path, verification status, and traceability for that slice.
-- Keeps detailed validation records in packet files instead of putting logs and paths in the PR description.
-<!-- speckit-pro-editable:what_changed:end -->
-
-Source: generated PR packet.
-
-## Why It Matters
-
-<!-- speckit-pro-editable:why_it_matters:start -->
-Reviewers should understand the purpose, scope, and acceptance signal before opening implementation files.
-<!-- speckit-pro-editable:why_it_matters:end -->
-
-## How To Review
-
-1. Confirm the title and Summary describe the slice you expected: Add marker split emission fixtures.
-2. Review the changed files tab for implementation details.
-3. Use Verification and Scope as pass/fail and boundary checks; detailed records stay in the PR files.
-
-## How To UAT
-
-No browser UAT is needed for this packet-generation slice. Automated checks are the acceptance path.
+- Adds the CrabTrap adapter foundation and fixture corpus.
+- Adds feature-flag wiring and strict TypeScript project coverage.
+- Includes the SPEC-012B stale-claim guardrail parity fix required for stack CI.
+- Defers future-marker CrabTrap behavior tests until the final US4 slice.
 
 ## Verification
 
-- Focused packet checks passed for this slice.
-- Full SpecKit Pro regression passed before PR emission.
-
-Source: validation metadata in the generated PR packet.
+- Foundation spot-check: `direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts` (test file skipped by design in this slice).
 
 ## Scope
 
-- Scope: this PR is limited to the slice named in the title.
-- Review surface: use the PR changed-files tab for the exact file list.
-- Traceability: FR-010 is covered by this packet slice and its automated checks.
-- Non-goals: this PR does not broaden the declared slice scope.
-
-## Known Gaps
-
-No known gaps for this split packet.
-
-## UAT Runbook
-
-No manual UAT path is required for this PR packet slice. The automated checks above are the review acceptance path.
+This PR is limited to the foundation slice for SPEC-011. Later slices add no-op gating, evidence intake, invalid-payload hardening, and final verification activation.
