@@ -1,7 +1,25 @@
 {
   "version": 1,
-  "updatedAt": "2026-06-25T00:20:14.383Z",
+  "updatedAt": "2026-06-25T00:21:40.883Z",
   "prs": [
+    {
+      "prNumber": "95",
+      "prTitle": "feat(speckit-pro): Add marker split emission fixtures",
+      "prUrl": "https://github.com/racecraft-lab/Paddock/pull/95",
+      "indexHref": "https://racecraft-lab.github.io/Paddock/pr/95/",
+      "headRef": "SPEC-011-crabtrap-honeypot-stack/05-us4",
+      "baseRef": "SPEC-011-crabtrap-honeypot-stack/04-us3",
+      "updatedAt": "2026-06-25T00:21:40.883Z",
+      "latest": {
+        "storybook": {
+          "runId": "28138202807",
+          "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/28138202807",
+          "latestHref": "https://racecraft-lab.github.io/Paddock/pr/95/storybook/latest/?v=28138202807-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/Paddock/pr/95/runs/28138202807-attempt-1/storybook/",
+          "updatedAt": "2026-06-25T00:21:40.883Z"
+        }
+      }
+    },
     {
       "prNumber": "91",
       "prTitle": "feat(speckit-pro): Add marker split emission fixtures",
@@ -24,24 +42,6 @@
           "latestHref": "https://racecraft-lab.github.io/Paddock/pr/91/playwright/latest/?v=28137994778-attempt-1",
           "reportHref": "https://racecraft-lab.github.io/Paddock/pr/91/runs/28137994778-attempt-1/playwright/",
           "updatedAt": "2026-06-25T00:19:47.553Z"
-        }
-      }
-    },
-    {
-      "prNumber": "95",
-      "prTitle": "feat(speckit-pro): Add marker split emission fixtures",
-      "prUrl": "https://github.com/racecraft-lab/Paddock/pull/95",
-      "indexHref": "https://racecraft-lab.github.io/Paddock/pr/95/",
-      "headRef": "SPEC-011-crabtrap-honeypot-stack/05-us4",
-      "baseRef": "SPEC-011-crabtrap-honeypot-stack/04-us3",
-      "updatedAt": "2026-06-25T00:16:32.998Z",
-      "latest": {
-        "storybook": {
-          "runId": "28138009677",
-          "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/28138009677",
-          "latestHref": "https://racecraft-lab.github.io/Paddock/pr/95/storybook/latest/?v=28138009677-attempt-1",
-          "reportHref": "https://racecraft-lab.github.io/Paddock/pr/95/runs/28138009677-attempt-1/storybook/",
-          "updatedAt": "2026-06-25T00:16:32.998Z"
         }
       }
     },
