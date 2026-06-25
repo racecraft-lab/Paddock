@@ -1,0 +1,35 @@
+{
+  "schema_version": "pr-marker-checkpoint.v1",
+  "feature_id": "011-crabtrap-honeypot",
+  "marker_id": "foundation",
+  "review_order": 1,
+  "status": "complete",
+  "source_boundary": {
+    "section": "Foundation",
+    "story_id": null,
+    "start_task_id": "T001",
+    "end_task_id": "T007"
+  },
+  "task_ids": [
+    "T001",
+    "T002",
+    "T003",
+    "T004",
+    "T005",
+    "T006",
+    "T007"
+  ],
+  "folded_polish_task_ids": [],
+  "commit_sha": "ae5552fb13b55c4eda80dbe72ba348960488eea3",
+  "head_sha": "ae5552fb13b55c4eda80dbe72ba348960488eea3",
+  "completed_at": "2026-06-24T22:39:32.329Z",
+  "updated_at": "2026-06-25T00:04:56.786Z",
+  "evidence_paths": [
+    "specs/011-crabtrap-honeypot/.process/uat-runbook.md",
+    "src/lib/__tests__/crabtrap-adapter.test.ts",
+    "src/lib/__tests__/fixtures/crabtrap/crabtrap-fixtures.ts"
+  ],
+  "validation": [],
+  "behavior_scope": "minimal type/export stub only; adapter behavior deferred to later markers",
+  "remediation": []
+}

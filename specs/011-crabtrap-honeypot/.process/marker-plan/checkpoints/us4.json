@@ -1,0 +1,61 @@
+{
+  "schema_version": "pr-marker-checkpoint.v1",
+  "feature_id": "011-crabtrap-honeypot",
+  "marker_id": "us4",
+  "review_order": 5,
+  "status": "complete",
+  "source_boundary": {
+    "section": "User Story 4 - Scope Isolation Review",
+    "story_id": 4,
+    "start_task_id": "T022",
+    "end_task_id": "T025"
+  },
+  "task_ids": [
+    "T022",
+    "T023",
+    "T024",
+    "T025"
+  ],
+  "folded_polish_task_ids": [
+    "T026",
+    "T027",
+    "T028",
+    "T029",
+    "T030",
+    "T031",
+    "T032"
+  ],
+  "commit_sha": "8da3ae65bb0ed23462b7ae4fc184de5478018502",
+  "head_sha": "8da3ae65bb0ed23462b7ae4fc184de5478018502",
+  "completed_at": "2026-06-24T23:32:16Z",
+  "updated_at": "2026-06-25T00:04:56.786Z",
+  "evidence_paths": [
+    "specs/011-crabtrap-honeypot/.process/uat-runbook.md",
+    "specs/011-crabtrap-honeypot/.process/pr-review-packet.md",
+    "specs/011-crabtrap-honeypot/tasks.md",
+    "docs/ai/rc-factory-technical-roadmap.md",
+    "docs/ai/specs/.process/SPEC-011-workflow.md",
+    "specs/011-crabtrap-honeypot/.process/review-report.md",
+    "specs/011-crabtrap-honeypot/verify-tasks-report.md",
+    "specs/011-crabtrap-honeypot/.process/final-reviewability/gate-state.json"
+  ],
+  "validation": [
+    "direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts -> passed: 1 file, 19 tests",
+    "direnv exec . pnpm guardrails -> passed: 4 suites",
+    "direnv exec . pnpm typecheck -> passed",
+    "direnv exec . pnpm lint -> passed",
+    "direnv exec . pnpm test -> passed: 328 files, 3410 tests, 4 skipped, 84 todo",
+    "direnv exec . pnpm build -> passed",
+    "git diff --check -> passed",
+    "direnv exec . node --test scripts/spec-012b/__tests__/hard-status-evidence.test.mjs -> passed: 5 tests"
+  ],
+  "behavior_scope": {
+    "forbidden_surface_diff": "no changed files in route, webhook, OpenAPI, UI, migration, scheduler, dispatch, notification, GitHub, task terminal, successor-selection, or workflow-contract surfaces",
+    "forbidden_surface_rg": "no CrabTrap references in forbidden runtime/API/UI surfaces and no forbidden-surface keywords in SPEC-011 adapter/test/fixture files",
+    "split_decision": "one-navigable-PR route preserved; no additional split applied in this marker; review size remains a known gap"
+  },
+  "remediation": [
+    "Aligned FEATURE_CRABTRAP_HONEYPOT cascade prerequisites in feature flag and product-line seed configs/tests",
+    "Tightened SPEC-012B stale-status detector to explicit pointer fields so historical prose does not fail guardrails"
+  ]
+}

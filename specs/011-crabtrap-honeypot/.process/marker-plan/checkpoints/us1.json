@@ -1,0 +1,35 @@
+{
+  "schema_version": "pr-marker-checkpoint.v1",
+  "feature_id": "011-crabtrap-honeypot",
+  "marker_id": "us1",
+  "review_order": 2,
+  "status": "complete",
+  "source_boundary": {
+    "section": "User Story 1 - Disabled And Absent Safe",
+    "story_id": 1,
+    "start_task_id": "T008",
+    "end_task_id": "T011"
+  },
+  "task_ids": [
+    "T008",
+    "T009",
+    "T010",
+    "T011"
+  ],
+  "folded_polish_task_ids": [],
+  "commit_sha": "f74d3491fdcc7418c270d66e69bc605bcdfb1fbb",
+  "head_sha": "f74d3491fdcc7418c270d66e69bc605bcdfb1fbb",
+  "completed_at": "2026-06-24T22:43:40Z",
+  "updated_at": "2026-06-25T00:04:56.786Z",
+  "evidence_paths": [
+    "specs/011-crabtrap-honeypot/.process/uat-runbook.md",
+    "src/lib/crabtrap-adapter.ts",
+    "src/lib/__tests__/crabtrap-adapter.test.ts"
+  ],
+  "validation": [
+    "direnv exec . pnpm exec tsc -p tsconfig.spec-strict.json --pretty false",
+    "direnv exec . pnpm exec eslint src/lib/crabtrap-adapter.ts src/lib/__tests__/crabtrap-adapter.test.ts src/lib/__tests__/fixtures/crabtrap/crabtrap-fixtures.ts"
+  ],
+  "behavior_scope": "feature flag and config no-op behavior only; payload parsing, HMAC verification, activity writes, replay detection, unsafe-field checks, URL normalization, routes, OpenAPI, migrations, scheduler/task-dispatch, notifications, UI panels, and CrabTrap runtime integration deferred",
+  "remediation": []
+}

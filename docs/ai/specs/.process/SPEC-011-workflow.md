@@ -520,12 +520,12 @@ Non-goals to preserve:
 | Field | Value |
 |---|---|
 | Schema | `pr-marker-plan.v1` |
-| Status | planned |
+| Status | emission_ready |
 | Fingerprint status | current |
 | Source evidence | `specs/011-crabtrap-honeypot/.process/reviewability/tasks-gate.json`, `specs/011-crabtrap-honeypot/.process/reviewability/atomicity-route.json`, `specs/011-crabtrap-honeypot/.process/marker-plan/pr-marker-plan.json` |
 | Ordered marker IDs | `foundation`, `us1`, `us2`, `us3`, `us4` |
 | Review order | 1. foundation (`T001`-`T007`); 2. us1 (`T008`-`T011`); 3. us2 (`T012`-`T016`); 4. us3 (`T017`-`T021`); 5. us4 (`T022`-`T025`, folded polish `T026`-`T032`) |
-| Marker checkpoints | pending |
+| Marker checkpoints | `foundation`, `us1`, `us2`, `us3`, and `us4` complete; checkpoint evidence under `specs/011-crabtrap-honeypot/.process/marker-plan/checkpoints/` |
 | Warnings | `reviewability_size_warning`: reviewability sizing result is marker-planning input |
 | Final marker split | pending |
 | Packet validation | pending |

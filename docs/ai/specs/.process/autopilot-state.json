@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "workflow_file": "docs/ai/specs/.process/SPEC-011-workflow.md",
-  "updated_at": "2026-06-24T23:32:16Z",
+  "updated_at": "2026-06-25T00:04:56.786Z",
   "active_step": "Phase 7: us4 + polish complete; post gates pending",
   "spec_id": "SPEC-011",
   "feature_dir": "specs/011-crabtrap-honeypot",
@@ -302,7 +302,7 @@
     "schema_version": "pr-marker-plan.v1",
     "kind": "pr_marker_plan",
     "feature_id": "011-crabtrap-honeypot",
-    "status": "planned",
+    "status": "emission_ready",
     "source_fingerprint": {
       "feature_spec_sha": "c96faf93d5cf509f3babeecaa67dee8adb53fd2b414b8ba068c63a435585e2e6",
       "plan_declared_scope_sha": "70f38eb8b7ca6cc0f09be50ef8edb27a5621289c90d7abc65a0c02a2c3ee6ffc",
@@ -389,7 +389,10 @@
           "red_result": "1 test file failed, 15 tests failed with assertion failures against the minimal adapter stub",
           "behavior_scope": "minimal type/export stub only; adapter behavior deferred to later markers",
           "commit_sha": "ae5552fb13b55c4eda80dbe72ba348960488eea3",
-          "completed_at": "2026-06-24T22:39:32.329Z"
+          "completed_at": "2026-06-24T22:39:32.329Z",
+          "evidence_path": "specs/011-crabtrap-honeypot/.process/marker-plan/checkpoints/foundation.json",
+          "head_sha": "ae5552fb13b55c4eda80dbe72ba348960488eea3",
+          "updated_at": "2026-06-25T00:04:56.786Z"
         },
         "emission_mapping": {
           "status": "pending"
@@ -464,7 +467,10 @@
           ],
           "behavior_scope": "feature flag and config no-op behavior only; payload parsing, HMAC verification, activity writes, replay detection, unsafe-field checks, URL normalization, routes, OpenAPI, migrations, scheduler/task-dispatch, notifications, UI panels, and CrabTrap runtime integration deferred",
           "completed_at": "2026-06-24T22:43:40Z",
-          "commit_sha": "f74d3491fdcc7418c270d66e69bc605bcdfb1fbb"
+          "commit_sha": "f74d3491fdcc7418c270d66e69bc605bcdfb1fbb",
+          "evidence_path": "specs/011-crabtrap-honeypot/.process/marker-plan/checkpoints/us1.json",
+          "head_sha": "f74d3491fdcc7418c270d66e69bc605bcdfb1fbb",
+          "updated_at": "2026-06-25T00:04:56.786Z"
         },
         "emission_mapping": {
           "status": "pending"
@@ -542,7 +548,10 @@
           ],
           "behavior_scope": "US2 signature verification, strict normalization, replay-key lookup, and existing-schema activity insertion only; stale timestamp handling and unsafe-field scanning remain deferred to US3",
           "completed_at": "2026-06-24T22:54:45Z",
-          "commit_sha": "246771e5b45713075768d76f3a84cdd704cbbe3b"
+          "commit_sha": "246771e5b45713075768d76f3a84cdd704cbbe3b",
+          "evidence_path": "specs/011-crabtrap-honeypot/.process/marker-plan/checkpoints/us2.json",
+          "head_sha": "246771e5b45713075768d76f3a84cdd704cbbe3b",
+          "updated_at": "2026-06-25T00:04:56.786Z"
         },
         "emission_mapping": {
           "status": "pending"
@@ -620,7 +629,10 @@
           ],
           "behavior_scope": "US3 invalid and unsafe payload hardening only; no route, OpenAPI, migration, scheduler/task-dispatch, notification, GitHub, task, UI, or CrabTrap runtime integration mutation",
           "completed_at": "2026-06-24T23:03:37Z",
-          "commit_sha": "b461883a31c4f13a68615614cf1be6421996ec74"
+          "commit_sha": "b461883a31c4f13a68615614cf1be6421996ec74",
+          "evidence_path": "specs/011-crabtrap-honeypot/.process/marker-plan/checkpoints/us3.json",
+          "head_sha": "b461883a31c4f13a68615614cf1be6421996ec74",
+          "updated_at": "2026-06-25T00:04:56.786Z"
         },
         "emission_mapping": {
           "status": "pending"
@@ -746,7 +758,10 @@
             "specs/011-crabtrap-honeypot/.process/pr-review-packet.md",
             "specs/011-crabtrap-honeypot/tasks.md",
             "docs/ai/rc-factory-technical-roadmap.md",
-            "docs/ai/specs/.process/SPEC-011-workflow.md"
+            "docs/ai/specs/.process/SPEC-011-workflow.md",
+            "specs/011-crabtrap-honeypot/.process/review-report.md",
+            "specs/011-crabtrap-honeypot/verify-tasks-report.md",
+            "specs/011-crabtrap-honeypot/.process/final-reviewability/gate-state.json"
           ],
           "focused_file_command": "direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts",
           "focused_file_result": "1 test file passed; 19 tests passed",
@@ -770,7 +785,10 @@
             "Aligned FEATURE_CRABTRAP_HONEYPOT cascade prerequisites in feature flag and product-line seed configs/tests",
             "Tightened SPEC-012B stale-status detector to explicit pointer fields so historical prose does not fail guardrails"
           ],
-          "commit_sha": "ef92a3d40b6a377a3fa4f21428cc82b1334a1cc3"
+          "commit_sha": "8da3ae65bb0ed23462b7ae4fc184de5478018502",
+          "evidence_path": "specs/011-crabtrap-honeypot/.process/marker-plan/checkpoints/us4.json",
+          "head_sha": "8da3ae65bb0ed23462b7ae4fc184de5478018502",
+          "updated_at": "2026-06-25T00:04:56.786Z"
         },
         "emission_mapping": {
           "status": "pending"
@@ -790,7 +808,8 @@
           "evidence_path": "specs/011-crabtrap-honeypot/.process/reviewability/tasks-gate.json"
         }
       }
-    ]
+    ],
+    "updated_at": "2026-06-25T00:04:56.786Z"
   },
   "current_source_fingerprint": {
     "feature_spec_sha": "c96faf93d5cf509f3babeecaa67dee8adb53fd2b414b8ba068c63a435585e2e6",
