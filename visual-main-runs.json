@@ -2,6 +2,33 @@
   "version": 1,
   "reports": [
     {
+      "surface": "storybook",
+      "runId": "28178789735",
+      "runAttempt": "1",
+      "runKey": "28178789735-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/28178789735",
+      "reportKey": "2b43c82026c097c847d6e700cace01eb4944f78f",
+      "reportHref": "https://racecraft-lab.github.io/Paddock/storybook/2b43c82026c097c847d6e700cace01eb4944f78f/",
+      "latestHref": "https://racecraft-lab.github.io/Paddock/storybook/latest/?v=28178789735-attempt-1",
+      "headSha": "2b43c82026c097c847d6e700cace01eb4944f78f",
+      "headRef": "main",
+      "baseRef": "main",
+      "workflowName": "Visual Storybook Snapshots",
+      "workflowFile": "visual-storybook.yml",
+      "surfaceLabel": "Storybook Components",
+      "sourcePullRequest": {
+        "baseRef": "main",
+        "headRef": "SPEC-011-crabtrap-honeypot-stack/01-foundation",
+        "headSha": "41d967461e6e33a350706f39a5ebe265901b7d68",
+        "indexHref": "https://racecraft-lab.github.io/Paddock/pr/91/",
+        "mergeCommitSha": "",
+        "number": "91",
+        "title": "feat(SPEC-011): add CrabTrap adapter foundation",
+        "url": "https://github.com/racecraft-lab/Paddock/pull/91"
+      },
+      "createdAt": "2026-06-25T14:51:34.554Z"
+    },
+    {
       "surface": "playwright",
       "runId": "28127769021",
       "runAttempt": "1",
@@ -1551,5 +1578,5 @@
       "createdAt": "2026-05-05T00:17:55.366Z"
     }
   ],
-  "updatedAt": "2026-06-24T20:40:55.563Z"
+  "updatedAt": "2026-06-25T14:51:34.554Z"
 }
