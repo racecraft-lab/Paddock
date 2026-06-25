@@ -1,0 +1,291 @@
+{
+  "multi_pr_emission": {
+    "schema_version": 2,
+    "status": "pending",
+    "emission_mode": "marker",
+    "route": "marker_split",
+    "base_branch": "main",
+    "base_sha": "51023c91182e6f57b4dcb2600a0407d145f4aadd",
+    "next_slice_id": "foundation",
+    "reconciled_at": "",
+    "slices": [
+      {
+        "slice_id": "foundation",
+        "review_order": 1,
+        "expected_branch": "011-crabtrap-honeypot/01-foundation",
+        "expected_base_branch": "main",
+        "head_sha": "ae5552fb13b55c4eda80dbe72ba348960488eea3",
+        "declared_files": [
+          ".agents/skills/speckit-converge/SKILL.md",
+          ".agents/skills/speckit-specify/SKILL.md",
+          ".agents/skills/speckit-taskstoissues/SKILL.md",
+          ".claude/skills/speckit-checklist/SKILL.md",
+          ".claude/skills/speckit-clarify/SKILL.md",
+          ".github/workflows/quality-gate.yml",
+          ".github/workflows/visual-approval.yml",
+          ".specify/curated-install.json",
+          ".specify/feature.json",
+          ".specify/init-options.json",
+          ".specify/integration.json",
+          ".specify/integrations/codex.manifest.json",
+          ".specify/integrations/speckit.manifest.json",
+          ".specify/presets/.registry",
+          ".specify/presets/claude-ask-questions/CHANGELOG.md",
+          ".specify/presets/claude-ask-questions/commands/speckit.checklist.md",
+          ".specify/presets/claude-ask-questions/commands/speckit.clarify.md",
+          ".specify/presets/claude-ask-questions/CONTRIBUTING.md",
+          ".specify/presets/claude-ask-questions/LICENSE",
+          ".specify/presets/claude-ask-questions/preset.yml",
+          ".specify/presets/claude-ask-questions/README.md",
+          ".specify/scripts/bash/check-prerequisites.sh",
+          ".specify/scripts/bash/common.sh",
+          ".specify/scripts/bash/create-new-feature.sh",
+          ".specify/scripts/bash/setup-plan.sh",
+          ".specify/scripts/bash/setup-tasks.sh",
+          "AGENTS.md",
+          "docs/ai/rc-factory-technical-roadmap.md",
+          "docs/ai/specs/.process/autopilot-state.json",
+          "docs/ai/specs/.process/SPEC-011-design-concept.md",
+          "docs/ai/specs/.process/SPEC-011-workflow.md",
+          "docs/SECURITY-HARDENING.md",
+          "eslint.config.mjs",
+          "package.json",
+          "pnpm-lock.yaml",
+          "scripts/check-guardrails.mjs",
+          "scripts/openclaw-smoke.sh",
+          "specs/011-crabtrap-honeypot/.process/marker-plan/pr-marker-plan.json",
+          "specs/011-crabtrap-honeypot/.process/reviewability/atomicity-route.json",
+          "specs/011-crabtrap-honeypot/.process/reviewability/tasks-gate.json",
+          "specs/011-crabtrap-honeypot/.process/uat-runbook.md",
+          "specs/011-crabtrap-honeypot/checklists/data-integrity.md",
+          "specs/011-crabtrap-honeypot/checklists/error-handling.md",
+          "specs/011-crabtrap-honeypot/checklists/requirements.md",
+          "specs/011-crabtrap-honeypot/checklists/security.md",
+          "specs/011-crabtrap-honeypot/checklists/state-management.md",
+          "specs/011-crabtrap-honeypot/contracts/crabtrap-denial-summary.v1.schema.json",
+          "specs/011-crabtrap-honeypot/data-model.md",
+          "specs/011-crabtrap-honeypot/plan.md",
+          "specs/011-crabtrap-honeypot/quickstart.md",
+          "specs/011-crabtrap-honeypot/research.md",
+          "specs/011-crabtrap-honeypot/SPEC-MOC.md",
+          "specs/011-crabtrap-honeypot/spec.md",
+          "specs/011-crabtrap-honeypot/tasks.md",
+          "src/app/api/openclaw/version/route.ts",
+          "src/components/panels/office-panel.tsx",
+          "src/lib/__tests__/crabtrap-adapter.test.ts",
+          "src/lib/__tests__/fixtures/crabtrap/crabtrap-fixtures.ts",
+          "src/lib/__tests__/openclaw-version-route.test.ts",
+          "src/lib/crabtrap-adapter.ts",
+          "src/lib/feature-flags.ts",
+          "tsconfig.spec-strict.json"
+        ],
+        "declared_scoped_tests": [],
+        "scoped_verification": {
+          "commands": [
+            {
+              "command": "<none>",
+              "gate_type": "no_scoped_tests",
+              "reason": "No declared scoped tests or applicable project command; full regression evidence remains required.",
+              "required": true,
+              "evidence_path": "specs/011-crabtrap-honeypot/.process/emission/foundation/no_scoped_tests.txt",
+              "exit_status": 0,
+              "started_at": "2026-06-10T00:00:00Z",
+              "finished_at": "2026-06-10T00:00:01Z"
+            }
+          ]
+        },
+        "status": "pending",
+        "marker_id": "foundation",
+        "source_marker_ids": [
+          "foundation"
+        ],
+        "source_marker_checkpoints": [
+          "specs/011-crabtrap-honeypot/.process/marker-plan/checkpoints/foundation.json"
+        ],
+        "route": "marker_split",
+        "marker_split_evidence": "specs/011-crabtrap-honeypot/.process/marker-plan/final-marker-split-result.json"
+      },
+      {
+        "slice_id": "us1",
+        "review_order": 2,
+        "expected_branch": "011-crabtrap-honeypot/02-us1",
+        "expected_base_branch": "011-crabtrap-honeypot/01-foundation",
+        "head_sha": "f74d3491fdcc7418c270d66e69bc605bcdfb1fbb",
+        "declared_files": [
+          "docs/ai/specs/.process/autopilot-state.json",
+          "docs/ai/specs/.process/SPEC-011-workflow.md",
+          "specs/011-crabtrap-honeypot/.process/marker-plan/pr-marker-plan.json",
+          "specs/011-crabtrap-honeypot/.process/uat-runbook.md",
+          "specs/011-crabtrap-honeypot/tasks.md",
+          "src/lib/crabtrap-adapter.ts"
+        ],
+        "declared_scoped_tests": [],
+        "scoped_verification": {
+          "commands": [
+            {
+              "command": "<none>",
+              "gate_type": "no_scoped_tests",
+              "reason": "No declared scoped tests or applicable project command; full regression evidence remains required.",
+              "required": true,
+              "evidence_path": "specs/011-crabtrap-honeypot/.process/emission/us1/no_scoped_tests.txt",
+              "exit_status": 0,
+              "started_at": "2026-06-10T00:00:00Z",
+              "finished_at": "2026-06-10T00:00:01Z"
+            }
+          ]
+        },
+        "status": "pending",
+        "marker_id": "us1",
+        "source_marker_ids": [
+          "us1"
+        ],
+        "source_marker_checkpoints": [
+          "specs/011-crabtrap-honeypot/.process/marker-plan/checkpoints/us1.json"
+        ],
+        "route": "marker_split",
+        "marker_split_evidence": "specs/011-crabtrap-honeypot/.process/marker-plan/final-marker-split-result.json"
+      },
+      {
+        "slice_id": "us2",
+        "review_order": 3,
+        "expected_branch": "011-crabtrap-honeypot/03-us2",
+        "expected_base_branch": "011-crabtrap-honeypot/02-us1",
+        "head_sha": "246771e5b45713075768d76f3a84cdd704cbbe3b",
+        "declared_files": [
+          "docs/ai/specs/.process/autopilot-state.json",
+          "docs/ai/specs/.process/SPEC-011-workflow.md",
+          "specs/011-crabtrap-honeypot/.process/marker-plan/pr-marker-plan.json",
+          "specs/011-crabtrap-honeypot/.process/uat-runbook.md",
+          "specs/011-crabtrap-honeypot/tasks.md",
+          "src/lib/crabtrap-adapter.ts"
+        ],
+        "declared_scoped_tests": [],
+        "scoped_verification": {
+          "commands": [
+            {
+              "command": "<none>",
+              "gate_type": "no_scoped_tests",
+              "reason": "No declared scoped tests or applicable project command; full regression evidence remains required.",
+              "required": true,
+              "evidence_path": "specs/011-crabtrap-honeypot/.process/emission/us2/no_scoped_tests.txt",
+              "exit_status": 0,
+              "started_at": "2026-06-10T00:00:00Z",
+              "finished_at": "2026-06-10T00:00:01Z"
+            }
+          ]
+        },
+        "status": "pending",
+        "marker_id": "us2",
+        "source_marker_ids": [
+          "us2"
+        ],
+        "source_marker_checkpoints": [
+          "specs/011-crabtrap-honeypot/.process/marker-plan/checkpoints/us2.json"
+        ],
+        "route": "marker_split",
+        "marker_split_evidence": "specs/011-crabtrap-honeypot/.process/marker-plan/final-marker-split-result.json"
+      },
+      {
+        "slice_id": "us3",
+        "review_order": 4,
+        "expected_branch": "011-crabtrap-honeypot/04-us3",
+        "expected_base_branch": "011-crabtrap-honeypot/03-us2",
+        "head_sha": "b461883a31c4f13a68615614cf1be6421996ec74",
+        "declared_files": [
+          "docs/ai/specs/.process/autopilot-state.json",
+          "docs/ai/specs/.process/SPEC-011-workflow.md",
+          "specs/011-crabtrap-honeypot/.process/marker-plan/pr-marker-plan.json",
+          "specs/011-crabtrap-honeypot/.process/uat-runbook.md",
+          "specs/011-crabtrap-honeypot/tasks.md",
+          "src/lib/crabtrap-adapter.ts"
+        ],
+        "declared_scoped_tests": [],
+        "scoped_verification": {
+          "commands": [
+            {
+              "command": "<none>",
+              "gate_type": "no_scoped_tests",
+              "reason": "No declared scoped tests or applicable project command; full regression evidence remains required.",
+              "required": true,
+              "evidence_path": "specs/011-crabtrap-honeypot/.process/emission/us3/no_scoped_tests.txt",
+              "exit_status": 0,
+              "started_at": "2026-06-10T00:00:00Z",
+              "finished_at": "2026-06-10T00:00:01Z"
+            }
+          ]
+        },
+        "status": "pending",
+        "marker_id": "us3",
+        "source_marker_ids": [
+          "us3"
+        ],
+        "source_marker_checkpoints": [
+          "specs/011-crabtrap-honeypot/.process/marker-plan/checkpoints/us3.json"
+        ],
+        "route": "marker_split",
+        "marker_split_evidence": "specs/011-crabtrap-honeypot/.process/marker-plan/final-marker-split-result.json"
+      },
+      {
+        "slice_id": "us4",
+        "review_order": 5,
+        "expected_branch": "011-crabtrap-honeypot/05-us4",
+        "expected_base_branch": "011-crabtrap-honeypot/04-us3",
+        "head_sha": "8da3ae65bb0ed23462b7ae4fc184de5478018502",
+        "declared_files": [
+          "docs/ai/product-lines/paddock.yaml",
+          "docs/ai/product-lines/product-line-b.yaml",
+          "docs/ai/rc-factory-technical-roadmap.md",
+          "docs/ai/specs/.process/autopilot-state.json",
+          "docs/ai/specs/.process/SPEC-011-workflow.md",
+          "scripts/spec-012b/harness-gardening-check.mjs",
+          "specs/011-crabtrap-honeypot/.process/marker-plan/pr-marker-plan.json",
+          "specs/011-crabtrap-honeypot/.process/pr-review-packet.md",
+          "specs/011-crabtrap-honeypot/.process/review-report.md",
+          "specs/011-crabtrap-honeypot/.process/uat-runbook.md",
+          "specs/011-crabtrap-honeypot/tasks.md",
+          "specs/011-crabtrap-honeypot/verify-tasks-report.md",
+          "src/lib/__tests__/crabtrap-adapter.test.ts",
+          "src/lib/__tests__/feature-flag-service.test.ts",
+          "src/lib/__tests__/feature-flags.test.ts",
+          "src/lib/__tests__/fixtures/crabtrap/crabtrap-fixtures.ts",
+          "src/lib/__tests__/product-line-b-seed.test.ts",
+          "src/lib/__tests__/product-line-seed.test.ts",
+          "src/lib/crabtrap-adapter.ts",
+          "src/lib/feature-flags.ts",
+          "src/lib/product-line-seed/types.ts"
+        ],
+        "declared_scoped_tests": [],
+        "scoped_verification": {
+          "commands": [
+            {
+              "command": "<none>",
+              "gate_type": "no_scoped_tests",
+              "reason": "No declared scoped tests or applicable project command; full regression evidence remains required.",
+              "required": true,
+              "evidence_path": "specs/011-crabtrap-honeypot/.process/emission/us4/no_scoped_tests.txt",
+              "exit_status": 0,
+              "started_at": "2026-06-10T00:00:00Z",
+              "finished_at": "2026-06-10T00:00:01Z"
+            }
+          ]
+        },
+        "status": "pending",
+        "marker_id": "us4",
+        "source_marker_ids": [
+          "us4"
+        ],
+        "source_marker_checkpoints": [
+          "specs/011-crabtrap-honeypot/.process/marker-plan/checkpoints/us4.json"
+        ],
+        "route": "marker_split",
+        "marker_split_evidence": "specs/011-crabtrap-honeypot/.process/marker-plan/final-marker-split-result.json"
+      }
+    ],
+    "source_marker_plan": {
+      "path": "specs/011-crabtrap-honeypot/.process/marker-plan/pr-marker-plan.json"
+    },
+    "marker_split_result": {
+      "path": "specs/011-crabtrap-honeypot/.process/marker-plan/final-marker-split-result.json"
+    }
+  }
+}

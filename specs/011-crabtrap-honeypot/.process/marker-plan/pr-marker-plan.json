@@ -35,24 +35,252 @@
       "folded_polish_target_reason": "",
       "declared_files": [
         {
+          "operation": "NEW",
+          "path": ".agents/skills/speckit-converge/SKILL.md"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": ".agents/skills/speckit-specify/SKILL.md"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": ".agents/skills/speckit-taskstoissues/SKILL.md"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": ".claude/skills/speckit-checklist/SKILL.md"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": ".claude/skills/speckit-clarify/SKILL.md"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": ".github/workflows/quality-gate.yml"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": ".github/workflows/visual-approval.yml"
+        },
+        {
+          "operation": "NEW",
+          "path": ".specify/curated-install.json"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": ".specify/feature.json"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": ".specify/init-options.json"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": ".specify/integration.json"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": ".specify/integrations/codex.manifest.json"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": ".specify/integrations/speckit.manifest.json"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": ".specify/presets/.registry"
+        },
+        {
+          "operation": "NEW",
+          "path": ".specify/presets/claude-ask-questions/CHANGELOG.md"
+        },
+        {
+          "operation": "NEW",
+          "path": ".specify/presets/claude-ask-questions/commands/speckit.checklist.md"
+        },
+        {
+          "operation": "NEW",
+          "path": ".specify/presets/claude-ask-questions/commands/speckit.clarify.md"
+        },
+        {
+          "operation": "NEW",
+          "path": ".specify/presets/claude-ask-questions/CONTRIBUTING.md"
+        },
+        {
+          "operation": "NEW",
+          "path": ".specify/presets/claude-ask-questions/LICENSE"
+        },
+        {
+          "operation": "NEW",
+          "path": ".specify/presets/claude-ask-questions/preset.yml"
+        },
+        {
+          "operation": "NEW",
+          "path": ".specify/presets/claude-ask-questions/README.md"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": ".specify/scripts/bash/check-prerequisites.sh"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": ".specify/scripts/bash/common.sh"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": ".specify/scripts/bash/create-new-feature.sh"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": ".specify/scripts/bash/setup-plan.sh"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": ".specify/scripts/bash/setup-tasks.sh"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": "AGENTS.md"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": "docs/ai/rc-factory-technical-roadmap.md"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": "docs/ai/specs/.process/autopilot-state.json"
+        },
+        {
+          "operation": "NEW",
+          "path": "docs/ai/specs/.process/SPEC-011-design-concept.md"
+        },
+        {
+          "operation": "NEW",
+          "path": "docs/ai/specs/.process/SPEC-011-workflow.md"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": "docs/SECURITY-HARDENING.md"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": "eslint.config.mjs"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": "package.json"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": "pnpm-lock.yaml"
+        },
+        {
           "operation": "MODIFIED",
           "path": "scripts/check-guardrails.mjs"
         },
         {
-          "operation": "MODIFIED",
+          "operation": "DELETED",
+          "path": "scripts/openclaw-smoke.sh"
+        },
+        {
+          "operation": "NEW",
+          "path": "specs/011-crabtrap-honeypot/.process/marker-plan/pr-marker-plan.json"
+        },
+        {
+          "operation": "NEW",
+          "path": "specs/011-crabtrap-honeypot/.process/reviewability/atomicity-route.json"
+        },
+        {
+          "operation": "NEW",
+          "path": "specs/011-crabtrap-honeypot/.process/reviewability/tasks-gate.json"
+        },
+        {
+          "operation": "NEW",
           "path": "specs/011-crabtrap-honeypot/.process/uat-runbook.md"
         },
         {
-          "operation": "MODIFIED",
-          "path": "src/lib/__tests__/crabtrap-adapter.test.ts"
+          "operation": "NEW",
+          "path": "specs/011-crabtrap-honeypot/checklists/data-integrity.md"
+        },
+        {
+          "operation": "NEW",
+          "path": "specs/011-crabtrap-honeypot/checklists/error-handling.md"
+        },
+        {
+          "operation": "NEW",
+          "path": "specs/011-crabtrap-honeypot/checklists/requirements.md"
+        },
+        {
+          "operation": "NEW",
+          "path": "specs/011-crabtrap-honeypot/checklists/security.md"
+        },
+        {
+          "operation": "NEW",
+          "path": "specs/011-crabtrap-honeypot/checklists/state-management.md"
+        },
+        {
+          "operation": "NEW",
+          "path": "specs/011-crabtrap-honeypot/contracts/crabtrap-denial-summary.v1.schema.json"
+        },
+        {
+          "operation": "NEW",
+          "path": "specs/011-crabtrap-honeypot/data-model.md"
+        },
+        {
+          "operation": "NEW",
+          "path": "specs/011-crabtrap-honeypot/plan.md"
+        },
+        {
+          "operation": "NEW",
+          "path": "specs/011-crabtrap-honeypot/quickstart.md"
+        },
+        {
+          "operation": "NEW",
+          "path": "specs/011-crabtrap-honeypot/research.md"
+        },
+        {
+          "operation": "NEW",
+          "path": "specs/011-crabtrap-honeypot/SPEC-MOC.md"
+        },
+        {
+          "operation": "NEW",
+          "path": "specs/011-crabtrap-honeypot/spec.md"
+        },
+        {
+          "operation": "NEW",
+          "path": "specs/011-crabtrap-honeypot/tasks.md"
         },
         {
           "operation": "MODIFIED",
+          "path": "src/app/api/openclaw/version/route.ts"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": "src/components/panels/office-panel.tsx"
+        },
+        {
+          "operation": "NEW",
+          "path": "src/lib/__tests__/crabtrap-adapter.test.ts"
+        },
+        {
+          "operation": "NEW",
+          "path": "src/lib/__tests__/fixtures/crabtrap/crabtrap-fixtures.ts"
+        },
+        {
+          "operation": "DELETED",
+          "path": "src/lib/__tests__/openclaw-version-route.test.ts"
+        },
+        {
+          "operation": "NEW",
           "path": "src/lib/crabtrap-adapter.ts"
         },
         {
           "operation": "MODIFIED",
           "path": "src/lib/feature-flags.ts"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": "tsconfig.spec-strict.json"
         }
       ],
       "declared_tests": [],
@@ -92,7 +320,7 @@
         "completed_at": "2026-06-24T22:39:32.329Z",
         "evidence_path": "specs/011-crabtrap-honeypot/.process/marker-plan/checkpoints/foundation.json",
         "head_sha": "ae5552fb13b55c4eda80dbe72ba348960488eea3",
-        "updated_at": "2026-06-25T00:04:56.786Z"
+        "updated_at": "2026-06-25T00:09:06.362Z"
       },
       "emission_mapping": {
         "status": "pending"
@@ -121,7 +349,23 @@
       "declared_files": [
         {
           "operation": "MODIFIED",
-          "path": "src/lib/__tests__/crabtrap-adapter.test.ts"
+          "path": "docs/ai/specs/.process/autopilot-state.json"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": "docs/ai/specs/.process/SPEC-011-workflow.md"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": "specs/011-crabtrap-honeypot/.process/marker-plan/pr-marker-plan.json"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": "specs/011-crabtrap-honeypot/.process/uat-runbook.md"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": "specs/011-crabtrap-honeypot/tasks.md"
         },
         {
           "operation": "MODIFIED",
@@ -170,7 +414,7 @@
         "commit_sha": "f74d3491fdcc7418c270d66e69bc605bcdfb1fbb",
         "evidence_path": "specs/011-crabtrap-honeypot/.process/marker-plan/checkpoints/us1.json",
         "head_sha": "f74d3491fdcc7418c270d66e69bc605bcdfb1fbb",
-        "updated_at": "2026-06-25T00:04:56.786Z"
+        "updated_at": "2026-06-25T00:07:45.649Z"
       },
       "emission_mapping": {
         "status": "pending"
@@ -200,7 +444,23 @@
       "declared_files": [
         {
           "operation": "MODIFIED",
-          "path": "src/lib/__tests__/crabtrap-adapter.test.ts"
+          "path": "docs/ai/specs/.process/autopilot-state.json"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": "docs/ai/specs/.process/SPEC-011-workflow.md"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": "specs/011-crabtrap-honeypot/.process/marker-plan/pr-marker-plan.json"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": "specs/011-crabtrap-honeypot/.process/uat-runbook.md"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": "specs/011-crabtrap-honeypot/tasks.md"
         },
         {
           "operation": "MODIFIED",
@@ -251,7 +511,7 @@
         "commit_sha": "246771e5b45713075768d76f3a84cdd704cbbe3b",
         "evidence_path": "specs/011-crabtrap-honeypot/.process/marker-plan/checkpoints/us2.json",
         "head_sha": "246771e5b45713075768d76f3a84cdd704cbbe3b",
-        "updated_at": "2026-06-25T00:04:56.786Z"
+        "updated_at": "2026-06-25T00:07:45.649Z"
       },
       "emission_mapping": {
         "status": "pending"
@@ -281,7 +541,23 @@
       "declared_files": [
         {
           "operation": "MODIFIED",
-          "path": "src/lib/__tests__/crabtrap-adapter.test.ts"
+          "path": "docs/ai/specs/.process/autopilot-state.json"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": "docs/ai/specs/.process/SPEC-011-workflow.md"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": "specs/011-crabtrap-honeypot/.process/marker-plan/pr-marker-plan.json"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": "specs/011-crabtrap-honeypot/.process/uat-runbook.md"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": "specs/011-crabtrap-honeypot/tasks.md"
         },
         {
           "operation": "MODIFIED",
@@ -332,7 +608,7 @@
         "commit_sha": "b461883a31c4f13a68615614cf1be6421996ec74",
         "evidence_path": "specs/011-crabtrap-honeypot/.process/marker-plan/checkpoints/us3.json",
         "head_sha": "b461883a31c4f13a68615614cf1be6421996ec74",
-        "updated_at": "2026-06-25T00:04:56.786Z"
+        "updated_at": "2026-06-25T00:07:45.649Z"
       },
       "emission_mapping": {
         "status": "pending"
@@ -369,26 +645,6 @@
       "declared_files": [
         {
           "operation": "MODIFIED",
-          "path": "docs/ai/rc-factory-technical-roadmap.md"
-        },
-        {
-          "operation": "MODIFIED",
-          "path": "docs/ai/specs/.process/SPEC-011-workflow.md"
-        },
-        {
-          "operation": "MODIFIED",
-          "path": "specs/011-crabtrap-honeypot/.process/pr-review-packet.md"
-        },
-        {
-          "operation": "MODIFIED",
-          "path": "specs/011-crabtrap-honeypot/.process/uat-runbook.md"
-        },
-        {
-          "operation": "MODIFIED",
-          "path": "src/lib/__tests__/crabtrap-adapter.test.ts"
-        },
-        {
-          "operation": "MODIFIED",
           "path": "docs/ai/product-lines/paddock.yaml"
         },
         {
@@ -397,7 +653,47 @@
         },
         {
           "operation": "MODIFIED",
+          "path": "docs/ai/rc-factory-technical-roadmap.md"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": "docs/ai/specs/.process/autopilot-state.json"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": "docs/ai/specs/.process/SPEC-011-workflow.md"
+        },
+        {
+          "operation": "MODIFIED",
           "path": "scripts/spec-012b/harness-gardening-check.mjs"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": "specs/011-crabtrap-honeypot/.process/marker-plan/pr-marker-plan.json"
+        },
+        {
+          "operation": "NEW",
+          "path": "specs/011-crabtrap-honeypot/.process/pr-review-packet.md"
+        },
+        {
+          "operation": "NEW",
+          "path": "specs/011-crabtrap-honeypot/.process/review-report.md"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": "specs/011-crabtrap-honeypot/.process/uat-runbook.md"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": "specs/011-crabtrap-honeypot/tasks.md"
+        },
+        {
+          "operation": "NEW",
+          "path": "specs/011-crabtrap-honeypot/verify-tasks-report.md"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": "src/lib/__tests__/crabtrap-adapter.test.ts"
         },
         {
           "operation": "MODIFIED",
@@ -409,11 +705,19 @@
         },
         {
           "operation": "MODIFIED",
+          "path": "src/lib/__tests__/fixtures/crabtrap/crabtrap-fixtures.ts"
+        },
+        {
+          "operation": "MODIFIED",
           "path": "src/lib/__tests__/product-line-b-seed.test.ts"
         },
         {
           "operation": "MODIFIED",
           "path": "src/lib/__tests__/product-line-seed.test.ts"
+        },
+        {
+          "operation": "MODIFIED",
+          "path": "src/lib/crabtrap-adapter.ts"
         },
         {
           "operation": "MODIFIED",
@@ -488,7 +792,7 @@
         "commit_sha": "8da3ae65bb0ed23462b7ae4fc184de5478018502",
         "evidence_path": "specs/011-crabtrap-honeypot/.process/marker-plan/checkpoints/us4.json",
         "head_sha": "8da3ae65bb0ed23462b7ae4fc184de5478018502",
-        "updated_at": "2026-06-25T00:04:56.786Z"
+        "updated_at": "2026-06-25T00:07:45.649Z"
       },
       "emission_mapping": {
         "status": "pending"
@@ -509,5 +813,5 @@
       }
     }
   ],
-  "updated_at": "2026-06-25T00:04:56.786Z"
+  "updated_at": "2026-06-25T00:09:06.362Z"
 }
