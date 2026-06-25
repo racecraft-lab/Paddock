@@ -34,7 +34,7 @@ Re-read the design concept before each phase. If a generated artifact contradict
 | Checklist | `$speckit-checklist` | Complete | Security, data-integrity, error-handling, and state-management checklists complete with zero gaps |
 | Tasks | `$speckit-tasks` | Complete | Generated 32 TDD-first tasks across 7 groups; G5 passed; marker plan recorded for reviewability sizing |
 | Analyze | `$speckit-analyze` | Complete | Resolved 3 findings; G6 passed; security-routed consensus completed 3/3 high-confidence |
-| Implement | `$speckit-implement` | In Progress | Foundation, US1, US2, and US3 checkpoints committed; US4 scope-isolation/polish marker is next |
+| Implement | `$speckit-implement` | Complete | Foundation through US4 + polish complete; post-verification and PR stack evidence recorded |
 
 ## Phase Gates
 
@@ -592,6 +592,7 @@ Focus on:
 | `us1` | `T008`-`T011` | Complete | Commit `0b9411f9`; feature-flag and missing/invalid-config no-op behavior recorded in `docs/ai/specs/.process/autopilot-state.json` |
 | `us2` | `T012`-`T016` | Complete | Commits `10534ebc` and `375767b1`; bounded denial-summary parsing, signature validation, SQLite replay lookup, and activity evidence recorded |
 | `us3` | `T017`-`T021` | Complete | Commits `737f96d1` and `02cfab95`; stale, unsafe, oversized, malformed, unsigned, invalid-signature, unsupported, and replay cases reject without rejection-path activity rows |
+| `us4` + polish | `T022`-`T032` | Complete | Commit `8e3aba38`; fixture UAT, forbidden-surface inspection, guardrails, typecheck, lint, full unit suite, build, and diff whitespace checks passed after feature-flag/product-line cascade alignment and SPEC-012B stale-status detector false-positive remediation |
 
 ### Implement Prompt
 
@@ -618,15 +619,15 @@ Minimum verification:
 
 ## Post-Implementation Checklist
 
-- [ ] All generated tasks are complete in `tasks.md`.
-- [ ] Focused SPEC-011 tests pass.
-- [ ] Guardrails pass with SPEC-011 ownership updated.
-- [ ] `pnpm typecheck` passes.
-- [ ] `pnpm lint` passes.
-- [ ] Fixture UAT evidence is recorded.
-- [ ] Reviewability diff gate is recorded.
-- [ ] PR review packet is generated.
-- [ ] Roadmap and workflow status are updated.
+- [x] All generated tasks are complete in `tasks.md`.
+- [x] Focused SPEC-011 tests pass.
+- [x] Guardrails pass with SPEC-011 ownership updated.
+- [x] `pnpm typecheck` passes.
+- [x] `pnpm lint` passes.
+- [x] Fixture UAT evidence is recorded.
+- [x] Reviewability diff gate is recorded.
+- [x] PR review packet is generated.
+- [x] Roadmap and workflow status are updated.
 
 ## Project Structure Reference
 
@@ -643,4 +644,22 @@ specs/011-crabtrap-honeypot/.process/uat-runbook.md
 
 ## Lessons Learned
 
-Fill this after implementation. Record whether the library-first boundary was enough or whether a follow-up spec is needed for a private route, polling integration, notification fanout, or live CrabTrap Docker/operator deployment.
+The library-first boundary was enough for fixture UAT and scope isolation. No
+private route, polling integration, notification fanout, UI surface, OpenAPI
+entry, migration, scheduler/task-dispatch path, GitHub mutation, task terminal
+mutation, successor selection, or live CrabTrap Docker dependency entered
+SPEC-011. A future CrabTrap architecture spec is still required before live
+deployment, custom sender/admin polling, harness egress enforcement, richer
+evidence retention, or fork ownership.
+
+US4/polish verification exposed one SPEC-011 integration gap before closeout:
+existing feature-flag cascade expectations and canonical Paddock/Product Line B
+seed config/tests did not account for `FEATURE_CRABTRAP_HONEYPOT` as a cascade
+prerequisite for `PILOT_PADDOCK_E2E`. The closeout fix aligned the registry,
+seed configs, and tests, and the full unit suite passed after that correction.
+
+Guardrails also exposed a SPEC-012B stale-status false positive: the detector
+treated ordinary historical prose containing "current SPEC-012B" as an active
+status pointer claim. The detector now requires explicit pointer fields such as
+`Status: Current` or `current_spec`, preserving the stale-status fixture tests
+while letting `pnpm guardrails` pass.

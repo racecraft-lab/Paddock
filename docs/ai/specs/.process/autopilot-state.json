@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
   "workflow_file": "docs/ai/specs/.process/SPEC-011-workflow.md",
-  "updated_at": "2026-06-25T02:31:22Z",
-  "active_step": "Phase 7: us4 + polish (T022,T023,T024,T025,T026,T027,T028,T029,T030,T031,T032)",
+  "updated_at": "2026-06-25T02:33:29Z",
+  "active_step": "Phase 7: us4 + polish complete; post gates pending",
   "spec_id": "SPEC-011",
   "feature_dir": "specs/011-crabtrap-honeypot",
   "branch": "011-crabtrap-honeypot",
@@ -181,7 +181,7 @@
     },
     {
       "step": "Phase 7: us4 + polish (T022,T023,T024,T025,T026,T027,T028,T029,T030,T031,T032)",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: Doctor Extension Check",
@@ -618,8 +618,9 @@
             "direnv exec . pnpm exec eslint src/lib/crabtrap-adapter.ts src/lib/__tests__/crabtrap-adapter.test.ts src/lib/__tests__/fixtures/crabtrap/crabtrap-fixtures.ts",
             "git diff --check"
           ],
-          "behavior_scope": "US3 invalid and unsafe payload hardening only; no route, OpenAPI, migration, scheduler/task-dispatch, notification, GitHub, task, UI, or CrabTrap runtime integration mutation; checkpoint commit SHA intentionally omitted for the parent orchestrator",
-          "completed_at": "2026-06-24T23:03:37Z"
+          "behavior_scope": "US3 invalid and unsafe payload hardening only; no route, OpenAPI, migration, scheduler/task-dispatch, notification, GitHub, task, UI, or CrabTrap runtime integration mutation",
+          "completed_at": "2026-06-24T23:03:37Z",
+          "commit_sha": "b461883a31c4f13a68615614cf1be6421996ec74"
         },
         "emission_mapping": {
           "status": "pending"
@@ -673,6 +674,42 @@
           {
             "operation": "MODIFIED",
             "path": "src/lib/__tests__/crabtrap-adapter.test.ts"
+          },
+          {
+            "operation": "MODIFIED",
+            "path": "docs/ai/product-lines/paddock.yaml"
+          },
+          {
+            "operation": "MODIFIED",
+            "path": "docs/ai/product-lines/product-line-b.yaml"
+          },
+          {
+            "operation": "MODIFIED",
+            "path": "scripts/spec-012b/harness-gardening-check.mjs"
+          },
+          {
+            "operation": "MODIFIED",
+            "path": "src/lib/__tests__/feature-flag-service.test.ts"
+          },
+          {
+            "operation": "MODIFIED",
+            "path": "src/lib/__tests__/feature-flags.test.ts"
+          },
+          {
+            "operation": "MODIFIED",
+            "path": "src/lib/__tests__/product-line-b-seed.test.ts"
+          },
+          {
+            "operation": "MODIFIED",
+            "path": "src/lib/__tests__/product-line-seed.test.ts"
+          },
+          {
+            "operation": "MODIFIED",
+            "path": "src/lib/feature-flags.ts"
+          },
+          {
+            "operation": "MODIFIED",
+            "path": "src/lib/product-line-seed/types.ts"
           }
         ],
         "declared_tests": [],
@@ -690,7 +727,50 @@
           "details": {}
         },
         "implementation_checkpoint": {
-          "status": "pending"
+          "status": "complete",
+          "completed_task_ids": [
+            "T022",
+            "T023",
+            "T024",
+            "T025",
+            "T026",
+            "T027",
+            "T028",
+            "T029",
+            "T030",
+            "T031",
+            "T032"
+          ],
+          "evidence_paths": [
+            "specs/011-crabtrap-honeypot/.process/uat-runbook.md",
+            "specs/011-crabtrap-honeypot/.process/pr-review-packet.md",
+            "specs/011-crabtrap-honeypot/tasks.md",
+            "docs/ai/rc-factory-technical-roadmap.md",
+            "docs/ai/specs/.process/SPEC-011-workflow.md"
+          ],
+          "focused_file_command": "direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts",
+          "focused_file_result": "1 test file passed; 19 tests passed",
+          "verification": [
+            "direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts -> passed: 1 file, 19 tests",
+            "direnv exec . pnpm guardrails -> passed: 4 suites",
+            "direnv exec . pnpm typecheck -> passed",
+            "direnv exec . pnpm lint -> passed",
+            "direnv exec . pnpm test -> passed: 328 files, 3410 tests, 4 skipped, 84 todo",
+            "direnv exec . pnpm build -> passed",
+            "git diff --check -> passed",
+            "direnv exec . node --test scripts/spec-012b/__tests__/hard-status-evidence.test.mjs -> passed: 5 tests"
+          ],
+          "scope_control": {
+            "forbidden_surface_diff": "no changed files in route, webhook, OpenAPI, UI, migration, scheduler, dispatch, notification, GitHub, task terminal, successor-selection, or workflow-contract surfaces",
+            "forbidden_surface_rg": "no CrabTrap references in forbidden runtime/API/UI surfaces and no forbidden-surface keywords in SPEC-011 adapter/test/fixture files",
+            "split_decision": "one-navigable-PR route preserved; no additional split applied in this marker; review size remains a known gap"
+          },
+          "completed_at": "2026-06-24T23:32:16Z",
+          "remediation": [
+            "Aligned FEATURE_CRABTRAP_HONEYPOT cascade prerequisites in feature flag and product-line seed configs/tests",
+            "Tightened SPEC-012B stale-status detector to explicit pointer fields so historical prose does not fail guardrails"
+          ],
+          "commit_sha": "ef92a3d40b6a377a3fa4f21428cc82b1334a1cc3"
         },
         "emission_mapping": {
           "status": "pending"
@@ -727,12 +807,13 @@
     "hazard_route_sha": "1971e9aff27a7010222da332f1ac103e1f057f251d24a8d49ad11470c23521fc"
   },
   "implementation": {
-    "current_marker": "us4",
+    "current_marker": null,
     "completed_markers": [
       "foundation",
       "us1",
       "us2",
-      "us3"
+      "us3",
+      "us4"
     ],
     "foundation_checkpoint": {
       "commit_sha": "ae5552fb13b55c4eda80dbe72ba348960488eea3",
@@ -820,6 +901,52 @@
       "behavior_scope": "US3 invalid and unsafe payload hardening only; no route, OpenAPI, migration, scheduler/task-dispatch, notification, GitHub, task, UI, or CrabTrap runtime integration mutation",
       "completed_at": "2026-06-24T23:03:37Z",
       "commit_sha": "02cfab9565579c74d0c8338bc136b75387bffa7b"
+    },
+    "us4_checkpoint": {
+      "status": "complete",
+      "completed_task_ids": [
+        "T022",
+        "T023",
+        "T024",
+        "T025",
+        "T026",
+        "T027",
+        "T028",
+        "T029",
+        "T030",
+        "T031",
+        "T032"
+      ],
+      "evidence_paths": [
+        "specs/011-crabtrap-honeypot/.process/uat-runbook.md",
+        "specs/011-crabtrap-honeypot/.process/pr-review-packet.md",
+        "specs/011-crabtrap-honeypot/tasks.md",
+        "docs/ai/rc-factory-technical-roadmap.md",
+        "docs/ai/specs/.process/SPEC-011-workflow.md"
+      ],
+      "focused_file_command": "direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts",
+      "focused_file_result": "1 test file passed; 19 tests passed",
+      "verification": [
+        "direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts -> passed: 1 file, 19 tests",
+        "direnv exec . pnpm guardrails -> passed: 4 suites",
+        "direnv exec . pnpm typecheck -> passed",
+        "direnv exec . pnpm lint -> passed",
+        "direnv exec . pnpm test -> passed: 328 files, 3410 tests, 4 skipped, 84 todo",
+        "direnv exec . pnpm build -> passed",
+        "git diff --check -> passed",
+        "direnv exec . node --test scripts/spec-012b/__tests__/hard-status-evidence.test.mjs -> passed: 5 tests"
+      ],
+      "scope_control": {
+        "forbidden_surface_diff": "no changed files in route, webhook, OpenAPI, UI, migration, scheduler, dispatch, notification, GitHub, task terminal, successor-selection, or workflow-contract surfaces",
+        "forbidden_surface_rg": "no CrabTrap references in forbidden runtime/API/UI surfaces and no forbidden-surface keywords in SPEC-011 adapter/test/fixture files",
+        "split_decision": "one-navigable-PR route preserved; no additional split applied in this marker; review size remains a known gap"
+      },
+      "completed_at": "2026-06-24T23:32:16Z",
+      "remediation": [
+        "Aligned FEATURE_CRABTRAP_HONEYPOT cascade prerequisites in feature flag and product-line seed configs/tests",
+        "Tightened SPEC-012B stale-status detector to explicit pointer fields so historical prose does not fail guardrails"
+      ],
+      "commit_sha": "8e3aba38a3b404bf4d1ef45d71a8756f633129e8"
     }
   },
   "marker_checkpoints": {
@@ -855,6 +982,36 @@
       ],
       "focused_file_result": "1 test file passed; 15 tests passed",
       "commit_sha": "02cfab9565579c74d0c8338bc136b75387bffa7b"
+    },
+    "us4": {
+      "status": "complete",
+      "completed_task_ids": [
+        "T022",
+        "T023",
+        "T024",
+        "T025",
+        "T026",
+        "T027",
+        "T028",
+        "T029",
+        "T030",
+        "T031",
+        "T032"
+      ],
+      "completed_at": "2026-06-24T23:32:16Z",
+      "evidence_paths": [
+        "specs/011-crabtrap-honeypot/.process/uat-runbook.md",
+        "specs/011-crabtrap-honeypot/.process/pr-review-packet.md",
+        "specs/011-crabtrap-honeypot/tasks.md",
+        "docs/ai/rc-factory-technical-roadmap.md",
+        "docs/ai/specs/.process/SPEC-011-workflow.md"
+      ],
+      "focused_file_result": "1 test file passed; 19 tests passed",
+      "guardrails_result": "passed: 4 suites",
+      "unit_result": "passed: 328 files, 3410 tests, 4 skipped, 84 todo",
+      "build_result": "passed",
+      "focused_status_detector_result": "passed: node --test scripts/spec-012b/__tests__/hard-status-evidence.test.mjs, 5 tests",
+      "commit_sha": "8e3aba38a3b404bf4d1ef45d71a8756f633129e8"
     }
   }
 }

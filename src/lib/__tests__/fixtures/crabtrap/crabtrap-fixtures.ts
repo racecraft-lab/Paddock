@@ -116,6 +116,20 @@ export const crabtrapFixtures = {
     event_id: 'ct-unsafe-001',
     url_path: '/admin/api_key/super-secret-token',
   }),
+  nestedUnsafe: makeSignedFixture({
+    event_id: 'ct-nested-unsafe-001',
+    metadata: {
+      request: {
+        headers: {
+          authorization: 'Bearer super-secret-token',
+        },
+      },
+    },
+  }),
+  occurredAtStale: makeSignedFixture({
+    event_id: 'ct-occurred-at-stale-001',
+    occurred_at: '2026-06-24T11:53:00.000Z',
+  }),
   unsupportedDecision: makeSignedFixture({
     event_id: 'ct-unsupported-decision-001',
     decision: 'allow',
@@ -126,5 +140,13 @@ export const crabtrapFixtures = {
   }),
   invalidSignature: makeSignedFixture({
     event_id: 'ct-invalid-signature-001',
+  }).replace(/sha256=[a-f0-9]{64}/, `sha256=${'0'.repeat(64)}`),
+  invalidSignatureUnsupportedDecision: makeSignedFixture({
+    event_id: 'ct-invalid-signature-unsupported-decision-001',
+    decision: 'allow',
+  }).replace(/sha256=[a-f0-9]{64}/, `sha256=${'0'.repeat(64)}`),
+  invalidSignatureUnsupportedMethod: makeSignedFixture({
+    event_id: 'ct-invalid-signature-unsupported-method-001',
+    method: 'TRACE',
   }).replace(/sha256=[a-f0-9]{64}/, `sha256=${'0'.repeat(64)}`),
 } as const

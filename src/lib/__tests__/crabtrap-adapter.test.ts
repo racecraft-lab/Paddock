@@ -110,7 +110,7 @@ function parseActivityData(row: ActivityRow): Record<string, unknown> {
   return JSON.parse(row.data ?? '{}') as Record<string, unknown>
 }
 
-describe.skip('SPEC-011 CrabTrap adapter foundation tests', () => {
+describe('SPEC-011 CrabTrap adapter foundation tests', () => {
   it('returns feature_disabled and writes no activity when FEATURE_CRABTRAP_HONEYPOT is off', () => {
     const result = processFixture(crabtrapFixtures.valid, { flagEnabled: false })
 
@@ -186,9 +186,13 @@ describe.skip('SPEC-011 CrabTrap adapter foundation tests', () => {
     ['malformed fixture', crabtrapFixtures.malformed, 'malformed_json'],
     ['unsigned fixture', crabtrapFixtures.unsigned, 'signature_missing'],
     ['invalid signature fixture', crabtrapFixtures.invalidSignature, 'signature_invalid'],
+    ['invalid signature with unsupported decision', crabtrapFixtures.invalidSignatureUnsupportedDecision, 'signature_invalid'],
+    ['invalid signature with unsupported method', crabtrapFixtures.invalidSignatureUnsupportedMethod, 'signature_invalid'],
     ['stale fixture', crabtrapFixtures.stale, 'timestamp_stale'],
+    ['stale occurred_at fixture', crabtrapFixtures.occurredAtStale, 'timestamp_stale'],
     ['oversized fixture', crabtrapFixtures.oversized, 'payload_too_large'],
     ['unsafe fixture', crabtrapFixtures.unsafe, 'unsafe_field_present'],
+    ['nested unsafe fixture', crabtrapFixtures.nestedUnsafe, 'unsafe_field_present'],
     ['unsupported decision fixture', crabtrapFixtures.unsupportedDecision, 'unsupported_decision'],
     ['unsupported method fixture', crabtrapFixtures.unsupportedMethod, 'unsupported_method'],
   ] as const)(

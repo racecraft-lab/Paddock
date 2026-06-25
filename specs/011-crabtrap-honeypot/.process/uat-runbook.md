@@ -283,3 +283,88 @@ verifies an official or operator-owned runtime source.
 Clarify Session 1 chose helper-only intake for this slice. Do not add or test a
 runtime route, webhook receiver, custom sender, admin poller, OpenAPI entry, or
 API-parity ignore as SPEC-011 completion evidence.
+
+## US4 + Polish Fixture UAT Checkpoint
+
+Completed at: 2026-06-24T23:16:09Z.
+
+Command:
+
+```bash
+direnv exec . pnpm vitest run src/lib/__tests__/crabtrap-adapter.test.ts
+```
+
+Result:
+
+- Passed: 1 test file, 19 tests.
+- Evidence source: `src/lib/__tests__/crabtrap-adapter.test.ts` with fixtures in
+  `src/lib/__tests__/fixtures/crabtrap/crabtrap-fixtures.ts`.
+
+Fixture UAT matrix:
+
+| Case | Expected result | Persistence proof |
+|---|---|---|
+| Flag off | `noop`, `feature_disabled` | 0 `security_intrusion_detected` rows |
+| Config missing | `noop`, `config_missing` | 0 rows |
+| Config invalid | `noop`, `config_invalid` | 0 rows |
+| Valid signed fixture | `accepted` | exactly 1 row |
+| Malformed fixture | `rejected`, `malformed_json` | 0 rows |
+| Unsigned fixture | `rejected`, `signature_missing` | 0 rows |
+| Invalid signature fixture | `rejected`, `signature_invalid` | 0 rows |
+| Stale fixture | `rejected`, `timestamp_stale` | 0 rows |
+| Replayed fixture | `rejected`, `replay_detected` | no duplicate row; count remains 1 after first accepted event |
+| Oversized fixture | `rejected`, `payload_too_large` | 0 rows; byte size exceeds 16 KiB before parse |
+| Unsafe fixture | `rejected`, `unsafe_field_present` | 0 rows; diagnostics do not include `super-secret-token` |
+| Nested unsafe fixture | `rejected`, `unsafe_field_present` | 0 rows; recursive diagnostics do not include raw secret values |
+| Invalid signature with unsupported decision | `rejected`, `signature_invalid` | 0 rows; authenticity is checked before semantic rejection |
+| Invalid signature with unsupported method | `rejected`, `signature_invalid` | 0 rows; authenticity is checked before semantic rejection |
+| Stale `occurred_at` fixture | `rejected`, `timestamp_stale` | 0 rows; both signed and event timestamps are freshness checked |
+| Unsupported decision fixture | `rejected`, `unsupported_decision` | 0 rows |
+| Unsupported method fixture | `rejected`, `unsupported_method` | 0 rows |
+| Activity write failed | `failed`, `activity_write_failed` | 0 rows; database error text is not leaked |
+
+Accepted activity inspection:
+
+- Row type: `security_intrusion_detected`.
+- Entity scope: `entity_type='workspace'`, `entity_id=11`, `workspace_id=11`.
+- Fixed actor: `crabtrap-adapter`.
+- Bounded data includes `source`, `decision`, `method`, `url_host`,
+  `url_path`, `reason_code`, `safe_request_hash`, `denial_count`,
+  `actor_kind`, `actor_ref_hash`, `project_id`, and adapter-derived
+  `replay_key_hash`.
+- Accepted data assertions reject raw `event_id`, `signature`, fixture signing
+  secret, `http://`, `https://`, and query marker `?`.
+
+No-raw-persistence inspection:
+
+- Rejection result assertions confirm unsafe diagnostics do not contain the
+  fixture secret or `super-secret-token`.
+- Accepted activity data persists reduced host/path fields only and does not
+  persist raw/full URL, scheme, query, signing material, or raw event identity.
+- The fixed activity actor `crabtrap-adapter` is allowed; payload-controlled
+  actor IDs, user IDs, and emails remain forbidden.
+
+Scope-control inspection:
+
+- `git diff --name-only c65bb02b..HEAD -- src/app openapi.json src/components src/lib/migrations.ts docs/migrations src/lib/scheduler.ts src/lib/task-dispatch.ts src/lib/github.ts src/lib/github src/lib/notifications.ts src/lib/notifications src/lib/tasks.ts src/lib/task-terminal.ts src/lib/task-artifacts.ts src/lib/workflow-templates.ts src/lib/workflow-contracts` produced no output.
+- `rg -n "CrabTrap|crabtrap|FEATURE_CRABTRAP_HONEYPOT|security_intrusion_detected" src/app src/components openapi.json src/lib/migrations.ts src/lib/scheduler.ts src/lib/task-dispatch.ts src/lib/github.ts src/lib/workflow-contracts` produced no matches.
+- `rg -n "successor|terminal|ready_for_owner|done|notification|webhook|dispatch|scheduler|OpenAPI|openapi|migration|route" src/lib/crabtrap-adapter.ts src/lib/__tests__/crabtrap-adapter.test.ts src/lib/__tests__/fixtures/crabtrap/crabtrap-fixtures.ts` produced no matches.
+- `git diff --check c65bb02b..HEAD` passed.
+
+Broad verification notes:
+
+- `direnv exec . pnpm guardrails` passed 4 suites after tightening the
+  SPEC-012B stale-status detector so ordinary historical prose containing
+  "current SPEC-012B" is not treated as an active status pointer claim.
+- `direnv exec . pnpm test` passed with 328 files, 3410 tests, 4 skipped, and
+  84 todo after adding `FEATURE_CRABTRAP_HONEYPOT` to the Paddock/Product Line
+  B cascade seed expectations.
+- `direnv exec . pnpm typecheck`, `direnv exec . pnpm lint`, and
+  `direnv exec . pnpm build` passed.
+- Focused cascade and Product Line B seed regressions passed:
+  `src/lib/__tests__/feature-flags.test.ts`,
+  `src/lib/__tests__/feature-flag-service.test.ts`,
+  `src/lib/__tests__/product-line-seed.test.ts`,
+  `src/lib/__tests__/product-line-seed-cli.test.ts`,
+  `src/lib/__tests__/paddock-seed/evidence.test.ts`, and
+  `src/lib/__tests__/product-line-b-seed.test.ts`.
