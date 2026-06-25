@@ -1336,5 +1336,455 @@
       "focused_status_detector_result": "passed: node --test scripts/spec-012b/__tests__/hard-status-evidence.test.mjs, 5 tests",
       "commit_sha": "ef92a3d40b6a377a3fa4f21428cc82b1334a1cc3"
     }
+  },
+  "multi_pr_emission": {
+    "schema_version": 2,
+    "status": "blocked",
+    "emission_mode": "marker",
+    "route": "marker_split",
+    "base_branch": "main",
+    "base_sha": "51023c91182e6f57b4dcb2600a0407d145f4aadd",
+    "stack_manager_decision": {
+      "schema_version": "stack-manager-decision.v1",
+      "phase": "emission",
+      "operation": "link",
+      "selected_manager": "explicit-gh",
+      "reason": "gh stack view --json failed or returned invalid JSON; using explicit gh fallback before mutation",
+      "fallback_reason": "gh stack view --json failed or returned invalid JSON",
+      "fallback_allowed": true,
+      "mutation_boundary": {
+        "status": "none",
+        "first_mutating_command_id": null,
+        "fallback_after_boundary_allowed": false
+      },
+      "gh_stack": {
+        "available": true,
+        "supported": false,
+        "reason": "gh stack view --json failed or returned invalid JSON",
+        "extension_owner": "github",
+        "extension_name": "gh-stack",
+        "version": "0.0.5",
+        "version_supported": true,
+        "repo_enabled": false,
+        "support_status": "read_only_proof_failed",
+        "invocation": [
+          [
+            "gh",
+            "stack",
+            "--version"
+          ],
+          [
+            "gh",
+            "stack",
+            "view",
+            "--json"
+          ]
+        ]
+      },
+      "read_only_proof": {
+        "argv": [
+          "gh",
+          "stack",
+          "view",
+          "--json"
+        ],
+        "exit_status": 2,
+        "parsed": false,
+        "matched_expected_topology": false,
+        "stdout_tail": "",
+        "stderr_tail": "✗ current branch \"011-crabtrap-honeypot\" is not part of a stack",
+        "evidence_path": "specs/011-crabtrap-honeypot/.process/stack-manager/emission/link/preflight/decision.json"
+      },
+      "topology_compatibility": {
+        "compatible": false,
+        "source": "prs-v2",
+        "mismatch_reason": "observed stack order did not match expected topology",
+        "expected_order": [
+          "011-crabtrap-honeypot/01-foundation",
+          "011-crabtrap-honeypot/02-us1",
+          "011-crabtrap-honeypot/03-us2",
+          "011-crabtrap-honeypot/04-us3",
+          "011-crabtrap-honeypot/05-us4"
+        ],
+        "observed_order": []
+      },
+      "command_plan": [
+        {
+          "id": "explicit-gh-fallback",
+          "action": "create_pr",
+          "manager": "explicit-gh",
+          "argv": [
+            "gh",
+            "pr",
+            "create",
+            "--base",
+            "main",
+            "--head",
+            "011-crabtrap-honeypot/01-foundation",
+            "--body-file",
+            "specs/011-crabtrap-honeypot/.process/pr-packets/foundation.md",
+            "--title",
+            "chore(PRSG-014): stacked PR"
+          ],
+          "mutates": true,
+          "mutation_boundary": true,
+          "slice_id": "foundation",
+          "review_order": 1,
+          "preconditions": [
+            "gh_stack_not_supported_before_mutation",
+            "packets_validated",
+            "topology_validated"
+          ],
+          "reason": "Explicit gh fallback before any gh stack mutation"
+        }
+      ],
+      "topology": {
+        "pre_mutation": [
+          {
+            "review_order": 1,
+            "slice_id": "foundation",
+            "branch": "011-crabtrap-honeypot/01-foundation",
+            "base_branch": "main",
+            "pr_number": null,
+            "pr_url": null,
+            "head_sha": "ae5552fb13b55c4eda80dbe72ba348960488eea3",
+            "status": "pending"
+          },
+          {
+            "review_order": 2,
+            "slice_id": "us1",
+            "branch": "011-crabtrap-honeypot/02-us1",
+            "base_branch": "011-crabtrap-honeypot/01-foundation",
+            "pr_number": null,
+            "pr_url": null,
+            "head_sha": "f74d3491fdcc7418c270d66e69bc605bcdfb1fbb",
+            "status": "pending"
+          },
+          {
+            "review_order": 3,
+            "slice_id": "us2",
+            "branch": "011-crabtrap-honeypot/03-us2",
+            "base_branch": "011-crabtrap-honeypot/02-us1",
+            "pr_number": null,
+            "pr_url": null,
+            "head_sha": "246771e5b45713075768d76f3a84cdd704cbbe3b",
+            "status": "pending"
+          },
+          {
+            "review_order": 4,
+            "slice_id": "us3",
+            "branch": "011-crabtrap-honeypot/04-us3",
+            "base_branch": "011-crabtrap-honeypot/03-us2",
+            "pr_number": null,
+            "pr_url": null,
+            "head_sha": "b461883a31c4f13a68615614cf1be6421996ec74",
+            "status": "pending"
+          },
+          {
+            "review_order": 5,
+            "slice_id": "us4",
+            "branch": "011-crabtrap-honeypot/05-us4",
+            "base_branch": "011-crabtrap-honeypot/04-us3",
+            "pr_number": null,
+            "pr_url": null,
+            "head_sha": "8da3ae65bb0ed23462b7ae4fc184de5478018502",
+            "status": "pending"
+          }
+        ],
+        "post_mutation": []
+      },
+      "recovery": null,
+      "evidence_path": "specs/011-crabtrap-honeypot/.process/stack-manager/emission/link/preflight/decision.json"
+    },
+    "stack_manager_evidence_path": "specs/011-crabtrap-honeypot/.process/stack-manager/emission/link/preflight/decision.json",
+    "next_slice_id": "foundation",
+    "reconciled_at": "2026-06-10T00:00:00Z",
+    "slices": [
+      {
+        "slice_id": "foundation",
+        "review_order": 1,
+        "expected_branch": "011-crabtrap-honeypot/01-foundation",
+        "expected_base_branch": "main",
+        "head_sha": "ae5552fb13b55c4eda80dbe72ba348960488eea3",
+        "declared_files": [
+          ".agents/skills/speckit-converge/SKILL.md",
+          ".agents/skills/speckit-specify/SKILL.md",
+          ".agents/skills/speckit-taskstoissues/SKILL.md",
+          ".claude/skills/speckit-checklist/SKILL.md",
+          ".claude/skills/speckit-clarify/SKILL.md",
+          ".github/workflows/quality-gate.yml",
+          ".github/workflows/visual-approval.yml",
+          ".specify/curated-install.json",
+          ".specify/feature.json",
+          ".specify/init-options.json",
+          ".specify/integration.json",
+          ".specify/integrations/codex.manifest.json",
+          ".specify/integrations/speckit.manifest.json",
+          ".specify/presets/.registry",
+          ".specify/presets/claude-ask-questions/CHANGELOG.md",
+          ".specify/presets/claude-ask-questions/commands/speckit.checklist.md",
+          ".specify/presets/claude-ask-questions/commands/speckit.clarify.md",
+          ".specify/presets/claude-ask-questions/CONTRIBUTING.md",
+          ".specify/presets/claude-ask-questions/LICENSE",
+          ".specify/presets/claude-ask-questions/preset.yml",
+          ".specify/presets/claude-ask-questions/README.md",
+          ".specify/scripts/bash/check-prerequisites.sh",
+          ".specify/scripts/bash/common.sh",
+          ".specify/scripts/bash/create-new-feature.sh",
+          ".specify/scripts/bash/setup-plan.sh",
+          ".specify/scripts/bash/setup-tasks.sh",
+          "AGENTS.md",
+          "docs/ai/rc-factory-technical-roadmap.md",
+          "docs/ai/specs/.process/autopilot-state.json",
+          "docs/ai/specs/.process/SPEC-011-design-concept.md",
+          "docs/ai/specs/.process/SPEC-011-workflow.md",
+          "docs/SECURITY-HARDENING.md",
+          "eslint.config.mjs",
+          "package.json",
+          "pnpm-lock.yaml",
+          "scripts/check-guardrails.mjs",
+          "scripts/openclaw-smoke.sh",
+          "specs/011-crabtrap-honeypot/.process/marker-plan/pr-marker-plan.json",
+          "specs/011-crabtrap-honeypot/.process/reviewability/atomicity-route.json",
+          "specs/011-crabtrap-honeypot/.process/reviewability/tasks-gate.json",
+          "specs/011-crabtrap-honeypot/.process/uat-runbook.md",
+          "specs/011-crabtrap-honeypot/checklists/data-integrity.md",
+          "specs/011-crabtrap-honeypot/checklists/error-handling.md",
+          "specs/011-crabtrap-honeypot/checklists/requirements.md",
+          "specs/011-crabtrap-honeypot/checklists/security.md",
+          "specs/011-crabtrap-honeypot/checklists/state-management.md",
+          "specs/011-crabtrap-honeypot/contracts/crabtrap-denial-summary.v1.schema.json",
+          "specs/011-crabtrap-honeypot/data-model.md",
+          "specs/011-crabtrap-honeypot/plan.md",
+          "specs/011-crabtrap-honeypot/quickstart.md",
+          "specs/011-crabtrap-honeypot/research.md",
+          "specs/011-crabtrap-honeypot/SPEC-MOC.md",
+          "specs/011-crabtrap-honeypot/spec.md",
+          "specs/011-crabtrap-honeypot/tasks.md",
+          "src/app/api/openclaw/version/route.ts",
+          "src/components/panels/office-panel.tsx",
+          "src/lib/__tests__/crabtrap-adapter.test.ts",
+          "src/lib/__tests__/fixtures/crabtrap/crabtrap-fixtures.ts",
+          "src/lib/__tests__/openclaw-version-route.test.ts",
+          "src/lib/crabtrap-adapter.ts",
+          "src/lib/feature-flags.ts",
+          "tsconfig.spec-strict.json"
+        ],
+        "declared_scoped_tests": [],
+        "scoped_verification": {
+          "commands": [
+            {
+              "command": "<none>",
+              "gate_type": "no_scoped_tests",
+              "reason": "No declared scoped tests or applicable project command; full regression evidence remains required.",
+              "required": true,
+              "evidence_path": "specs/011-crabtrap-honeypot/.process/emission/foundation/no_scoped_tests.txt",
+              "exit_status": 0,
+              "started_at": "2026-06-10T00:00:00Z",
+              "finished_at": "2026-06-10T00:00:01Z"
+            }
+          ]
+        },
+        "status": "failed",
+        "marker_id": "foundation",
+        "source_marker_ids": [
+          "foundation"
+        ],
+        "source_marker_checkpoints": [
+          "specs/011-crabtrap-honeypot/.process/marker-plan/checkpoints/foundation.json"
+        ],
+        "route": "marker_split",
+        "marker_split_evidence": "specs/011-crabtrap-honeypot/.process/marker-plan/final-marker-split-result.json",
+        "last_error": {
+          "slice_id": "foundation",
+          "failed_at": "2026-06-10T00:00:00Z",
+          "phase": "git_branch",
+          "command": "git branch failed for slice foundation",
+          "exit_status": 2,
+          "evidence_path": ""
+        }
+      },
+      {
+        "slice_id": "us1",
+        "review_order": 2,
+        "expected_branch": "011-crabtrap-honeypot/02-us1",
+        "expected_base_branch": "011-crabtrap-honeypot/01-foundation",
+        "head_sha": "f74d3491fdcc7418c270d66e69bc605bcdfb1fbb",
+        "declared_files": [
+          "docs/ai/specs/.process/autopilot-state.json",
+          "docs/ai/specs/.process/SPEC-011-workflow.md",
+          "specs/011-crabtrap-honeypot/.process/marker-plan/pr-marker-plan.json",
+          "specs/011-crabtrap-honeypot/.process/uat-runbook.md",
+          "specs/011-crabtrap-honeypot/tasks.md",
+          "src/lib/crabtrap-adapter.ts"
+        ],
+        "declared_scoped_tests": [],
+        "scoped_verification": {
+          "commands": [
+            {
+              "command": "<none>",
+              "gate_type": "no_scoped_tests",
+              "reason": "No declared scoped tests or applicable project command; full regression evidence remains required.",
+              "required": true,
+              "evidence_path": "specs/011-crabtrap-honeypot/.process/emission/us1/no_scoped_tests.txt",
+              "exit_status": 0,
+              "started_at": "2026-06-10T00:00:00Z",
+              "finished_at": "2026-06-10T00:00:01Z"
+            }
+          ]
+        },
+        "status": "pending",
+        "marker_id": "us1",
+        "source_marker_ids": [
+          "us1"
+        ],
+        "source_marker_checkpoints": [
+          "specs/011-crabtrap-honeypot/.process/marker-plan/checkpoints/us1.json"
+        ],
+        "route": "marker_split",
+        "marker_split_evidence": "specs/011-crabtrap-honeypot/.process/marker-plan/final-marker-split-result.json"
+      },
+      {
+        "slice_id": "us2",
+        "review_order": 3,
+        "expected_branch": "011-crabtrap-honeypot/03-us2",
+        "expected_base_branch": "011-crabtrap-honeypot/02-us1",
+        "head_sha": "246771e5b45713075768d76f3a84cdd704cbbe3b",
+        "declared_files": [
+          "docs/ai/specs/.process/autopilot-state.json",
+          "docs/ai/specs/.process/SPEC-011-workflow.md",
+          "specs/011-crabtrap-honeypot/.process/marker-plan/pr-marker-plan.json",
+          "specs/011-crabtrap-honeypot/.process/uat-runbook.md",
+          "specs/011-crabtrap-honeypot/tasks.md",
+          "src/lib/crabtrap-adapter.ts"
+        ],
+        "declared_scoped_tests": [],
+        "scoped_verification": {
+          "commands": [
+            {
+              "command": "<none>",
+              "gate_type": "no_scoped_tests",
+              "reason": "No declared scoped tests or applicable project command; full regression evidence remains required.",
+              "required": true,
+              "evidence_path": "specs/011-crabtrap-honeypot/.process/emission/us2/no_scoped_tests.txt",
+              "exit_status": 0,
+              "started_at": "2026-06-10T00:00:00Z",
+              "finished_at": "2026-06-10T00:00:01Z"
+            }
+          ]
+        },
+        "status": "pending",
+        "marker_id": "us2",
+        "source_marker_ids": [
+          "us2"
+        ],
+        "source_marker_checkpoints": [
+          "specs/011-crabtrap-honeypot/.process/marker-plan/checkpoints/us2.json"
+        ],
+        "route": "marker_split",
+        "marker_split_evidence": "specs/011-crabtrap-honeypot/.process/marker-plan/final-marker-split-result.json"
+      },
+      {
+        "slice_id": "us3",
+        "review_order": 4,
+        "expected_branch": "011-crabtrap-honeypot/04-us3",
+        "expected_base_branch": "011-crabtrap-honeypot/03-us2",
+        "head_sha": "b461883a31c4f13a68615614cf1be6421996ec74",
+        "declared_files": [
+          "docs/ai/specs/.process/autopilot-state.json",
+          "docs/ai/specs/.process/SPEC-011-workflow.md",
+          "specs/011-crabtrap-honeypot/.process/marker-plan/pr-marker-plan.json",
+          "specs/011-crabtrap-honeypot/.process/uat-runbook.md",
+          "specs/011-crabtrap-honeypot/tasks.md",
+          "src/lib/crabtrap-adapter.ts"
+        ],
+        "declared_scoped_tests": [],
+        "scoped_verification": {
+          "commands": [
+            {
+              "command": "<none>",
+              "gate_type": "no_scoped_tests",
+              "reason": "No declared scoped tests or applicable project command; full regression evidence remains required.",
+              "required": true,
+              "evidence_path": "specs/011-crabtrap-honeypot/.process/emission/us3/no_scoped_tests.txt",
+              "exit_status": 0,
+              "started_at": "2026-06-10T00:00:00Z",
+              "finished_at": "2026-06-10T00:00:01Z"
+            }
+          ]
+        },
+        "status": "pending",
+        "marker_id": "us3",
+        "source_marker_ids": [
+          "us3"
+        ],
+        "source_marker_checkpoints": [
+          "specs/011-crabtrap-honeypot/.process/marker-plan/checkpoints/us3.json"
+        ],
+        "route": "marker_split",
+        "marker_split_evidence": "specs/011-crabtrap-honeypot/.process/marker-plan/final-marker-split-result.json"
+      },
+      {
+        "slice_id": "us4",
+        "review_order": 5,
+        "expected_branch": "011-crabtrap-honeypot/05-us4",
+        "expected_base_branch": "011-crabtrap-honeypot/04-us3",
+        "head_sha": "8da3ae65bb0ed23462b7ae4fc184de5478018502",
+        "declared_files": [
+          "docs/ai/product-lines/paddock.yaml",
+          "docs/ai/product-lines/product-line-b.yaml",
+          "docs/ai/rc-factory-technical-roadmap.md",
+          "docs/ai/specs/.process/autopilot-state.json",
+          "docs/ai/specs/.process/SPEC-011-workflow.md",
+          "scripts/spec-012b/harness-gardening-check.mjs",
+          "specs/011-crabtrap-honeypot/.process/marker-plan/pr-marker-plan.json",
+          "specs/011-crabtrap-honeypot/.process/pr-review-packet.md",
+          "specs/011-crabtrap-honeypot/.process/review-report.md",
+          "specs/011-crabtrap-honeypot/.process/uat-runbook.md",
+          "specs/011-crabtrap-honeypot/tasks.md",
+          "specs/011-crabtrap-honeypot/verify-tasks-report.md",
+          "src/lib/__tests__/crabtrap-adapter.test.ts",
+          "src/lib/__tests__/feature-flag-service.test.ts",
+          "src/lib/__tests__/feature-flags.test.ts",
+          "src/lib/__tests__/fixtures/crabtrap/crabtrap-fixtures.ts",
+          "src/lib/__tests__/product-line-b-seed.test.ts",
+          "src/lib/__tests__/product-line-seed.test.ts",
+          "src/lib/crabtrap-adapter.ts",
+          "src/lib/feature-flags.ts",
+          "src/lib/product-line-seed/types.ts"
+        ],
+        "declared_scoped_tests": [],
+        "scoped_verification": {
+          "commands": [
+            {
+              "command": "<none>",
+              "gate_type": "no_scoped_tests",
+              "reason": "No declared scoped tests or applicable project command; full regression evidence remains required.",
+              "required": true,
+              "evidence_path": "specs/011-crabtrap-honeypot/.process/emission/us4/no_scoped_tests.txt",
+              "exit_status": 0,
+              "started_at": "2026-06-10T00:00:00Z",
+              "finished_at": "2026-06-10T00:00:01Z"
+            }
+          ]
+        },
+        "status": "pending",
+        "marker_id": "us4",
+        "source_marker_ids": [
+          "us4"
+        ],
+        "source_marker_checkpoints": [
+          "specs/011-crabtrap-honeypot/.process/marker-plan/checkpoints/us4.json"
+        ],
+        "route": "marker_split",
+        "marker_split_evidence": "specs/011-crabtrap-honeypot/.process/marker-plan/final-marker-split-result.json"
+      }
+    ],
+    "source_marker_plan": {
+      "path": "specs/011-crabtrap-honeypot/.process/marker-plan/pr-marker-plan.json"
+    },
+    "marker_split_result": {
+      "path": "specs/011-crabtrap-honeypot/.process/marker-plan/final-marker-split-result.json"
+    }
   }
 }
