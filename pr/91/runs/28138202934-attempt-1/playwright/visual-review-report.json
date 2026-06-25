@@ -3,7 +3,7 @@
   "version": 1,
   "repository": "racecraft-lab/Paddock",
   "reportMode": "pr",
-  "reportScope": "latest",
+  "reportScope": "run",
   "surface": "playwright",
   "surfaceLabel": "Playwright UI E2E",
   "workflowName": "Paddock UI E2E",
@@ -17,7 +17,7 @@
   "headRef": "SPEC-011-crabtrap-honeypot-stack/01-foundation",
   "baseRef": "main",
   "headSha": "c21e3d4bf0568a4de4b6a116611af42e21931f98",
-  "reportHref": "https://racecraft-lab.github.io/Paddock/pr/91/playwright/latest/",
+  "reportHref": "https://racecraft-lab.github.io/Paddock/pr/91/runs/28138202934-attempt-1/playwright/",
   "latestHref": "https://racecraft-lab.github.io/Paddock/pr/91/playwright/latest/?v=28138202934-attempt-1",
   "createdAt": "2026-06-25T00:27:50.776Z",
   "itemCounts": {
