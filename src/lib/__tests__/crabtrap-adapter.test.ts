@@ -110,7 +110,7 @@ function parseActivityData(row: ActivityRow): Record<string, unknown> {
   return JSON.parse(row.data ?? '{}') as Record<string, unknown>
 }
 
-describe.skip('SPEC-011 CrabTrap adapter foundation tests', () => {
+describe('SPEC-011 CrabTrap adapter foundation tests', () => {
   it('returns feature_disabled and writes no activity when FEATURE_CRABTRAP_HONEYPOT is off', () => {
     const result = processFixture(crabtrapFixtures.valid, { flagEnabled: false })
 
