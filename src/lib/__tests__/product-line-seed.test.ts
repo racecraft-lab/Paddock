@@ -988,6 +988,7 @@ describe('Paddock product-line seed parity', () => {
     })
     expect(Object.keys(parsedFlags).filter((key) => key.startsWith('FEATURE_') || key.startsWith('PILOT_')).sort()).toEqual([
       'FEATURE_AREA_LABEL_ROUTING',
+      'FEATURE_CRABTRAP_HONEYPOT',
       'FEATURE_DISPOSITION_LOGGING',
       'FEATURE_GLOBAL_AEGIS',
       'FEATURE_OPENCLAW_HEALTH_COSTS',

@@ -344,6 +344,7 @@ export const FEATURE_FLAG_REGISTRY: Record<FeatureFlagKey, FeatureFlagDefinition
       'FEATURE_TASK_ARTIFACTS',
       'FEATURE_RESOURCE_GOVERNANCE',
       'FEATURE_OPENCLAW_HEALTH_COSTS',
+      'FEATURE_CRABTRAP_HONEYPOT',
     ],
     implementedAfter: ['Paddock pilot'],
     preflightRequires: ['Paddock seed data, workflow templates, GitHub issue trigger, and pilot smoke checklist are ready.'],
