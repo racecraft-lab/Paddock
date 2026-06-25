@@ -1,0 +1,49 @@
+{
+  "schema": "visual-review-pages.visual-review-report.v1",
+  "version": 1,
+  "repository": "racecraft-lab/Paddock",
+  "reportMode": "pr",
+  "reportScope": "latest",
+  "surface": "storybook",
+  "surfaceLabel": "Storybook Components",
+  "workflowName": "Visual Storybook Snapshots",
+  "workflowFile": "visual-storybook.yml",
+  "prNumber": "95",
+  "prUrl": "https://github.com/racecraft-lab/Paddock/pull/95",
+  "runId": "28138009677",
+  "runAttempt": "1",
+  "runKey": "28138009677-attempt-1",
+  "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/28138009677",
+  "headRef": "SPEC-011-crabtrap-honeypot-stack/05-us4",
+  "baseRef": "SPEC-011-crabtrap-honeypot-stack/04-us3",
+  "headSha": "8da3ae65bb0ed23462b7ae4fc184de5478018502",
+  "reportHref": "https://racecraft-lab.github.io/Paddock/pr/95/storybook/latest/",
+  "latestHref": "https://racecraft-lab.github.io/Paddock/pr/95/storybook/latest/?v=28138009677-attempt-1",
+  "createdAt": "2026-06-25T00:16:32.998Z",
+  "itemCounts": {
+    "baselineApproved": 0,
+    "changed": 0,
+    "deleted": 0,
+    "new": 0,
+    "open": 0,
+    "passed": 0,
+    "total": 0
+  },
+  "reviewScope": {
+    "domains": [],
+    "filtered": 310,
+    "reason": "changed-files-no-review-domain"
+  },
+  "sourcePullRequest": null,
+  "initialReviewState": null,
+  "canonicalReviewState": {
+    "schema": "visual-review-pages.visual-review-state.v1",
+    "repository": "racecraft-lab/Paddock",
+    "prNumber": "95",
+    "surface": "storybook",
+    "surfaceLabel": "Storybook Components",
+    "headSha": "8da3ae65bb0ed23462b7ae4fc184de5478018502",
+    "runKey": "28138009677-attempt-1",
+    "items": []
+  }
+}
