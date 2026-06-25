@@ -1,0 +1,9 @@
+{
+  "route": "one-navigable-PR",
+  "releasable": true,
+  "signals": [
+    "context:flag-system:guarded-cutover"
+  ],
+  "hints": [],
+  "warnings": []
+}

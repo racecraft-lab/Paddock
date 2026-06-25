@@ -129,8 +129,10 @@ function runTaskPipelineGuardrails() {
     //   SPEC-010A's declarative product-line seed defaults.
     // - ready_for_owner: SPEC-005 owns this. Allowed in the status vocabulary,
     //   GitHub label mapping, task API guard, and Kanban/store surfaces listed below.
-    // - CrabTrap: SPEC-011 owns this. NO production owner yet, so it
-    //   remains blocked everywhere except the central resolver.
+    // - CrabTrap: SPEC-011 owns the helper-only adapter boundary plus focused
+    //   tests, fixtures, and UAT evidence listed below. Runtime routes,
+    //   OpenAPI, migrations, scheduler/task-dispatch, notification, GitHub,
+    //   and UI surfaces remain out of scope.
     const areaLabelRoutingAllowlist = new Set([
       'src/lib/feature-flags.ts',
       'src/lib/github-label-map.ts',
@@ -160,8 +162,20 @@ function runTaskPipelineGuardrails() {
       fail(`SPEC-005 marker (ready_for_owner) outside allowed files: ${path}`)
     }
 
-    if (path !== 'src/lib/feature-flags.ts' && /\bCrabTrap\b/.test(source)) {
-      fail(`SPEC-011 marker (CrabTrap) found before its owner spec lands: ${path}`)
+    const crabTrapAllowlist = new Set([
+      'src/lib/feature-flags.ts',
+      'src/lib/crabtrap-adapter.ts',
+      'src/lib/__tests__/crabtrap-adapter.test.ts',
+      'src/lib/__tests__/fixtures/crabtrap/crabtrap-fixtures.ts',
+      'specs/011-crabtrap-honeypot/.process/uat-runbook.md',
+    ])
+    for (const allowedPath of crabTrapAllowlist) {
+      if (!existsSync(join(root, allowedPath))) {
+        fail(`SPEC-011 CrabTrap allowlist file missing: ${allowedPath}`)
+      }
+    }
+    if (!crabTrapAllowlist.has(path) && /\bCrabTrap\b/.test(source)) {
+      fail(`SPEC-011 marker (CrabTrap) outside allowed files: ${path}`)
     }
   }
 

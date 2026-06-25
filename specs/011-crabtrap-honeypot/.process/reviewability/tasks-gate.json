@@ -1,0 +1,52 @@
+{
+  "mode": "tasks",
+  "status": "block",
+  "pass": false,
+  "feature_id": "011-crabtrap-honeypot",
+  "is_size_only": true,
+  "evidence_path": "specs/011-crabtrap-honeypot/.process/reviewability/tasks-gate.json",
+  "gate_exit_code": 1,
+  "reviewable_loc": 1280,
+  "production_files": 7,
+  "total_files": 68,
+  "primary_surface_count": 6,
+  "primary_surfaces": [
+    "docs/process",
+    "harness/adapter",
+    "other",
+    "scheduler/runtime",
+    "schema/migration",
+    "seed/config"
+  ],
+  "greenfield": false,
+  "thresholds": {
+    "warn": {
+      "reviewable_loc": 400,
+      "production_files": 6,
+      "total_files": 15,
+      "primary_surfaces": 1
+    },
+    "block": {
+      "reviewable_loc": 800,
+      "production_files": 8,
+      "total_files": 25,
+      "primary_surfaces": 1
+    }
+  },
+  "exception_honored": false,
+  "exception_class": null,
+  "exceptions": {
+    "accepted": [],
+    "rejected": []
+  },
+  "warnings": [
+    "reviewable LOC 1280 exceeds warn threshold 400",
+    "production files 7 exceeds warn threshold 6",
+    "total files 68 exceeds warn threshold 15",
+    "primary surfaces 6 exceeds warn threshold 1"
+  ],
+  "blockers": [
+    "reviewable LOC 1280 exceeds block threshold 800",
+    "total files 68 exceeds block threshold 25"
+  ]
+}

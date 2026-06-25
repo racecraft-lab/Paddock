@@ -123,6 +123,7 @@ function productLineBConfigFixture(): ProductLineSeedConfig {
         'FEATURE_TASK_ARTIFACTS',
         'FEATURE_RESOURCE_GOVERNANCE',
         'FEATURE_OPENCLAW_HEALTH_COSTS',
+        'FEATURE_CRABTRAP_HONEYPOT',
         'PILOT_PADDOCK_E2E',
         'FEATURE_GITHUB_SYNC_AUTOMATION',
         'PILOT_PRODUCT_LINE_A_E2E',
@@ -141,6 +142,7 @@ function productLineBConfigFixture(): ProductLineSeedConfig {
         'FEATURE_TASK_ARTIFACTS',
         'FEATURE_RESOURCE_GOVERNANCE',
         'FEATURE_OPENCLAW_HEALTH_COSTS',
+        'FEATURE_CRABTRAP_HONEYPOT',
         'PILOT_PADDOCK_E2E',
         'FEATURE_PRODUCT_LINE_B_DISPATCH',
         'PILOT_PRODUCT_LINE_B_SMOKE',
@@ -155,6 +157,7 @@ function productLineBConfigFixture(): ProductLineSeedConfig {
         'FEATURE_TASK_ARTIFACTS',
         'FEATURE_RESOURCE_GOVERNANCE',
         'FEATURE_OPENCLAW_HEALTH_COSTS',
+        'FEATURE_CRABTRAP_HONEYPOT',
         'PILOT_PADDOCK_E2E',
       ],
       paused_or_forbidden: [

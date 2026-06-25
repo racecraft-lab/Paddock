@@ -169,6 +169,7 @@ describe('feature flag registry', () => {
       'FEATURE_TASK_ARTIFACTS',
       'FEATURE_RESOURCE_GOVERNANCE',
       'FEATURE_OPENCLAW_HEALTH_COSTS',
+      'FEATURE_CRABTRAP_HONEYPOT',
       'PILOT_PADDOCK_E2E',
       'FEATURE_TASK_CONTROL_PLANE',
       'FEATURE_GITHUB_SYNC_AUTOMATION',
@@ -227,7 +228,8 @@ describe('feature flag registry', () => {
     expect(FEATURE_FLAG_REGISTRY.FEATURE_TWO_STEP_TERMINAL.enableRequires).toEqual(['FEATURE_TASK_PIPELINES'])
     expect(FEATURE_FLAG_REGISTRY.FEATURE_AREA_LABEL_ROUTING.enableRequires).toEqual(['FEATURE_WORKSPACE_SWITCHER'])
     expect(FEATURE_FLAG_REGISTRY.PILOT_PADDOCK_E2E.enableRequires).toContain('FEATURE_OPENCLAW_HEALTH_COSTS')
-    expect(FEATURE_FLAG_REGISTRY.PILOT_PADDOCK_E2E.enableRequires).toHaveLength(9)
+    expect(FEATURE_FLAG_REGISTRY.PILOT_PADDOCK_E2E.enableRequires).toContain('FEATURE_CRABTRAP_HONEYPOT')
+    expect(FEATURE_FLAG_REGISTRY.PILOT_PADDOCK_E2E.enableRequires).toHaveLength(10)
   })
 
   it('derives additive cascade prerequisites from roadmap phase order', () => {
@@ -258,6 +260,7 @@ describe('feature flag registry', () => {
       'FEATURE_TASK_ARTIFACTS',
       'FEATURE_RESOURCE_GOVERNANCE',
       'FEATURE_OPENCLAW_HEALTH_COSTS',
+      'FEATURE_CRABTRAP_HONEYPOT',
       'PILOT_PADDOCK_E2E',
       'FEATURE_TASK_CONTROL_PLANE',
       'FEATURE_GITHUB_SYNC_AUTOMATION',
@@ -265,6 +268,7 @@ describe('feature flag registry', () => {
     ])
     expect(getFeatureFlagCascadeDependents('FEATURE_RESOURCE_GOVERNANCE')).toEqual([
       'FEATURE_OPENCLAW_HEALTH_COSTS',
+      'FEATURE_CRABTRAP_HONEYPOT',
       'PILOT_PADDOCK_E2E',
       'FEATURE_TASK_CONTROL_PLANE',
       'FEATURE_GITHUB_SYNC_AUTOMATION',

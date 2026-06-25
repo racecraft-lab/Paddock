@@ -10,6 +10,7 @@ export type FeatureFlagKey =
   | 'FEATURE_TASK_ARTIFACTS'
   | 'FEATURE_RESOURCE_GOVERNANCE'
   | 'FEATURE_OPENCLAW_HEALTH_COSTS'
+  | 'FEATURE_CRABTRAP_HONEYPOT'
   | 'PILOT_PADDOCK_E2E'
   | 'FEATURE_TASK_CONTROL_PLANE'
   | 'FEATURE_GITHUB_SYNC_AUTOMATION'
@@ -85,6 +86,7 @@ export const FEATURE_FLAG_KEYS = [
   'FEATURE_TASK_ARTIFACTS',
   'FEATURE_RESOURCE_GOVERNANCE',
   'FEATURE_OPENCLAW_HEALTH_COSTS',
+  'FEATURE_CRABTRAP_HONEYPOT',
   'PILOT_PADDOCK_E2E',
   'FEATURE_TASK_CONTROL_PLANE',
   'FEATURE_GITHUB_SYNC_AUTOMATION',
@@ -296,6 +298,27 @@ export const FEATURE_FLAG_REGISTRY: Record<FeatureFlagKey, FeatureFlagDefinition
     rollbackBehavior: 'Disable to remove OpenClaw infra/electricity data from Cost Tracker without affecting governance core.',
     evidence: {},
   },
+  FEATURE_CRABTRAP_HONEYPOT: {
+    key: 'FEATURE_CRABTRAP_HONEYPOT',
+    label: 'CrabTrap honeypot adapter',
+    description: 'Helper-only signed denial-summary adapter for bounded security intrusion activity evidence.',
+    spec: 'CrabTrap Honeypot Adapter',
+    phase: 7.5,
+    upstreamImpact: 'fork-only optional',
+    activationScope: 'productLineWorkspace',
+    riskTier: 'high',
+    defaultValue: false,
+    adminManageable: false,
+    requiresHuman: true,
+    requiresReason: true,
+    requiresPreflight: true,
+    implementationStatus: 'not_implemented',
+    enableRequires: ['FEATURE_RESOURCE_GOVERNANCE'],
+    implementedAfter: ['Resource governance'],
+    preflightRequires: ['Adapter signing config, fixture UAT, and no-raw-persistence proof are verified.'],
+    rollbackBehavior: 'Disable to make CrabTrap intake a no-op while preserving existing security activity rows.',
+    evidence: {},
+  },
   PILOT_PADDOCK_E2E: {
     key: 'PILOT_PADDOCK_E2E',
     label: 'Paddock pilot',
@@ -321,6 +344,7 @@ export const FEATURE_FLAG_REGISTRY: Record<FeatureFlagKey, FeatureFlagDefinition
       'FEATURE_TASK_ARTIFACTS',
       'FEATURE_RESOURCE_GOVERNANCE',
       'FEATURE_OPENCLAW_HEALTH_COSTS',
+      'FEATURE_CRABTRAP_HONEYPOT',
     ],
     implementedAfter: ['Paddock pilot'],
     preflightRequires: ['Paddock seed data, workflow templates, GitHub issue trigger, and pilot smoke checklist are ready.'],

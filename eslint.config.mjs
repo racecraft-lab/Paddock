@@ -161,6 +161,10 @@ const specStrictFiles = [
   'src/lib/harness-adapters/__tests__/codex-app-server-artifact-safety.test.ts',
   'src/lib/__tests__/task-dispatch-codex-app-server.test.ts',
   'scripts/spec-014c/check-scope-guard.mjs',
+  // SPEC-011 CrabTrap honeypot adapter foundation.
+  'src/lib/crabtrap-adapter.ts',
+  'src/lib/__tests__/crabtrap-adapter.test.ts',
+  'src/lib/__tests__/fixtures/crabtrap/crabtrap-fixtures.ts',
 ]
 
 const config = tseslint.config(

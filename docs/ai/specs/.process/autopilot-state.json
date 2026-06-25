@@ -1,12 +1,12 @@
 {
   "schema_version": "1.0",
-  "workflow_file": "docs/ai/specs/.process/SPEC-012B-workflow.md",
-  "updated_at": "2026-06-08T09:15:15-05:00",
-  "active_step": "Complete: PR #84 merged to main; status hygiene recorded",
-  "spec_id": "SPEC-012B",
-  "feature_dir": "specs/012b-harness-gardening-guards",
-  "branch": "012b-harness-gardening-guards",
-  "skill_version": "speckit-pro 2.7.0",
+  "workflow_file": "docs/ai/specs/.process/SPEC-011-workflow.md",
+  "updated_at": "2026-06-24T17:20:42-05:00",
+  "active_step": "Phase 7: foundation (T001,T002,T003,T004,T005,T006,T007)",
+  "spec_id": "SPEC-011",
+  "feature_dir": "specs/011-crabtrap-honeypot",
+  "branch": "011-crabtrap-honeypot",
+  "skill_version": "speckit-pro 2.15.0",
   "confidence_gate_mode": "advisory",
   "project_commands": {
     "BUILD": "pnpm build",
@@ -22,103 +22,614 @@
   "preset_conventions": {
     "has_presets": true,
     "presets": [
+      "claude-ask-questions",
       "codex-ask-questions",
       "speckit-pro-reviewability"
-    ]
+    ],
+    "templates": {
+      "spec": ".specify/presets/speckit-pro-reviewability/templates/spec-template.md",
+      "plan": ".specify/presets/speckit-pro-reviewability/templates/plan-template.md",
+      "tasks": ".specify/presets/speckit-pro-reviewability/templates/tasks-template.md"
+    }
   },
   "preflight": {
-    "speckit_cli": "specify 0.9.4",
+    "speckit_cli": "specify 0.11.6",
     "package_manager": "pnpm",
     "required_agents_installed": true,
     "required_agent_scope": "user",
     "subagent_model": "gpt-5.5",
     "subagent_model_reasoning_effort": "xhigh",
-    "mcp_servers": "Missing: tavily-mcp context7 RepoPrompt (agents will use built-in fallbacks)",
-    "plugin_cache": "speckit-pro 2.7.0 cache (local path redacted)",
-    "plugin_cache_warning": "Cache path briefly oscillated during startup; scripts resolved to 2.7.0 before G1 validation",
+    "plugin_cache": "speckit-pro 2.15.0 cache",
     "implementation_agent": "implement-executor",
     "commands_detected": true,
-    "presets_detected": true
+    "presets_detected": true,
+    "capability_coverage": "advisory; acceptable fallbacks available"
   },
   "archive_sweep": {
     "archive_extension_installed": true,
-    "current_target": "specs/012b-harness-gardening-guards",
+    "current_target": "specs/011-crabtrap-honeypot",
     "safeToApplyCleanup": false,
     "status": "completed",
-    "eligible_archived_specs": [
-      "specs/010b-product-line-b-smoke",
-      "specs/013a1-github-sync-automation",
-      "specs/013b-claim-reconciliation",
-      "specs/013c-retry-debug-surfaces",
-      "specs/013d-claim-control-operator-ux",
-      "specs/014a-sandbox-lifecycle-contract",
-      "specs/014b-adapter-manifest-fakes",
-      "specs/014c-first-real-harness-adapter"
-    ],
     "cleanup_applied": false,
     "warnings": [
+      "current target excluded",
       "--apply-cleanup was not supplied",
-      "current branch is not a safe cleanup base",
-      "current target excluded"
+      "cleanup is not applied from this feature branch startup sweep"
     ]
   },
-  "closeout": {
-    "status": "completed",
-    "pr": "https://github.com/racecraft-lab/Paddock/pull/84",
-    "merge_commit": "77c6ce44bb10ac89b43ffcaab2b9ea35e7ea2f39",
-    "merged_at": "2026-06-07T16:18:07Z",
-    "source_cleanup": "not_applied_no_apply_cleanup_request",
-    "next_follow_ups": ["SPEC-014D", "SPEC-014E", "SPEC-014F", "SPEC-015A"]
-  },
+  "current_blocker": null,
   "plan": [
-    {"step": "Archive Sweep: previously merged specs dry-run/apply eligibility", "status": "completed"},
-    {"step": "Phase 0: Prerequisites", "status": "completed"},
-    {"step": "Phase 1: Specify", "status": "completed"},
-    {"step": "Phase 2: Clarify - Recommendation Schema And Outputs", "status": "completed"},
-    {"step": "Phase 2: Clarify - Recommendation Schema And Outputs Consensus", "status": "completed"},
-    {"step": "Phase 2: Clarify - Drift Taxonomy And Failure Policy", "status": "completed"},
-    {"step": "Phase 2: Clarify - Drift Taxonomy And Failure Policy Consensus", "status": "completed"},
-    {"step": "Phase 2: Clarify - Evidence Freshness And Owner Metadata", "status": "completed"},
-    {"step": "Phase 2: Clarify - Evidence Freshness And Owner Metadata Consensus", "status": "completed"},
-    {"step": "Phase 2: Clarify - Fixtures, Dedupe, And Historical Patterns", "status": "completed"},
-    {"step": "Phase 2: Clarify - Fixtures, Dedupe, And Historical Patterns Consensus", "status": "completed"},
-    {"step": "Phase 2: Clarify - Scope Control And Archive Cleanup Boundary", "status": "completed"},
-    {"step": "Phase 2: Clarify - Scope Control And Archive Cleanup Boundary Consensus", "status": "completed"},
-    {"step": "Phase 3: Plan", "status": "completed"},
-    {"step": "Phase 4: Checklist - data-integrity", "status": "completed"},
-    {"step": "Phase 4: Checklist - data-integrity Consensus", "status": "completed"},
-    {"step": "Phase 4: Checklist - docs-integrity", "status": "completed"},
-    {"step": "Phase 4: Checklist - docs-integrity Consensus", "status": "completed"},
-    {"step": "Phase 4: Checklist - guardrail-integration", "status": "completed"},
-    {"step": "Phase 4: Checklist - guardrail-integration Consensus", "status": "completed"},
-    {"step": "Phase 4: Checklist - error-handling", "status": "completed"},
-    {"step": "Phase 4: Checklist - error-handling Consensus", "status": "completed"},
-    {"step": "Phase 4: Checklist - testing-strategy", "status": "completed"},
-    {"step": "Phase 4: Checklist - testing-strategy Consensus", "status": "completed"},
-    {"step": "Phase 4: Checklist - scope-control", "status": "completed"},
-    {"step": "Phase 4: Checklist - scope-control Consensus", "status": "completed"},
-    {"step": "Phase 5: Tasks", "status": "completed"},
-    {"step": "Phase 6: Analyze", "status": "completed"},
-    {"step": "Phase 6: Analyze - Consensus", "status": "completed"},
-    {"step": "Phase 6.5: Confidence Gate", "status": "completed"},
-    {"step": "Phase 7: RED fixture tests (T001-T010)", "status": "completed"},
-    {"step": "Phase 7: Foundational guard infrastructure (T011-T018)", "status": "completed"},
-    {"step": "Phase 7: US1 hard drift detectors (T019-T026)", "status": "completed"},
-    {"step": "Phase 7: US2 recommendations and guardrail wiring (T027-T036)", "status": "completed"},
-    {"step": "Phase 7: US3 advisory signals and scope guard (T037-T044)", "status": "completed"},
-    {"step": "Phase 7: Polish and verification (T045-T055)", "status": "completed"},
-    {"step": "Post: Doctor Extension Check", "status": "completed"},
-    {"step": "Post: Verify Implementation", "status": "completed"},
-    {"step": "Post: Verify Tasks Phantom Check", "status": "completed"},
-    {"step": "Post: Code Review", "status": "completed"},
-    {"step": "Post: Integration Suite", "status": "completed"},
-    {"step": "Post: Cleanup", "status": "completed"},
-    {"step": "Post: Reviewability Diff Gate", "status": "completed"},
-    {"step": "Post: Self-Review", "status": "completed"},
-    {"step": "Post: UAT Runbook Generation", "status": "completed"},
-    {"step": "Post: PR Body Generation", "status": "completed"},
-    {"step": "Post: PR Creation", "status": "completed"},
-    {"step": "Post: Review Remediation", "status": "completed"},
-    {"step": "Post: Retrospective", "status": "completed"}
-  ]
+    {
+      "step": "Archive Sweep: previously merged specs dry-run/apply eligibility",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 0: Prerequisites",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 1: Specify",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 2: Clarify - Intake Boundary",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 2: Clarify - Intake Boundary Consensus",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 2: Clarify - Signature, Replay, And Size",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 2: Clarify - Signature, Replay, And Size Consensus",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 2: Clarify - Normalized Payload Contract",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 2: Clarify - Normalized Payload Contract Consensus",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 2: Clarify - Activity Scope And Alerts",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 2: Clarify - Activity Scope And Alerts Consensus",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 2: Clarify - UAT And Live CrabTrap Evidence",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 2: Clarify - UAT And Live CrabTrap Evidence Consensus",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 3: Plan",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 4: Checklist - security",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 4: Checklist - security Consensus",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 4: Checklist - data-integrity",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 4: Checklist - data-integrity Consensus",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 4: Checklist - error-handling",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 4: Checklist - error-handling Consensus",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 4: Checklist - state-management",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 4: Checklist - state-management Consensus",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 5: Tasks",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 6: Analyze",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 6: Analyze - Consensus",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 6.5: Confidence Gate",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 7: foundation (T001,T002,T003,T004,T005,T006,T007)",
+      "status": "in_progress"
+    },
+    {
+      "step": "Phase 7: us1 (T008,T009,T010,T011)",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 7: us2 (T012,T013,T014,T015,T016)",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 7: us3 (T017,T018,T019,T020,T021)",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 7: us4 + polish (T022,T023,T024,T025,T026,T027,T028,T029,T030,T031,T032)",
+      "status": "pending"
+    },
+    {
+      "step": "Post: Doctor Extension Check",
+      "status": "pending"
+    },
+    {
+      "step": "Post: Verify Implementation",
+      "status": "pending"
+    },
+    {
+      "step": "Post: Verify Tasks Phantom Check",
+      "status": "pending"
+    },
+    {
+      "step": "Post: Code Review",
+      "status": "pending"
+    },
+    {
+      "step": "Post: Integration Suite",
+      "status": "pending"
+    },
+    {
+      "step": "Post: Cleanup",
+      "status": "pending"
+    },
+    {
+      "step": "Post: Reviewability Diff Gate",
+      "status": "pending"
+    },
+    {
+      "step": "Post: Self-Review",
+      "status": "pending"
+    },
+    {
+      "step": "Post: UAT Runbook Generation",
+      "status": "pending"
+    },
+    {
+      "step": "Post: PR Body Generation",
+      "status": "pending"
+    },
+    {
+      "step": "Post: PR Creation",
+      "status": "pending"
+    },
+    {
+      "step": "Post: Review Remediation",
+      "status": "pending"
+    },
+    {
+      "step": "Post: Retrospective",
+      "status": "pending"
+    }
+  ],
+  "reviewability_task_gate": {
+    "status": "block",
+    "mode": "tasks",
+    "exit_code": 1,
+    "is_size_only": true,
+    "evidence_path": "specs/011-crabtrap-honeypot/.process/reviewability/tasks-gate.json",
+    "reviewable_loc": 1280,
+    "production_files": 7,
+    "total_files": 68,
+    "primary_surface_count": 6,
+    "warnings": [
+      "reviewable LOC 1280 exceeds warn threshold 400",
+      "production files 7 exceeds warn threshold 6",
+      "total files 68 exceeds warn threshold 15",
+      "primary surfaces 6 exceeds warn threshold 1"
+    ],
+    "blockers": [
+      "reviewable LOC 1280 exceeds block threshold 800",
+      "total files 68 exceeds block threshold 25"
+    ]
+  },
+  "atomicity_route": {
+    "route": "one-navigable-PR",
+    "releasable": true,
+    "signals": [
+      "context:flag-system:guarded-cutover"
+    ],
+    "hints": [],
+    "warnings": [],
+    "evidence_path": "specs/011-crabtrap-honeypot/.process/reviewability/atomicity-route.json"
+  },
+  "layer_plan": {
+    "status": "skipped",
+    "route": "one-navigable-PR",
+    "reason": "Atomicity route is one-navigable-PR; split-PR layer planner not required."
+  },
+  "analysis": {
+    "status": "completed",
+    "findings_total": 3,
+    "critical": 0,
+    "high": 2,
+    "medium": 1,
+    "low": 0,
+    "remaining_total": 0,
+    "consensus": "security-routed 3/3 high-confidence; wording cleanup applied"
+  },
+  "confidence_gate": {
+    "status": "completed",
+    "mode": "advisory",
+    "threshold": 0.9,
+    "composite": 0.94,
+    "pass": true,
+    "criteria": {
+      "task_understanding": 0.95,
+      "approach_clarity": 0.94,
+      "requirements_alignment": 0.95,
+      "risk_assessment": 0.92,
+      "completeness": 0.95
+    },
+    "recommended_action": "proceed"
+  },
+  "pr_marker_plan_path": "specs/011-crabtrap-honeypot/.process/marker-plan/pr-marker-plan.json",
+  "pr_marker_plan": {
+    "schema_version": "pr-marker-plan.v1",
+    "kind": "pr_marker_plan",
+    "feature_id": "011-crabtrap-honeypot",
+    "status": "planned",
+    "source_fingerprint": {
+      "feature_spec_sha": "c96faf93d5cf509f3babeecaa67dee8adb53fd2b414b8ba068c63a435585e2e6",
+      "plan_declared_scope_sha": "70f38eb8b7ca6cc0f09be50ef8edb27a5621289c90d7abc65a0c02a2c3ee6ffc",
+      "tasks_sha": "98bf9c75f0f1b3d7bd7ae7aa2d5bfc9b57c1334986c02c2087c1c63aaf377696",
+      "reviewability_sha": "e7962a8207de25d2de85c0e816bf5f23c318597d153e1efbe78fa2ef2d3a1dc4",
+      "hazard_route_sha": "1971e9aff27a7010222da332f1ac103e1f057f251d24a8d49ad11470c23521fc"
+    },
+    "markers": [
+      {
+        "id": "foundation",
+        "review_order": 1,
+        "kind": "foundation",
+        "parent_marker_id": null,
+        "source_boundary": {
+          "section": "Foundation",
+          "story_id": null,
+          "start_task_id": "T001",
+          "end_task_id": "T007"
+        },
+        "task_ids": [
+          "T001",
+          "T002",
+          "T003",
+          "T004",
+          "T005",
+          "T006",
+          "T007"
+        ],
+        "folded_polish_task_ids": [],
+        "folded_polish_target_reason": "",
+        "declared_files": [
+          {
+            "operation": "MODIFIED",
+            "path": "scripts/check-guardrails.mjs"
+          },
+          {
+            "operation": "MODIFIED",
+            "path": "specs/011-crabtrap-honeypot/.process/uat-runbook.md"
+          },
+          {
+            "operation": "MODIFIED",
+            "path": "src/lib/__tests__/crabtrap-adapter.test.ts"
+          },
+          {
+            "operation": "MODIFIED",
+            "path": "src/lib/crabtrap-adapter.ts"
+          },
+          {
+            "operation": "MODIFIED",
+            "path": "src/lib/feature-flags.ts"
+          }
+        ],
+        "declared_tests": [],
+        "reviewability": {
+          "status": "block",
+          "mode": "tasks",
+          "scope": "foundation",
+          "evidence_path": "specs/011-crabtrap-honeypot/.process/reviewability/tasks-gate.json"
+        },
+        "hazards": [
+          "context:flag-system:guarded-cutover"
+        ],
+        "subdivision": {
+          "status": "none",
+          "details": {}
+        },
+        "implementation_checkpoint": {
+          "status": "pending"
+        },
+        "emission_mapping": {
+          "status": "pending"
+        },
+        "warnings": []
+      },
+      {
+        "id": "us1",
+        "review_order": 2,
+        "kind": "user_story",
+        "parent_marker_id": null,
+        "source_boundary": {
+          "section": "User Story 1 - Disabled And Absent Safe",
+          "story_id": 1,
+          "start_task_id": "T008",
+          "end_task_id": "T011"
+        },
+        "task_ids": [
+          "T008",
+          "T009",
+          "T010",
+          "T011"
+        ],
+        "folded_polish_task_ids": [],
+        "folded_polish_target_reason": "",
+        "declared_files": [
+          {
+            "operation": "MODIFIED",
+            "path": "src/lib/__tests__/crabtrap-adapter.test.ts"
+          },
+          {
+            "operation": "MODIFIED",
+            "path": "src/lib/crabtrap-adapter.ts"
+          }
+        ],
+        "declared_tests": [],
+        "reviewability": {
+          "status": "block",
+          "mode": "tasks",
+          "scope": "us1",
+          "evidence_path": "specs/011-crabtrap-honeypot/.process/reviewability/tasks-gate.json"
+        },
+        "hazards": [
+          "context:flag-system:guarded-cutover"
+        ],
+        "subdivision": {
+          "status": "none",
+          "details": {}
+        },
+        "implementation_checkpoint": {
+          "status": "pending"
+        },
+        "emission_mapping": {
+          "status": "pending"
+        },
+        "warnings": []
+      },
+      {
+        "id": "us2",
+        "review_order": 3,
+        "kind": "user_story",
+        "parent_marker_id": null,
+        "source_boundary": {
+          "section": "User Story 2 - Bounded Denial Evidence",
+          "story_id": 2,
+          "start_task_id": "T012",
+          "end_task_id": "T016"
+        },
+        "task_ids": [
+          "T012",
+          "T013",
+          "T014",
+          "T015",
+          "T016"
+        ],
+        "folded_polish_task_ids": [],
+        "folded_polish_target_reason": "",
+        "declared_files": [
+          {
+            "operation": "MODIFIED",
+            "path": "src/lib/__tests__/crabtrap-adapter.test.ts"
+          },
+          {
+            "operation": "MODIFIED",
+            "path": "src/lib/crabtrap-adapter.ts"
+          }
+        ],
+        "declared_tests": [],
+        "reviewability": {
+          "status": "block",
+          "mode": "tasks",
+          "scope": "us2",
+          "evidence_path": "specs/011-crabtrap-honeypot/.process/reviewability/tasks-gate.json"
+        },
+        "hazards": [
+          "context:flag-system:guarded-cutover"
+        ],
+        "subdivision": {
+          "status": "none",
+          "details": {}
+        },
+        "implementation_checkpoint": {
+          "status": "pending"
+        },
+        "emission_mapping": {
+          "status": "pending"
+        },
+        "warnings": []
+      },
+      {
+        "id": "us3",
+        "review_order": 4,
+        "kind": "user_story",
+        "parent_marker_id": null,
+        "source_boundary": {
+          "section": "User Story 3 - Unsafe Or Invalid Payload Rejection",
+          "story_id": 3,
+          "start_task_id": "T017",
+          "end_task_id": "T021"
+        },
+        "task_ids": [
+          "T017",
+          "T018",
+          "T019",
+          "T020",
+          "T021"
+        ],
+        "folded_polish_task_ids": [],
+        "folded_polish_target_reason": "",
+        "declared_files": [
+          {
+            "operation": "MODIFIED",
+            "path": "src/lib/__tests__/crabtrap-adapter.test.ts"
+          },
+          {
+            "operation": "MODIFIED",
+            "path": "src/lib/crabtrap-adapter.ts"
+          }
+        ],
+        "declared_tests": [],
+        "reviewability": {
+          "status": "block",
+          "mode": "tasks",
+          "scope": "us3",
+          "evidence_path": "specs/011-crabtrap-honeypot/.process/reviewability/tasks-gate.json"
+        },
+        "hazards": [
+          "context:flag-system:guarded-cutover"
+        ],
+        "subdivision": {
+          "status": "none",
+          "details": {}
+        },
+        "implementation_checkpoint": {
+          "status": "pending"
+        },
+        "emission_mapping": {
+          "status": "pending"
+        },
+        "warnings": []
+      },
+      {
+        "id": "us4",
+        "review_order": 5,
+        "kind": "user_story",
+        "parent_marker_id": null,
+        "source_boundary": {
+          "section": "User Story 4 - Scope Isolation Review",
+          "story_id": 4,
+          "start_task_id": "T022",
+          "end_task_id": "T025"
+        },
+        "task_ids": [
+          "T022",
+          "T023",
+          "T024",
+          "T025"
+        ],
+        "folded_polish_task_ids": [
+          "T026",
+          "T027",
+          "T028",
+          "T029",
+          "T030",
+          "T031",
+          "T032"
+        ],
+        "folded_polish_target_reason": "nearest_preceding_non_polish_scope",
+        "declared_files": [
+          {
+            "operation": "MODIFIED",
+            "path": "docs/ai/rc-factory-technical-roadmap.md"
+          },
+          {
+            "operation": "MODIFIED",
+            "path": "docs/ai/specs/.process/SPEC-011-workflow.md"
+          },
+          {
+            "operation": "MODIFIED",
+            "path": "specs/011-crabtrap-honeypot/.process/pr-review-packet.md"
+          },
+          {
+            "operation": "MODIFIED",
+            "path": "specs/011-crabtrap-honeypot/.process/uat-runbook.md"
+          },
+          {
+            "operation": "MODIFIED",
+            "path": "src/lib/__tests__/crabtrap-adapter.test.ts"
+          }
+        ],
+        "declared_tests": [],
+        "reviewability": {
+          "status": "block",
+          "mode": "tasks",
+          "scope": "us4",
+          "evidence_path": "specs/011-crabtrap-honeypot/.process/reviewability/tasks-gate.json"
+        },
+        "hazards": [
+          "context:flag-system:guarded-cutover"
+        ],
+        "subdivision": {
+          "status": "none",
+          "details": {}
+        },
+        "implementation_checkpoint": {
+          "status": "pending"
+        },
+        "emission_mapping": {
+          "status": "pending"
+        },
+        "warnings": []
+      }
+    ],
+    "warnings": [
+      {
+        "code": "reviewability_size_warning",
+        "severity": "warning",
+        "message": "Reviewability sizing result is marker-planning input.",
+        "source": "reviewability",
+        "details": {
+          "status": "block",
+          "mode": "tasks",
+          "evidence_path": "specs/011-crabtrap-honeypot/.process/reviewability/tasks-gate.json"
+        }
+      }
+    ]
+  },
+  "current_source_fingerprint": {
+    "feature_spec_sha": "c96faf93d5cf509f3babeecaa67dee8adb53fd2b414b8ba068c63a435585e2e6",
+    "plan_declared_scope_sha": "70f38eb8b7ca6cc0f09be50ef8edb27a5621289c90d7abc65a0c02a2c3ee6ffc",
+    "tasks_sha": "98bf9c75f0f1b3d7bd7ae7aa2d5bfc9b57c1334986c02c2087c1c63aaf377696",
+    "reviewability_sha": "e7962a8207de25d2de85c0e816bf5f23c318597d153e1efbe78fa2ef2d3a1dc4",
+    "hazard_route_sha": "1971e9aff27a7010222da332f1ac103e1f057f251d24a8d49ad11470c23521fc"
+  },
+  "pr_marker_plan_current_source_fingerprint": {
+    "feature_spec_sha": "c96faf93d5cf509f3babeecaa67dee8adb53fd2b414b8ba068c63a435585e2e6",
+    "plan_declared_scope_sha": "70f38eb8b7ca6cc0f09be50ef8edb27a5621289c90d7abc65a0c02a2c3ee6ffc",
+    "tasks_sha": "98bf9c75f0f1b3d7bd7ae7aa2d5bfc9b57c1334986c02c2087c1c63aaf377696",
+    "reviewability_sha": "e7962a8207de25d2de85c0e816bf5f23c318597d153e1efbe78fa2ef2d3a1dc4",
+    "hazard_route_sha": "1971e9aff27a7010222da332f1ac103e1f057f251d24a8d49ad11470c23521fc"
+  }
 }

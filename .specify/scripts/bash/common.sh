@@ -158,6 +158,13 @@ get_feature_paths() {
     repo_root=$(get_repo_root) || return 1
     local current_branch
     current_branch=$(get_current_branch)
+    local has_git_repo="false"
+
+    if { [[ -d "$repo_root/.git" ]] || [[ -f "$repo_root/.git" ]]; } &&
+        command -v git >/dev/null 2>&1 &&
+        git -C "$repo_root" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        has_git_repo="true"
+    fi
 
     # Resolve feature directory.  Priority:
     #   1. SPECIFY_FEATURE_DIRECTORY env var (explicit override)
@@ -186,10 +193,15 @@ get_feature_paths() {
         return 1
     fi
 
+    if [[ -z "$current_branch" ]]; then
+        current_branch="$(basename "$feature_dir")"
+    fi
+
     # Use printf '%q' to safely quote values, preventing shell injection
     # via crafted branch names or paths containing special characters
     printf 'REPO_ROOT=%q\n' "$repo_root"
     printf 'CURRENT_BRANCH=%q\n' "$current_branch"
+    printf 'HAS_GIT=%q\n' "$has_git_repo"
     printf 'FEATURE_DIR=%q\n' "$feature_dir"
     printf 'FEATURE_SPEC=%q\n' "$feature_dir/spec.md"
     printf 'IMPL_PLAN=%q\n' "$feature_dir/plan.md"
