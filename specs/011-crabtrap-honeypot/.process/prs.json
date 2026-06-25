@@ -76,7 +76,7 @@
       "verification_evidence": "specs/011-crabtrap-honeypot/.process/emission/foundation/no_scoped_tests.txt",
       "stack_manager_evidence_path": "specs/011-crabtrap-honeypot/.process/stack-manager/emission/link/preflight/decision.json",
       "status": "opened",
-      "head_sha": "1d4c10c8da07e960aa23a17a53e3c8049a84f0fd",
+      "head_sha": "b242e11dd69adc547e575ba29e12ea7199feb4b3",
       "merged_sha": null
     },
     {
@@ -98,7 +98,7 @@
       "verification_evidence": "specs/011-crabtrap-honeypot/.process/emission/us1/no_scoped_tests.txt",
       "stack_manager_evidence_path": "specs/011-crabtrap-honeypot/.process/stack-manager/emission/link/preflight/decision.json",
       "status": "opened",
-      "head_sha": "7ffcb4c8649944dedd4593a3e7f2c4378be4b98d",
+      "head_sha": "0b9411f9688136e35df7d29690416d6b9b474aaa",
       "merged_sha": null
     },
     {
@@ -120,7 +120,7 @@
       "verification_evidence": "specs/011-crabtrap-honeypot/.process/emission/us2/no_scoped_tests.txt",
       "stack_manager_evidence_path": "specs/011-crabtrap-honeypot/.process/stack-manager/emission/link/preflight/decision.json",
       "status": "opened",
-      "head_sha": "db1826efb4b89717447699a4aa088ab4fb017967",
+      "head_sha": "375767b126ddfcbda76662bccda5d4bfc51e549d",
       "merged_sha": null
     },
     {
@@ -142,7 +142,7 @@
       "verification_evidence": "specs/011-crabtrap-honeypot/.process/emission/us3/no_scoped_tests.txt",
       "stack_manager_evidence_path": "specs/011-crabtrap-honeypot/.process/stack-manager/emission/link/preflight/decision.json",
       "status": "opened",
-      "head_sha": "7ef9a71983fa01920ed7e37a5019e2946e853c78",
+      "head_sha": "02cfab9565579c74d0c8338bc136b75387bffa7b",
       "merged_sha": null
     },
     {
@@ -179,7 +179,7 @@
       "verification_evidence": "specs/011-crabtrap-honeypot/.process/emission/us4/no_scoped_tests.txt",
       "stack_manager_evidence_path": "specs/011-crabtrap-honeypot/.process/stack-manager/emission/link/preflight/decision.json",
       "status": "opened",
-      "head_sha": "0f7df1d6d0a96cf08247a3163832955642848c0b",
+      "head_sha": "8e3aba38a3b404bf4d1ef45d71a8756f633129e8",
       "merged_sha": null
     }
   ]
