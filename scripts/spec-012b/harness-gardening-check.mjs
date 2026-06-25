@@ -588,7 +588,7 @@ function detectStaleStatusPointers(caseRoot, fixture) {
       if (!text) return []
 
       const claimedSpec = specIdFromValue(text.match(/SPEC-[0-9]{3,4}[A-Z]?/i)?.[0])
-      const claimsCurrent = /\bcurrent\b/i.test(text)
+      const claimsCurrent = claimedSpec ? claimsCurrentStatusPointer(text, claimedSpec) : false
       if (!claimedSpec || !claimsCurrent || claimedSpec === currentSpec) return []
 
       return [{
@@ -606,6 +606,15 @@ function detectStaleStatusPointers(caseRoot, fixture) {
         case_id: fixture.case_id,
       }]
     })
+}
+
+function claimsCurrentStatusPointer(text, claimedSpec) {
+  const claimedSpecPattern = escapeRegex(claimedSpec)
+  return (
+    /^\s*status\s*:\s*current\b/im.test(text) ||
+    new RegExp(`^\\s*(?:current|active|in[_ -]?progress)[_ -]?spec\\s*[:=]\\s*${claimedSpecPattern}\\b`, 'im').test(text) ||
+    new RegExp(`^\\s*${claimedSpecPattern}\\s*[:=]\\s*(?:current|active|in\\s+progress)\\b`, 'im').test(text)
+  )
 }
 
 function detectMissingRequiredEvidence(caseRoot, fixture) {
