@@ -670,3 +670,8 @@ while letting `pnpm guardrails` pass.
 - Opened PR#93 for `us2` (SPEC-011-crabtrap-honeypot-stack/03-us2 -> SPEC-011-crabtrap-honeypot-stack/02-us1).
 - Opened PR#94 for `us3` (SPEC-011-crabtrap-honeypot-stack/04-us3 -> SPEC-011-crabtrap-honeypot-stack/03-us2).
 - Opened PR#95 for `us4` (SPEC-011-crabtrap-honeypot-stack/05-us4 -> SPEC-011-crabtrap-honeypot-stack/04-us3).
+- Reconciled existing PR#91 for `foundation` (SPEC-011-crabtrap-honeypot-stack/01-foundation -> main).
+- Reconciled existing PR#92 for `us1` (SPEC-011-crabtrap-honeypot-stack/02-us1 -> SPEC-011-crabtrap-honeypot-stack/01-foundation).
+- Reconciled existing PR#93 for `us2` (SPEC-011-crabtrap-honeypot-stack/03-us2 -> SPEC-011-crabtrap-honeypot-stack/02-us1).
+- Reconciled existing PR#94 for `us3` (SPEC-011-crabtrap-honeypot-stack/04-us3 -> SPEC-011-crabtrap-honeypot-stack/03-us2).
+- Reconciled existing PR#95 for `us4` (SPEC-011-crabtrap-honeypot-stack/05-us4 -> SPEC-011-crabtrap-honeypot-stack/04-us3).

@@ -1477,7 +1477,7 @@
             "base_branch": "main",
             "pr_number": null,
             "pr_url": null,
-            "head_sha": "ae5552fb13b55c4eda80dbe72ba348960488eea3",
+            "head_sha": "c21e3d4bf0568a4de4b6a116611af42e21931f98",
             "status": "pending"
           },
           {
@@ -1487,7 +1487,7 @@
             "base_branch": "SPEC-011-crabtrap-honeypot-stack/01-foundation",
             "pr_number": null,
             "pr_url": null,
-            "head_sha": "f74d3491fdcc7418c270d66e69bc605bcdfb1fbb",
+            "head_sha": "4b1204099df564b6e29f7441e4ecfd5c2368f1db",
             "status": "pending"
           },
           {
@@ -1497,7 +1497,7 @@
             "base_branch": "SPEC-011-crabtrap-honeypot-stack/02-us1",
             "pr_number": null,
             "pr_url": null,
-            "head_sha": "246771e5b45713075768d76f3a84cdd704cbbe3b",
+            "head_sha": "b41a2004dce983c9f520ca8c51db4b94d0b12eac",
             "status": "pending"
           },
           {
@@ -1507,7 +1507,7 @@
             "base_branch": "SPEC-011-crabtrap-honeypot-stack/03-us2",
             "pr_number": null,
             "pr_url": null,
-            "head_sha": "b461883a31c4f13a68615614cf1be6421996ec74",
+            "head_sha": "6ee512b277f121953f1c62bafc5dd54a049a4542",
             "status": "pending"
           },
           {
@@ -1517,7 +1517,7 @@
             "base_branch": "SPEC-011-crabtrap-honeypot-stack/04-us3",
             "pr_number": null,
             "pr_url": null,
-            "head_sha": "8da3ae65bb0ed23462b7ae4fc184de5478018502",
+            "head_sha": "b93009a91fe6ce3bc6248d60716c9f3d0e05d3bd",
             "status": "pending"
           }
         ],
@@ -1535,7 +1535,7 @@
         "review_order": 1,
         "expected_branch": "SPEC-011-crabtrap-honeypot-stack/01-foundation",
         "expected_base_branch": "main",
-        "head_sha": "ae5552fb13b55c4eda80dbe72ba348960488eea3",
+        "head_sha": "c21e3d4bf0568a4de4b6a116611af42e21931f98",
         "declared_files": [
           ".agents/skills/speckit-converge/SKILL.md",
           ".agents/skills/speckit-specify/SKILL.md",
@@ -1631,7 +1631,7 @@
           "state": "opened",
           "base_ref": "main",
           "head_ref": "SPEC-011-crabtrap-honeypot-stack/01-foundation",
-          "head_sha": "ae5552fb13b55c4eda80dbe72ba348960488eea3",
+          "head_sha": "c21e3d4bf0568a4de4b6a116611af42e21931f98",
           "merged_sha": null
         }
       },
@@ -1640,7 +1640,7 @@
         "review_order": 2,
         "expected_branch": "SPEC-011-crabtrap-honeypot-stack/02-us1",
         "expected_base_branch": "SPEC-011-crabtrap-honeypot-stack/01-foundation",
-        "head_sha": "f74d3491fdcc7418c270d66e69bc605bcdfb1fbb",
+        "head_sha": "4b1204099df564b6e29f7441e4ecfd5c2368f1db",
         "declared_files": [
           "docs/ai/specs/.process/autopilot-state.json",
           "docs/ai/specs/.process/SPEC-011-workflow.md",
@@ -1680,7 +1680,7 @@
           "state": "opened",
           "base_ref": "SPEC-011-crabtrap-honeypot-stack/01-foundation",
           "head_ref": "SPEC-011-crabtrap-honeypot-stack/02-us1",
-          "head_sha": "f74d3491fdcc7418c270d66e69bc605bcdfb1fbb",
+          "head_sha": "4b1204099df564b6e29f7441e4ecfd5c2368f1db",
           "merged_sha": null
         }
       },
@@ -1689,7 +1689,7 @@
         "review_order": 3,
         "expected_branch": "SPEC-011-crabtrap-honeypot-stack/03-us2",
         "expected_base_branch": "SPEC-011-crabtrap-honeypot-stack/02-us1",
-        "head_sha": "246771e5b45713075768d76f3a84cdd704cbbe3b",
+        "head_sha": "b41a2004dce983c9f520ca8c51db4b94d0b12eac",
         "declared_files": [
           "docs/ai/specs/.process/autopilot-state.json",
           "docs/ai/specs/.process/SPEC-011-workflow.md",
@@ -1729,7 +1729,7 @@
           "state": "opened",
           "base_ref": "SPEC-011-crabtrap-honeypot-stack/02-us1",
           "head_ref": "SPEC-011-crabtrap-honeypot-stack/03-us2",
-          "head_sha": "246771e5b45713075768d76f3a84cdd704cbbe3b",
+          "head_sha": "b41a2004dce983c9f520ca8c51db4b94d0b12eac",
           "merged_sha": null
         }
       },
@@ -1738,7 +1738,7 @@
         "review_order": 4,
         "expected_branch": "SPEC-011-crabtrap-honeypot-stack/04-us3",
         "expected_base_branch": "SPEC-011-crabtrap-honeypot-stack/03-us2",
-        "head_sha": "b461883a31c4f13a68615614cf1be6421996ec74",
+        "head_sha": "6ee512b277f121953f1c62bafc5dd54a049a4542",
         "declared_files": [
           "docs/ai/specs/.process/autopilot-state.json",
           "docs/ai/specs/.process/SPEC-011-workflow.md",
@@ -1778,7 +1778,7 @@
           "state": "opened",
           "base_ref": "SPEC-011-crabtrap-honeypot-stack/03-us2",
           "head_ref": "SPEC-011-crabtrap-honeypot-stack/04-us3",
-          "head_sha": "b461883a31c4f13a68615614cf1be6421996ec74",
+          "head_sha": "6ee512b277f121953f1c62bafc5dd54a049a4542",
           "merged_sha": null
         }
       },
@@ -1787,7 +1787,7 @@
         "review_order": 5,
         "expected_branch": "SPEC-011-crabtrap-honeypot-stack/05-us4",
         "expected_base_branch": "SPEC-011-crabtrap-honeypot-stack/04-us3",
-        "head_sha": "8da3ae65bb0ed23462b7ae4fc184de5478018502",
+        "head_sha": "b93009a91fe6ce3bc6248d60716c9f3d0e05d3bd",
         "declared_files": [
           "docs/ai/product-lines/paddock.yaml",
           "docs/ai/product-lines/product-line-b.yaml",
@@ -1842,7 +1842,7 @@
           "state": "opened",
           "base_ref": "SPEC-011-crabtrap-honeypot-stack/04-us3",
           "head_ref": "SPEC-011-crabtrap-honeypot-stack/05-us4",
-          "head_sha": "8da3ae65bb0ed23462b7ae4fc184de5478018502",
+          "head_sha": "b93009a91fe6ce3bc6248d60716c9f3d0e05d3bd",
           "merged_sha": null
         }
       }

@@ -168,7 +168,7 @@
     ],
     "verification_evidence": "specs/011-crabtrap-honeypot/.process/emission/us4/no_scoped_tests.txt",
     "status": "pending",
-    "head_sha": "8da3ae65bb0ed23462b7ae4fc184de5478018502",
+    "head_sha": "b93009a91fe6ce3bc6248d60716c9f3d0e05d3bd",
     "merged_sha": null
   },
   "marker_id": "us4",

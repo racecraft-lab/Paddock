@@ -291,7 +291,7 @@
     ],
     "verification_evidence": "specs/011-crabtrap-honeypot/.process/emission/foundation/no_scoped_tests.txt",
     "status": "pending",
-    "head_sha": "ae5552fb13b55c4eda80dbe72ba348960488eea3",
+    "head_sha": "c21e3d4bf0568a4de4b6a116611af42e21931f98",
     "merged_sha": null
   },
   "marker_id": "foundation",
