@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
   "workflow_file": "docs/ai/specs/.process/SPEC-011-workflow.md",
-  "updated_at": "2026-06-24T22:54:45Z",
-  "active_step": "Phase 7: us2 (T012,T013,T014,T015,T016) checkpoint complete - commit SHA pending",
+  "updated_at": "2026-06-25T02:29:54Z",
+  "active_step": "Phase 7: us3 (T017,T018,T019,T020,T021)",
   "spec_id": "SPEC-011",
   "feature_dir": "specs/011-crabtrap-honeypot",
   "branch": "011-crabtrap-honeypot",
@@ -676,10 +676,11 @@
     "hazard_route_sha": "1971e9aff27a7010222da332f1ac103e1f057f251d24a8d49ad11470c23521fc"
   },
   "implementation": {
-    "current_marker": "us2",
+    "current_marker": "us3",
     "completed_markers": [
       "foundation",
-      "us1"
+      "us1",
+      "us2"
     ],
     "foundation_checkpoint": {
       "commit_sha": "ae5552fb13b55c4eda80dbe72ba348960488eea3",
@@ -718,7 +719,7 @@
       ],
       "behavior_scope": "feature flag and config no-op behavior only; payload parsing, HMAC verification, activity writes, replay detection, unsafe-field checks, URL normalization, routes, OpenAPI, migrations, scheduler/task-dispatch, notifications, UI panels, and CrabTrap runtime integration deferred",
       "completed_at": "2026-06-24T22:43:40Z",
-      "commit_sha": "f74d3491fdcc7418c270d66e69bc605bcdfb1fbb"
+      "commit_sha": "0b9411f9688136e35df7d29690416d6b9b474aaa"
     }
   },
   "marker_checkpoints": {
@@ -731,7 +732,7 @@
         "T015",
         "T016"
       ],
-      "commit_sha": null,
+      "commit_sha": "375767b126ddfcbda76662bccda5d4bfc51e549d",
       "completed_at": "2026-06-24T22:54:45Z",
       "evidence_paths": [
         "specs/011-crabtrap-honeypot/.process/uat-runbook.md",

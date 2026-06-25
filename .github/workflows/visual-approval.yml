@@ -24,6 +24,11 @@ jobs:
     if: >-
       github.event_name != 'pull_request' ||
       github.event.pull_request.head.repo.full_name == github.repository
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
+      statuses: write
     uses: racecraft-lab/visual-review-pages/.github/workflows/visual-review-approval.yml@main
     with:
       pr_number: ${{ github.event_name == 'workflow_dispatch' && inputs.pr_number || '' }}
@@ -59,6 +64,11 @@ jobs:
     if: >-
       github.event_name != 'pull_request' ||
       github.event.pull_request.head.repo.full_name == github.repository
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
+      statuses: write
     uses: racecraft-lab/visual-review-pages/.github/workflows/visual-review-approval.yml@main
     with:
       pr_number: ${{ github.event_name == 'workflow_dispatch' && inputs.pr_number || '' }}

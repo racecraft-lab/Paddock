@@ -48,6 +48,17 @@ interface MovingWorker {
   destinationTile: string
 }
 
+interface RenderedWorker {
+  agent: Agent
+  x: number
+  y: number
+  zoneLabel: string
+  seatLabel: string
+  isMoving: boolean
+  direction: { dx: number; dy: number }
+  variant: WorkerVariant
+}
+
 type SidebarFilter = 'all' | 'working' | 'idle' | 'attention'
 
 interface MapRoom {
@@ -96,6 +107,35 @@ interface OfficeEvent {
   message: string
   at: number
   severity: 'info' | 'warn' | 'good'
+}
+
+interface WorkCue {
+  label: string
+  detail: string
+  toneClass: string
+  glowColor: string
+}
+
+interface DeliveryPacket {
+  id: string
+  fromX: number
+  fromY: number
+  midX: number
+  midY: number
+  toX: number
+  toY: number
+  delay: number
+  duration: number
+  color: string
+  label: string
+}
+
+interface RoomActivity {
+  total: number
+  busy: number
+  idle: number
+  alerts: number
+  taskLoad: number
 }
 
 interface ThemePalette {
@@ -206,6 +246,44 @@ function getStatusEmote(status: Agent['status']): string {
   return '\u2013'  // dash
 }
 
+function getAgentTaskLoad(agent: Agent): number {
+  const stats = agent.taskStats
+  if (!stats) return 0
+  return (
+    (stats.assigned || 0) +
+    (stats.in_progress || 0) +
+    (stats.quality_review || 0)
+  )
+}
+
+function getAgentWorkCue(agent: Agent, action?: OfficeAction): WorkCue {
+  const stats = agent.taskStats
+  const activeTasks = getAgentTaskLoad(agent)
+
+  if (action === 'focus') {
+    return { label: 'focus', detail: 'deep work', toneClass: 'text-cyan-100 border-cyan-300/30 bg-cyan-400/15', glowColor: 'rgba(34,211,238,0.6)' }
+  }
+  if (action === 'pair') {
+    return { label: 'pairing', detail: 'syncing', toneClass: 'text-violet-100 border-violet-300/30 bg-violet-400/15', glowColor: 'rgba(167,139,250,0.6)' }
+  }
+  if (action === 'break') {
+    return { label: 'break', detail: 'away', toneClass: 'text-emerald-100 border-emerald-300/30 bg-emerald-400/15', glowColor: 'rgba(52,211,153,0.5)' }
+  }
+  if (agent.status === 'error') {
+    return { label: 'blocked', detail: 'needs help', toneClass: 'text-rose-100 border-rose-300/40 bg-rose-500/20', glowColor: 'rgba(244,63,94,0.65)' }
+  }
+  if ((stats?.quality_review || 0) > 0) {
+    return { label: 'review', detail: `${stats?.quality_review || 0} in QA`, toneClass: 'text-violet-100 border-violet-300/35 bg-violet-400/15', glowColor: 'rgba(167,139,250,0.65)' }
+  }
+  if (agent.status === 'busy') {
+    return { label: 'typing', detail: activeTasks > 0 ? `${activeTasks} tasks` : 'working', toneClass: 'text-amber-100 border-amber-300/35 bg-amber-400/15', glowColor: 'rgba(251,191,36,0.65)' }
+  }
+  if (agent.status === 'offline') {
+    return { label: 'away', detail: 'offline', toneClass: 'text-slate-200 border-slate-300/20 bg-slate-500/15', glowColor: 'rgba(148,163,184,0.35)' }
+  }
+  return { label: 'standby', detail: activeTasks > 0 ? `${activeTasks} queued` : 'ready', toneClass: 'text-emerald-100 border-emerald-300/30 bg-emerald-400/10', glowColor: 'rgba(52,211,153,0.45)' }
+}
+
 function inferLocalRole(row: SessionAgentRow): string {
   const context = [
     String(row.agent || ''),
@@ -258,6 +336,36 @@ const LOUNGE_WAYPOINTS = [
   { x: 82, y: 66 },
   { x: 76, y: 68 },
 ]
+
+const DELIVERY_TERMINALS = [
+  { id: 'queue', label: 'TASK QUEUE', x: 42, y: 47.8, color: 'rgba(34,211,238,0.9)', border: 'border-cyan-300/30' },
+  { id: 'review', label: 'REVIEW', x: 58, y: 47.8, color: 'rgba(167,139,250,0.9)', border: 'border-violet-300/30' },
+  { id: 'owner', label: 'OWNER', x: 78, y: 35, color: 'rgba(52,211,153,0.9)', border: 'border-emerald-300/30' },
+] as const
+
+function workerIsInsideRoom(room: MapRoom, worker: Pick<RenderedWorker, 'x' | 'y'>): boolean {
+  return (
+    worker.x >= room.x &&
+    worker.x <= room.x + room.w &&
+    worker.y >= room.y &&
+    worker.y <= room.y + room.h
+  )
+}
+
+function getRoomActivity(room: MapRoom, workers: RenderedWorker[]): RoomActivity {
+  const occupants = workers.filter((worker) => workerIsInsideRoom(room, worker))
+  return occupants.reduce<RoomActivity>(
+    (acc, worker) => {
+      acc.total += 1
+      if (worker.agent.status === 'busy') acc.busy += 1
+      else if (worker.agent.status === 'idle') acc.idle += 1
+      else if (worker.agent.status === 'error') acc.alerts += 1
+      acc.taskLoad += getAgentTaskLoad(worker.agent)
+      return acc
+    },
+    { total: 0, busy: 0, idle: 0, alerts: 0, taskLoad: 0 },
+  )
+}
 
 function getPropSprite(propId: string): string {
   if (propId === 'desk-a' || propId === 'desk-b' || propId === 'desk-e' || propId === 'desk-f') return '/office-sprites/kenney/desk.png'
@@ -501,7 +609,7 @@ export function OfficePanel() {
   const roamReturnTimersRef = useRef<Map<number, ReturnType<typeof setTimeout>>>(new Map())
   const movingAgentIdsRef = useRef<Set<number>>(new Set())
   const movingWorkersRef = useRef<MovingWorker[]>([])
-  const renderedWorkersRef = useRef<Array<{ agent: Agent; x: number; y: number; zoneLabel: string; seatLabel: string; isMoving: boolean; direction: { dx: number; dy: number }; variant: WorkerVariant }>>([])
+  const renderedWorkersRef = useRef<RenderedWorker[]>([])
   const [transitioningAgentIds, setTransitioningAgentIds] = useState<Set<number>>(new Set())
   const previousSeatMapRef = useRef<Map<number, SeatPosition>>(new Map())
   const [movingWorkers, setMovingWorkers] = useState<MovingWorker[]>([])
@@ -781,7 +889,7 @@ export function OfficePanel() {
     return directions
   }, [movingWorkers])
 
-  const renderedWorkers = useMemo(() => {
+  const renderedWorkers = useMemo<RenderedWorker[]>(() => {
     return gameWorkers.map((worker) => {
       const movingPosition = movingPositionByAgent.get(worker.agent.id)
       return {
@@ -985,6 +1093,56 @@ export function OfficePanel() {
         y: worker.y,
         radius,
         color: `${hue}${Math.min(0.85, Math.max(0.2, intensity)).toFixed(2)})`,
+      }
+    })
+  }, [agentActionOverrides, renderedWorkers])
+
+  const roomActivityById = useMemo(() => {
+    const activity = new Map<string, RoomActivity>()
+    for (const room of roomLayoutState) {
+      activity.set(room.id, getRoomActivity(room, renderedWorkers))
+    }
+    return activity
+  }, [renderedWorkers, roomLayoutState])
+
+  const deliveryPackets = useMemo<DeliveryPacket[]>(() => {
+    if (renderedWorkers.length === 0) return []
+
+    const candidates = renderedWorkers
+      .filter((worker) => worker.agent.status === 'busy' || getAgentTaskLoad(worker.agent) > 0 || agentActionOverrides.has(worker.agent.id))
+      .sort((a, b) => {
+        const aLoad = getAgentTaskLoad(a.agent) + (a.agent.status === 'busy' ? 2 : 0)
+        const bLoad = getAgentTaskLoad(b.agent) + (b.agent.status === 'busy' ? 2 : 0)
+        return bLoad - aLoad || a.agent.name.localeCompare(b.agent.name)
+      })
+      .slice(0, 8)
+
+    return candidates.map((worker, index) => {
+      const stats = worker.agent.taskStats
+      const target = (stats?.quality_review || 0) > 0
+          ? DELIVERY_TERMINALS[1]
+          : DELIVERY_TERMINALS[index % 2]
+      const partner = renderedWorkers[(renderedWorkers.findIndex((item) => item.agent.id === worker.agent.id) + 1) % renderedWorkers.length]
+      const toX = agentActionOverrides.get(worker.agent.id) === 'pair' && partner ? partner.x : target.x
+      const toY = agentActionOverrides.get(worker.agent.id) === 'pair' && partner ? partner.y - 5 : target.y
+      const color = (stats?.quality_review || 0) > 0
+          ? DELIVERY_TERMINALS[1].color
+          : worker.agent.status === 'busy'
+            ? 'rgba(251,191,36,0.95)'
+            : DELIVERY_TERMINALS[0].color
+
+      return {
+        id: `${worker.agent.id}-${index}`,
+        fromX: worker.x,
+        fromY: worker.y - 7,
+        midX: clamp((worker.x + toX) / 2, 8, 92),
+        midY: clamp(Math.min(worker.y, toY) - 8 - (index % 3) * 2, 10, 82),
+        toX,
+        toY,
+        delay: (index % 4) * 0.75,
+        duration: 5.2 + (index % 3) * 0.7,
+        color,
+        label: target.label,
       }
     })
   }, [agentActionOverrides, renderedWorkers])
@@ -1611,40 +1769,43 @@ export function OfficePanel() {
               </div>
             )}
             <div className="space-y-2 max-h-[560px] overflow-y-auto pr-1">
-              {filteredRosterRows.map(({ agent, minutesIdle, needsAttention }) => (
-                <Button
-                  key={agent.id}
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setSelectedAgent(agent)
-                    const worker = renderedWorkers.find((item) => item.agent.id === agent.id)
-                    if (worker) focusMapPoint(worker.x, worker.y)
-                  }}
-                  className={`w-full flex items-center gap-2 rounded-lg p-2 text-left h-auto ${
-                    needsAttention
-                      ? 'bg-amber-500/12 border border-amber-400/60 hover:bg-amber-500/20'
-                      : 'bg-black/20 border border-white/5 hover:bg-black/35'
-                  }`}
-                >
-                  <span className={`w-6 h-6 rounded ${hashColor(agent.name)} flex items-center justify-center text-[10px] font-bold text-white`}>
-                    {getInitials(agent.name)}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-xs font-medium truncate">{agent.name}</span>
-                    <span className="block text-[10px] text-slate-300 truncate">{agent.role}</span>
-                    <span className="block text-[9px] text-slate-400 truncate">
-                      {agent.last_activity || t('noRecentActivity')}
+              {filteredRosterRows.map(({ agent, minutesIdle, needsAttention }) => {
+                const cue = getAgentWorkCue(agent, agentActionOverrides.get(agent.id))
+                return (
+                  <Button
+                    key={agent.id}
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedAgent(agent)
+                      const worker = renderedWorkers.find((item) => item.agent.id === agent.id)
+                      if (worker) focusMapPoint(worker.x, worker.y)
+                    }}
+                    className={`w-full flex items-center gap-2 rounded-lg p-2 text-left h-auto ${
+                      needsAttention
+                        ? 'bg-amber-500/12 border border-amber-400/60 hover:bg-amber-500/20'
+                        : 'bg-black/20 border border-white/5 hover:bg-black/35'
+                    }`}
+                  >
+                    <span className={`w-6 h-6 rounded ${hashColor(agent.name)} flex items-center justify-center text-[10px] font-bold text-white`}>
+                      {getInitials(agent.name)}
                     </span>
-                  </span>
-                  <span className="flex flex-col items-end gap-1">
-                    <span className={`w-2 h-2 rounded-full ${statusDot[agent.status]}`} />
-                    <span className={`text-[9px] ${needsAttention ? 'text-amber-300 font-semibold' : 'text-slate-400'}`}>
-                      {agent.status === 'busy' ? t('activeStatus') : t('idleMinutes', { minutes: minutesIdle })}
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-xs font-medium truncate">{agent.name}</span>
+                      <span className="block text-[10px] text-slate-300 truncate">{agent.role}</span>
+                      <span className="block text-[9px] text-slate-400 truncate">
+                        {agent.last_activity || t('noRecentActivity')}
+                      </span>
                     </span>
-                  </span>
-                </Button>
-              ))}
+                    <span className="flex flex-col items-end gap-1">
+                      <span className={`rounded-full border px-1.5 py-0.5 text-[9px] leading-none ${cue.toneClass}`}>{cue.label}</span>
+                      <span className={`text-[9px] ${needsAttention ? 'text-amber-300 font-semibold' : 'text-slate-400'}`}>
+                        {agent.status === 'busy' ? t('activeStatus') : t('idleMinutes', { minutes: minutesIdle })}
+                      </span>
+                    </span>
+                  </Button>
+                )
+              })}
               {filteredRosterRows.length === 0 && (
                 <div className="text-[11px] text-slate-400 px-1 py-2">{t('noWorkersInFilter')}</div>
               )}
@@ -1809,48 +1970,126 @@ export function OfficePanel() {
                 ))}
               </div>
 
-              {/* Zone rooms */}
-              {roomLayoutState.map((room) => (
+              <svg className="absolute inset-0 w-full h-full pointer-events-none z-[12]" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                <defs>
+                  <filter id="officePacketGlow" x="-120%" y="-120%" width="340%" height="340%">
+                    <feGaussianBlur stdDeviation="0.75" result="blur" />
+                    <feMerge>
+                      <feMergeNode in="blur" />
+                      <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                  </filter>
+                </defs>
+                {deliveryPackets.map((packet) => (
+                  <g key={packet.id}>
+                    <path
+                      d={`M ${packet.fromX} ${packet.fromY} Q ${packet.midX} ${packet.midY} ${packet.toX} ${packet.toY}`}
+                      fill="none"
+                      stroke={packet.color}
+                      strokeOpacity="0.18"
+                      strokeWidth="0.18"
+                      strokeDasharray="0.8 1.1"
+                    />
+                    <circle r="0.75" fill={packet.color} filter="url(#officePacketGlow)">
+                      <animate attributeName="cx" values={`${packet.fromX};${packet.midX};${packet.toX}`} dur={`${packet.duration}s`} begin={`${packet.delay}s`} repeatCount="indefinite" calcMode="spline" keyTimes="0;0.48;1" keySplines="0.35 0 0.65 1;0.35 0 0.65 1" />
+                      <animate attributeName="cy" values={`${packet.fromY};${packet.midY};${packet.toY}`} dur={`${packet.duration}s`} begin={`${packet.delay}s`} repeatCount="indefinite" calcMode="spline" keyTimes="0;0.48;1" keySplines="0.35 0 0.65 1;0.35 0 0.65 1" />
+                      <animate attributeName="opacity" values="0;1;1;0" dur={`${packet.duration}s`} begin={`${packet.delay}s`} repeatCount="indefinite" keyTimes="0;0.12;0.82;1" />
+                    </circle>
+                  </g>
+                ))}
+              </svg>
+
+              {DELIVERY_TERMINALS.map((terminal) => (
                 <div
-                  key={room.id}
-                  className={`absolute border border-void-cyan/15 ${room.style} shadow-[inset_0_0_0_1px_hsl(var(--void-cyan)/0.04),0_8px_24px_rgba(0,0,0,0.3)]`}
-                  style={{
-                    left: `${room.x}%`,
-                    top: `${room.y}%`,
-                    width: `${room.w}%`,
-                    height: `${room.h}%`,
-                    backgroundImage: `linear-gradient(to bottom right, rgba(255,255,255,0.04), rgba(0,0,0,0.1)), url('/office-sprites/kenney/floorFull.png')`,
-                    backgroundSize: 'auto, 22% 22%',
-                    filter: themePalette.floorFilter,
-                  }}
-                  onClick={(event) => {
-                    event.stopPropagation()
-                    const activeInRoom = renderedWorkers.filter((worker) => worker.zoneLabel === room.label).length
-                    setSelectedHotspot({
-                      kind: 'room',
-                      id: room.id,
-                      label: room.label,
-                      x: room.x + room.w / 2,
-                      y: room.y + room.h / 2,
-                      stats: [
-                        `${activeInRoom} workers present`,
-                        `${Math.round(room.w * room.h)} tile area`,
-                        'Click worker to inspect session',
-                      ],
-                    })
-                    pushOfficeEvent({
-                      kind: 'room',
-                      severity: 'info',
-                      message: `${room.label} room inspected (${activeInRoom} workers).`,
-                    })
-                  }}
+                  key={terminal.id}
+                  className={`absolute z-[13] -translate-x-1/2 -translate-y-1/2 rounded border ${terminal.border} bg-black/45 px-2 py-1 shadow-[0_0_18px_rgba(34,211,238,0.16)] backdrop-blur-sm pointer-events-none`}
+                  style={{ left: `${terminal.x}%`, top: `${terminal.y}%` }}
                 >
-                  <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: `${themePalette.roomTone}, linear-gradient(to bottom right, rgba(255,255,255,0.08), transparent 45%)` }} />
-                  <div className="absolute left-2 top-1 rounded bg-card/70 backdrop-blur-sm border border-void-cyan/15 text-void-cyan/80 text-[9px] px-1.5 py-0.5 font-mono uppercase tracking-wide">
-                    {room.label}
+                  <div className="text-[8px] font-mono leading-none tracking-wider text-slate-200/90">{terminal.label}</div>
+                  <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-white/10">
+                    <div
+                      className="h-full rounded-full"
+                      style={{
+                        width: terminal.id === 'owner' ? '72%' : terminal.id === 'review' ? '58%' : '84%',
+                        backgroundColor: terminal.color,
+                        animation: `mcScreenScan ${terminal.id === 'owner' ? 2.8 : terminal.id === 'review' ? 2.3 : 2.1}s ease-in-out infinite`,
+                      }}
+                    />
                   </div>
                 </div>
               ))}
+
+              {/* Zone rooms */}
+              {roomLayoutState.map((room) => {
+                const activity = roomActivityById.get(room.id) || { total: 0, busy: 0, idle: 0, alerts: 0, taskLoad: 0 }
+                const activityLevel = activity.total > 0 ? Math.min(100, 28 + activity.busy * 18 + activity.taskLoad * 8 + activity.alerts * 16) : 12
+                return (
+                  <div
+                    key={room.id}
+                    className={`absolute border border-void-cyan/15 ${room.style} shadow-[inset_0_0_0_1px_hsl(var(--void-cyan)/0.04),0_8px_24px_rgba(0,0,0,0.3)]`}
+                    style={{
+                      left: `${room.x}%`,
+                      top: `${room.y}%`,
+                      width: `${room.w}%`,
+                      height: `${room.h}%`,
+                      backgroundImage: `linear-gradient(to bottom right, rgba(255,255,255,0.04), rgba(0,0,0,0.1)), url('/office-sprites/kenney/floorFull.png')`,
+                      backgroundSize: 'auto, 22% 22%',
+                      filter: themePalette.floorFilter,
+                    }}
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      setSelectedHotspot({
+                        kind: 'room',
+                        id: room.id,
+                        label: room.label,
+                        x: room.x + room.w / 2,
+                        y: room.y + room.h / 2,
+                        stats: [
+                          `${activity.total} workers present`,
+                          `${activity.busy} active, ${activity.idle} standby, ${activity.alerts} alert`,
+                          `${activity.taskLoad} visible task handoffs`,
+                        ],
+                      })
+                      pushOfficeEvent({
+                        kind: 'room',
+                        severity: activity.alerts > 0 ? 'warn' : activity.busy > 0 ? 'good' : 'info',
+                        message: `${room.label} room inspected (${activity.total} workers, ${activity.taskLoad} handoffs).`,
+                      })
+                    }}
+                  >
+                    <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: `${themePalette.roomTone}, linear-gradient(to bottom right, rgba(255,255,255,0.08), transparent 45%)` }} />
+                    {activity.total > 0 && (
+                      <div
+                        className="absolute inset-0 pointer-events-none"
+                        style={{
+                          background: `radial-gradient(circle at 50% 48%, ${activity.alerts > 0 ? 'rgba(244,63,94,0.22)' : activity.busy > 0 ? 'rgba(251,191,36,0.18)' : 'rgba(52,211,153,0.12)'}, transparent 62%)`,
+                          animation: `mcRoomPulse ${activity.busy > 0 ? 3.2 : 4.8}s ease-in-out infinite`,
+                        }}
+                      />
+                    )}
+                    <div className="absolute left-2 top-1 rounded bg-card/70 backdrop-blur-sm border border-void-cyan/15 text-void-cyan/80 text-[9px] px-1.5 py-0.5 font-mono uppercase tracking-wide">
+                      {room.label}
+                    </div>
+                    <div className="absolute right-2 top-1 flex items-center gap-1 rounded bg-black/55 border border-white/10 px-1.5 py-0.5 text-[8px] font-mono text-slate-200">
+                      <span className={`h-1.5 w-1.5 rounded-full ${activity.alerts > 0 ? 'bg-void-crimson' : activity.busy > 0 ? 'bg-void-amber' : 'bg-void-mint'}`} />
+                      {activity.total}
+                    </div>
+                    <div className="absolute bottom-2 left-2 right-2 h-1 overflow-hidden rounded-full bg-black/35">
+                      <div
+                        className="h-full rounded-full"
+                        style={{
+                          width: `${activityLevel}%`,
+                          background: activity.alerts > 0
+                            ? 'linear-gradient(90deg, rgba(244,63,94,0.2), rgba(244,63,94,0.9))'
+                            : activity.busy > 0
+                              ? 'linear-gradient(90deg, rgba(251,191,36,0.2), rgba(251,191,36,0.9))'
+                              : 'linear-gradient(90deg, rgba(52,211,153,0.16), rgba(52,211,153,0.65))',
+                        }}
+                      />
+                    </div>
+                  </div>
+                )
+              })}
 
               {/* Props / furniture */}
               {mapPropsState.map((prop) => (
@@ -1910,117 +2149,146 @@ export function OfficePanel() {
                 ))}
               </svg>
 
-              {renderedWorkers.map(({ agent, x, y, zoneLabel, seatLabel, isMoving, direction }) => (
-                <div key={agent.id}>
-                  <div
-                    className="absolute -translate-x-1/2 pointer-events-none"
-                    style={{ left: `${x}%`, top: `calc(${y}% - 14px)` }}
-                  >
-                    <Image
-                      src="/office-sprites/kenney/chairDesk.png"
-                      alt=""
-                      aria-hidden="true"
-                      width={22}
-                      height={21}
-                      unoptimized
-                      className="w-6 h-6 object-contain opacity-90"
-                      style={{ imageRendering: 'pixelated' }}
-                      draggable={false}
-                    />
-                  </div>
-                  <div
-                    className="absolute -translate-x-1/2 pointer-events-none"
-                    style={{ left: `${x}%`, top: `calc(${y}% - 56px)` }}
-                  >
-                    <div className="relative w-16 h-9">
-                      <Image
-                        src="/office-sprites/kenney/desk.png"
-                        alt=""
-                        aria-hidden="true"
-                        width={64}
-                        height={32}
-                        unoptimized
-                        className="w-16 h-9 object-contain opacity-95"
-                        style={{ imageRendering: 'pixelated', filter: themePalette.spriteFilter }}
-                        draggable={false}
-                      />
-                      <Image
-                        src="/office-sprites/kenney/computerScreen.png"
-                        alt=""
-                        aria-hidden="true"
-                        width={20}
-                        height={6}
-                        unoptimized
-                        className="absolute left-1/2 -translate-x-1/2 top-[6px] w-7 h-2 object-contain opacity-95"
-                        style={{ imageRendering: 'pixelated', filter: themePalette.spriteFilter }}
-                        draggable={false}
-                      />
-                    </div>
-                  </div>
+              {renderedWorkers.map(({ agent, x, y, zoneLabel, seatLabel, isMoving, direction }) => {
+                const cue = getAgentWorkCue(agent, agentActionOverrides.get(agent.id))
+                const taskLoad = getAgentTaskLoad(agent)
+                const hasLiveWork = agent.status === 'busy' || taskLoad > 0 || agentActionOverrides.has(agent.id)
 
-                  <Button
-                    variant="ghost"
-                    onClick={() => setSelectedAgent(agent)}
-                    className="absolute -translate-x-1/2 -translate-y-1/2 transition-all duration-500 hover:scale-110 h-auto p-0 rounded-none hover:bg-transparent"
-                    style={{ left: `${x}%`, top: `${y}%` }}
-                  >
-                    <div className="absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-black/70 border border-white/10 text-white text-[11px] px-2 py-0.5 shadow-[0_0_12px_rgba(0,0,0,0.4)]">
-                      <span className={`inline-block w-2 h-2 rounded-full ${statusDot[agent.status]} mr-1`} />
-                      {agent.name}
+                return (
+                  <div key={agent.id}>
+                    <div
+                      className="absolute -translate-x-1/2 pointer-events-none"
+                      style={{ left: `${x}%`, top: `calc(${y}% - 14px)` }}
+                    >
+                      <Image
+                        src="/office-sprites/kenney/chairDesk.png"
+                        alt=""
+                        aria-hidden="true"
+                        width={22}
+                        height={21}
+                        unoptimized
+                        className="w-6 h-6 object-contain opacity-90"
+                        style={{ imageRendering: 'pixelated' }}
+                        draggable={false}
+                      />
                     </div>
-                    <div className="absolute -top-12 left-1/2 -translate-x-1/2 text-sm">
-                      <span className={`${agent.status === 'busy' ? 'animate-bounce' : 'animate-pulse'}`}>{getStatusEmote(agent.status)}</span>
+                    <div
+                      className="absolute -translate-x-1/2 pointer-events-none"
+                      style={{ left: `${x}%`, top: `calc(${y}% - 56px)` }}
+                    >
+                      <div className="relative w-16 h-9">
+                        <Image
+                          src="/office-sprites/kenney/desk.png"
+                          alt=""
+                          aria-hidden="true"
+                          width={64}
+                          height={32}
+                          unoptimized
+                          className="w-16 h-9 object-contain opacity-95"
+                          style={{ imageRendering: 'pixelated', filter: themePalette.spriteFilter }}
+                          draggable={false}
+                        />
+                        <Image
+                          src="/office-sprites/kenney/computerScreen.png"
+                          alt=""
+                          aria-hidden="true"
+                          width={20}
+                          height={6}
+                          unoptimized
+                          className="absolute left-1/2 -translate-x-1/2 top-[6px] w-7 h-2 object-contain opacity-95"
+                          style={{ imageRendering: 'pixelated', filter: themePalette.spriteFilter }}
+                          draggable={false}
+                        />
+                        <div className={`absolute left-1/2 top-[4px] h-3 w-8 -translate-x-1/2 overflow-hidden rounded-sm border ${hasLiveWork ? 'border-amber-200/30 bg-cyan-950/80' : 'border-slate-400/10 bg-slate-950/70'}`}>
+                          {[0, 1, 2].map((line) => (
+                            <span
+                              key={`${agent.id}-screen-${line}`}
+                              className={`absolute left-1 h-px rounded-full ${hasLiveWork ? 'bg-cyan-200/80' : 'bg-slate-500/35'}`}
+                              style={{
+                                top: `${3 + line * 3}px`,
+                                width: `${11 + ((hashNumber(agent.name) + line * 5) % 14)}px`,
+                                animation: hasLiveWork ? `mcTypingLine ${1.15 + line * 0.2}s ease-in-out ${line * 0.18}s infinite` : undefined,
+                              }}
+                            />
+                          ))}
+                          {hasLiveWork && <span className="absolute inset-y-0 w-1 bg-white/25" style={{ animation: 'mcScreenScan 1.8s ease-in-out infinite' }} />}
+                        </div>
+                      </div>
                     </div>
-                    <div className="relative w-8 h-12 mx-auto">
+
+                    <Button
+                      variant="ghost"
+                      onClick={() => setSelectedAgent(agent)}
+                      className="absolute -translate-x-1/2 -translate-y-1/2 transition-all duration-500 hover:scale-110 h-auto p-0 rounded-none hover:bg-transparent"
+                      style={{ left: `${x}%`, top: `${y}%` }}
+                    >
+                      <div className="absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-black/70 border border-white/10 text-white text-[11px] px-2 py-0.5 shadow-[0_0_12px_rgba(0,0,0,0.4)]">
+                        <span className={`inline-block w-2 h-2 rounded-full ${statusDot[agent.status]} mr-1`} />
+                        {agent.name}
+                      </div>
                       <div
-                        className={`absolute inset-0 ${transitioningAgentIds.has(agent.id) || isMoving ? 'animate-pulse' : ''}`}
-                        style={{
-                          backgroundImage: `url('/office-sprites/cc0-hero/player_full_animation.png')`,
-                          backgroundRepeat: 'no-repeat',
-                          backgroundSize: `${HERO_SHEET_COLS * 100}% ${HERO_SHEET_ROWS * 100}%`,
-                          backgroundPosition: (() => {
-                            const frame = getWorkerHeroFrame(agent.status, isMoving, spriteFrame)
-                            const xPct = (frame.col / (HERO_SHEET_COLS - 1)) * 100
-                            const yPct = (frame.row / (HERO_SHEET_ROWS - 1)) * 100
-                            return `${xPct}% ${yPct}%`
-                          })(),
-                          imageRendering: 'pixelated',
-                          filter: themePalette.spriteFilter,
-                          transform: isMoving && Math.abs(direction.dx) > Math.abs(direction.dy) && direction.dx < 0 ? 'scaleX(-1)' : undefined,
-                          transformOrigin: 'center',
-                        }}
-                      />
-                      <div className={`absolute left-[8px] top-[14px] w-4 h-3 ${hashColor(agent.name)} border border-black/60`} />
-                    </div>
-                    {!isMoving && <div className="text-[9px] text-slate-300 font-mono mt-0.5">#{seatLabel}</div>}
-                  </Button>
+                        className={`absolute -top-14 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full border px-2 py-0.5 text-[9px] font-mono uppercase tracking-wide ${cue.toneClass}`}
+                        style={{ boxShadow: `0 0 16px ${cue.glowColor}` }}
+                      >
+                        <span className={`${agent.status === 'busy' ? 'animate-bounce' : 'animate-pulse'} mr-1`}>{getStatusEmote(agent.status)}</span>
+                        {cue.label}
+                      </div>
+                      <div className="relative w-8 h-12 mx-auto">
+                        <div
+                          className={`absolute inset-0 ${transitioningAgentIds.has(agent.id) || isMoving ? 'animate-pulse' : ''}`}
+                          style={{
+                            backgroundImage: `url('/office-sprites/cc0-hero/player_full_animation.png')`,
+                            backgroundRepeat: 'no-repeat',
+                            backgroundSize: `${HERO_SHEET_COLS * 100}% ${HERO_SHEET_ROWS * 100}%`,
+                            backgroundPosition: (() => {
+                              const frame = getWorkerHeroFrame(agent.status, isMoving, spriteFrame)
+                              const xPct = (frame.col / (HERO_SHEET_COLS - 1)) * 100
+                              const yPct = (frame.row / (HERO_SHEET_ROWS - 1)) * 100
+                              return `${xPct}% ${yPct}%`
+                            })(),
+                            imageRendering: 'pixelated',
+                            filter: themePalette.spriteFilter,
+                            transform: isMoving && Math.abs(direction.dx) > Math.abs(direction.dy) && direction.dx < 0 ? 'scaleX(-1)' : undefined,
+                            transformOrigin: 'center',
+                          }}
+                        />
+                        <div className={`absolute left-[8px] top-[14px] w-4 h-3 ${hashColor(agent.name)} border border-black/60`} />
+                        {taskLoad > 0 && (
+                          <div className="absolute -right-2 top-4 flex h-4 min-w-4 items-center justify-center rounded-sm border border-emerald-200/40 bg-emerald-500/80 px-1 text-[9px] font-bold text-black shadow-[0_0_10px_rgba(52,211,153,0.6)]">
+                            {Math.min(taskLoad, 9)}
+                          </div>
+                        )}
+                      </div>
+                      {!isMoving && <div className="text-[9px] text-slate-300 font-mono mt-0.5">#{seatLabel}</div>}
+                    </Button>
 
-                  {agentActionOverrides.has(agent.id) && (
+                    {hasLiveWork && (
+                      <div
+                        className={`absolute -translate-x-1/2 rounded border px-1.5 py-0.5 text-[9px] leading-none ${cue.toneClass}`}
+                        style={{ left: `${x}%`, top: `calc(${y}% - 24px)`, boxShadow: `0 0 12px ${cue.glowColor}` }}
+                      >
+                        {cue.detail}
+                      </div>
+                    )}
+
+                    {(transitioningAgentIds.has(agent.id) || isMoving) && (
+                      <div
+                        className="absolute -translate-x-1/2 text-[9px] text-slate-200/85 font-medium px-1.5 py-0.5 rounded bg-black/45 border border-white/10"
+                        style={{ left: `${x}%`, top: `calc(${y}% + 22px)` }}
+                      >
+                        {t('moving')}
+                      </div>
+                    )}
+
                     <div
-                      className="absolute -translate-x-1/2 text-[9px] px-1.5 py-0.5 rounded bg-black/70 border border-white/15 text-cyan-200"
-                      style={{ left: `${x}%`, top: `calc(${y}% - 24px)` }}
+                      className="absolute text-[9px] text-slate-500/70 font-mono pointer-events-none"
+                      style={{ left: `${x}%`, top: `calc(${y}% + 38px)` }}
                     >
-                      {agentActionOverrides.get(agent.id)}
+                      {zoneLabel}
                     </div>
-                  )}
-
-                  {(transitioningAgentIds.has(agent.id) || isMoving) && (
-                    <div
-                      className="absolute -translate-x-1/2 text-[9px] text-slate-200/85 font-medium px-1.5 py-0.5 rounded bg-black/45 border border-white/10"
-                      style={{ left: `${x}%`, top: `calc(${y}% + 22px)` }}
-                    >
-                      {t('moving')}
-                    </div>
-                  )}
-
-                  <div
-                    className="absolute text-[9px] text-slate-500/70 font-mono pointer-events-none"
-                    style={{ left: `${x}%`, top: `calc(${y}% + 38px)` }}
-                  >
-                    {zoneLabel}
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
 
             {showMinimap && (
@@ -2398,6 +2666,22 @@ export function OfficePanel() {
           0% { opacity: 0.25; transform: scale(0.9); }
           50% { opacity: 1; transform: scale(1.15); }
           100% { opacity: 0.25; transform: scale(0.9); }
+        }
+        @keyframes mcRoomPulse {
+          0% { opacity: 0.35; transform: scale(0.98); }
+          50% { opacity: 0.8; transform: scale(1.02); }
+          100% { opacity: 0.35; transform: scale(0.98); }
+        }
+        @keyframes mcScreenScan {
+          0% { transform: translateX(-140%); opacity: 0; }
+          35% { opacity: 0.85; }
+          70% { opacity: 0.5; }
+          100% { transform: translateX(260%); opacity: 0; }
+        }
+        @keyframes mcTypingLine {
+          0% { transform: scaleX(0.35); opacity: 0.38; }
+          50% { transform: scaleX(1); opacity: 1; }
+          100% { transform: scaleX(0.55); opacity: 0.52; }
         }
       `}</style>
     </div>

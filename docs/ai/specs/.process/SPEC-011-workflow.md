@@ -34,7 +34,7 @@ Re-read the design concept before each phase. If a generated artifact contradict
 | Checklist | `$speckit-checklist` | Complete | Security, data-integrity, error-handling, and state-management checklists complete with zero gaps |
 | Tasks | `$speckit-tasks` | Complete | Generated 32 TDD-first tasks across 7 groups; G5 passed; marker plan recorded for reviewability sizing |
 | Analyze | `$speckit-analyze` | Complete | Resolved 3 findings; G6 passed; security-routed consensus completed 3/3 high-confidence |
-| Implement | `$speckit-implement` | In Progress | Foundation and US1 checkpoints committed; US2 bounded denial-evidence marker in progress |
+| Implement | `$speckit-implement` | In Progress | Foundation, US1, and US2 checkpoints committed; US3 invalid-payload hardening marker is next |
 
 ## Phase Gates
 
@@ -589,8 +589,8 @@ Focus on:
 | Marker | Tasks | Status | Evidence |
 |---|---|---|---|
 | `foundation` | `T001`-`T007` | Complete | Commit `ae5552fb`; RED evidence and reviewability checkpoint recorded in `specs/011-crabtrap-honeypot/.process/uat-runbook.md` |
-| `us1` | `T008`-`T011` | Complete | Commit `f74d3491`; feature-disabled and missing/invalid-config no-op behavior verified |
-| `us2` | `T012`-`T016` | In Progress | Bounded denial-summary parsing, signature validation, and activity evidence next |
+| `us1` | `T008`-`T011` | Complete | Commit `0b9411f9`; feature-flag and missing/invalid-config no-op behavior recorded in `docs/ai/specs/.process/autopilot-state.json` |
+| `us2` | `T012`-`T016` | Complete | Commits `10534ebc` and `375767b1`; bounded denial-summary parsing, signature validation, SQLite replay lookup, and activity evidence recorded |
 
 ### Implement Prompt
 
