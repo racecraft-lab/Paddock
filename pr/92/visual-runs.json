@@ -7,6 +7,22 @@
   "baseRef": "SPEC-011-crabtrap-honeypot-stack/01-foundation",
   "reports": [
     {
+      "surface": "playwright",
+      "runId": "28139100731",
+      "runAttempt": "1",
+      "runKey": "28139100731-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/28139100731",
+      "reportHref": "https://racecraft-lab.github.io/Paddock/pr/92/runs/28139100731-attempt-1/playwright/",
+      "latestHref": "https://racecraft-lab.github.io/Paddock/pr/92/playwright/latest/?v=28139100731-attempt-1",
+      "headSha": "0b9411f9688136e35df7d29690416d6b9b474aaa",
+      "headRef": "SPEC-011-crabtrap-honeypot-stack/02-us1",
+      "baseRef": "SPEC-011-crabtrap-honeypot-stack/01-foundation",
+      "workflowName": "Paddock UI E2E",
+      "workflowFile": "paddock-ui-e2e.yml",
+      "surfaceLabel": "Playwright UI E2E",
+      "createdAt": "2026-06-25T00:50:29.621Z"
+    },
+    {
       "surface": "storybook",
       "runId": "28139100747",
       "runAttempt": "1",
@@ -23,5 +39,5 @@
       "createdAt": "2026-06-25T00:44:44.493Z"
     }
   ],
-  "updatedAt": "2026-06-25T00:44:44.493Z"
+  "updatedAt": "2026-06-25T00:50:29.621Z"
 }
